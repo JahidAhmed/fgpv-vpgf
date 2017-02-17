@@ -2,6 +2,8 @@
 (() => {
     'use strict';
 
+    const THROTTLE_COUNT = 2;
+
     /**
      * @ngdoc service
      * @module layerRegistry
@@ -19,7 +21,129 @@
         .module('app.geo')
         .factory('layerRegistry', layerRegistryFactory);
 
-    function layerRegistryFactory($q, $timeout, $translate, gapiService, legendService, tooltipService, Geo) {
+    function layerRegistryFactory(Geo, LayerBlueprint, configService) {
+        const service = {
+            getLayerRecord,
+            makeLayerRecord,
+            loadLayerRecord
+        };
+
+        const ref = {
+            loadingQueue: [],
+            loadingCount: 0
+        };
+
+        /***/
+
+        function getLayerRecord(id) {
+            const layerRecords = configService._sharedConfig_.map.layerRecords;
+
+            return layerRecords.find(layerRecord =>
+                layerRecord.layerId === id);
+        }
+
+        // layerDefinition must have id property
+        function makeLayerRecord(layerBlueprint) {
+            const layerRecords = configService._sharedConfig_.map.layerRecords;
+
+            let layerRecord = getLayerRecord(layerBlueprint.config.id);
+            if (!layerRecord) {
+                layerRecord = layerBlueprint.generateLayer();
+                layerRecords.push(layerRecord);
+            }
+
+            return layerRecord;
+        }
+
+        /**
+         * Finds a layer record with the specified id and adds it to the map
+         * @param {Number} id layer record id to load on the map
+         * @return {Boolean} true if the layer record existed and was added to the map; false otherwise
+         */
+        function loadLayerRecord(id) { //, pos = null) {
+            const layerRecord = getLayerRecord(id);
+
+            if (layerRecord) {
+                ref.loadingQueue.push(layerRecord);
+                _loadNextLayerRecord();
+
+                return true;
+            } else {
+                return false;
+            }
+        }
+
+        /**
+         * Loads a LayerRecord from the `loadingQueue` by adding it to the map. If the throttle count is reached, waits until some of the currently loading layers finish (or error.)
+         *
+         * @function _loadNextLayerRecord
+         * @private
+         */
+        function _loadNextLayerRecord() {
+            if (ref.loadingCount >= THROTTLE_COUNT || ref.loadingQueue.length === 0) {
+                return;
+            }
+
+            const mapBody = configService._sharedConfig_.map.body;
+            const layerRecord = ref.loadingQueue.shift();
+
+            mapBody.addLayer(layerRecord._layer);
+            ref.loadingCount ++;
+
+            let isRefreshed = false;
+            layerRecord.addStateListener(_onLayerRecordLoad);
+
+            /**
+             * Waits fro the layer to load or fail.
+             *
+             * // TODO: check if there is a better way to wait for layer to load than to wait for 'refresh' -> 'load' event chain
+             * // TODO: file-based layers don't fire these events; need a hack to handle those as well
+             * @function _onLayerRecordLoad
+             * @param {String} state name of the new LayerRecord state
+             * @private
+             */
+            function _onLayerRecordLoad(state) {
+                // TODO: add a reasonable timeout to prevent stalling with slow services
+                if (state === 'rv-refresh') {
+                    isRefreshed = true;
+                } else if (
+                    (isRefreshed && state === 'rv-loaded') ||
+                    (state === 'rv-error')
+                ) {
+                    layerRecord.removeStateListener(_onLayerRecordLoad);
+                    ref.loadingCount = Math.max(--ref.loadingCount, 0);
+                    _loadNextLayerRecord();
+
+                    // FIX: hover events are broken in geoApi at the moment
+                    //_setHoverTips(layerRecord);
+                }
+            }
+        }
+
+        function _setHoverTips(layerRecord) {
+            // TODO: layerRecord returns a promise on layerType to be consistent with dynamic children which don't know their type upfront
+            // to not wait on promise, check the layerRecord config
+            if (layerRecord.config.layerType !== Geo.Layer.Types.ESRI_FEATURE) {
+                return;
+            }
+
+            /* if (!layerRecord.config.tooltipEnabled) {
+                return;
+            } */
+
+            layerRecord.addHoverListener(_onHoverHandler);
+
+            function _onHoverHandler(data) {
+                console.info(data);
+            }
+        }
+
+        return service;
+    }
+
+    _layerRegistryFactory();
+
+    function _layerRegistryFactory($q, $timeout, $translate, gapiService, legendService, tooltipService, Geo) {
 
         return (geoState, config) => layerRegistry(geoState, geoState.mapService.mapObject, config);
 
@@ -43,14 +167,19 @@
 
                 constructLayers,
                 removeLayer,
+
                 zoomToScale,
                 zoomToBoundary,
+
                 reloadLayer,
                 snapshotLayer,
+
                 aliasedFieldName,
+
                 getLayersByType,
                 getRcsLayerIDs,
                 getAllQueryableLayerRecords,
+
                 moveLayer,
                 checkDateType,
                 setBboxState,
@@ -669,7 +798,8 @@
              * @param {LayerRecord|LegendEntry} l the layer to be reloaded
              */
             function snapshotLayer(l) {
-                const configUpdate = cfg => cfg.options.snapshot.value = true;
+                const configUpdate = cfg =>
+                    cfg.options.snapshot.value = true;
                 reloadLayer(l, configUpdate);
             }
 

@@ -51,12 +51,12 @@
          */
         function configureSearch() {
             configService.getCurrent().then(config => {
-                if (typeof config.search === 'undefined') {
+                if (typeof config.services.search === 'undefined') {
                     enabled = false;
                 } else {
                     enabled = true;
-                    serviceUrls = config.search.serviceUrls;
-                    disableSearch = config.search.disabledSearches;
+                    serviceUrls = config.services.search.serviceUrls;
+                    disableSearch = config.services.search.disabledSearches;
                 }
             });
         }

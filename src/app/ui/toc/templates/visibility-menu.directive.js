@@ -30,17 +30,21 @@
         return directive;
     }
 
-    function Controller(geoService, appInfo) {
+    function Controller(LegendBlock, geoService, appInfo, configService) {
         'ngInject';
         const self = this;
 
         self.appID = appInfo.id;
 
-        self.showAllLegendEntries = () => toggleLegendEntries();
-        self.hideAllLegendEntries = () => toggleLegendEntries(false);
+        self.showAllLegendEntries = () =>
+            toggleLegendEntries();
+        self.hideAllLegendEntries = () =>
+            toggleLegendEntries(false);
 
-        self.isAllLegendEntriesVisible = () => getLegendEntriesVisibility();
-        self.isAllLegendEntriesHidden = () => getLegendEntriesVisibility(false);
+        self.isAllLegendEntriesVisible = () =>
+            getLegendEntriesVisibility();
+        self.isAllLegendEntriesHidden = () =>
+            getLegendEntriesVisibility(false);
 
         /***/
 
@@ -55,8 +59,8 @@
                 return;
             }
 
-            geoService.legend.items.forEach(item =>
-                item.setVisibility(value));
+            configService._sharedConfig_.map.legendBlocks.entries.forEach(block =>
+                block.layerProxy.setVisibility(value));
         }
 
         /**
@@ -71,11 +75,13 @@
                 return;
             }
 
-            return geoService.legend
-                .walkItems(item =>
-                    (item.getVisibility()), true)
-                .every(item =>
-                    (item === value));
+            const isAllVisible = configService._sharedConfig_.map.legendBlocks
+                .walk(block =>
+                    block.layerProxy.visibility)
+                .every(isVisible =>
+                    isVisible === value);
+
+            return isAllVisible;
         }
     }
 })();

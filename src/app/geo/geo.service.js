@@ -16,7 +16,7 @@
         .factory('geoService', geoService);
 
     function geoService($http, $q, $rootScope, events, mapService, layerRegistry, configService,
-        identifyService, LayerBlueprint, basemapService) {
+        identifyService, /*LayerBlueprint,*/ ConfigObject, legendService) {
 
         // TODO update how the layerOrder works with the UI
         // Make the property read only. All angular bindings will be a one-way binding to read the state of layerOrder
@@ -30,7 +30,9 @@
             reloadLayer: l => layerRegistry.reloadLayer(l),
             snapshotLayer: l => layerRegistry.snapshotLayer(l),
 
-            state: null
+            state: null,
+
+            configObject: null
         };
 
         return service;
@@ -92,9 +94,20 @@
 
             let config; // reference to the current config
 
+            let layers;
+
             return configService.getCurrent()
                 .then(cf => {
                     config = cf;
+
+                    configService._sharedConfig_ = new ConfigObject.ConfigObject(config);
+
+                    // TODO: remove after config is typed and returns proper typed objects;
+                    // it's like this will have to be moved to the mapService or something
+                    state.configObject = service.configObject = configService._sharedConfig_;
+
+
+                    // state._map = service._map = basemapService.constructBasemaps(config);
 
                     // assemble geo state object
                     return mapService(state, config);
@@ -102,18 +115,32 @@
                 .then(ms => {
                     // expose mapService on geoService
                     angular.extend(service, ms);
-                    basemapService.reload();
-                    return layerRegistry(state, config);
+
+                    layers = legendService.contructLegend(state.configObject.map.layers, state.configObject.map.legend);
+
+                    // layers.forEach(layer =>
+                        // state.mapService.mapObject.addLayer(layer._layer));
+
+                    // basemapService.reload();
+
+                    return true; //layerRegistry(state, config);
                 })
                 .then(lr => {
                     // expose layerRegistry service on geoService
                     angular.extend(service, lr);
 
+                    // TODO: move blueprint construction to the layer registry
+                    /*
                     const layerBlueprints = config.layers.map(layerConfig =>
                         new LayerBlueprint.service(layerConfig, epsgLookup));
                     service.constructLayers(layerBlueprints);
+                    */
 
-                    return identifyService(state);
+                    // service.constructLayers([]);
+
+                    // return identifyService(state);
+
+                    return true;
                 })
                 .then(id => {
                     // expose idenitifyService on geoService

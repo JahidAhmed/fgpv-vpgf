@@ -127,6 +127,9 @@
                 coordElem[0].innerText = coords[0];
                 coordElem[1].innerText = coords[1];
             }
+
+            // TODO: remove; opens the main panel for easier dev work
+            stateManager.setActive({ side: false }, 'mainToc')
         }
 
         /**
@@ -141,11 +144,12 @@
         }
     }
 
-    function Controller($translate, geoService) {
+    function Controller($translate, geoService, configService) {
         'ngInject';
         const self = this;
 
         self.geoService = geoService;
+        self.configService = configService; // TODO: fix when config service can fire events
         self.translate = tag => $translate.instant('focus.dialog.' + tag);
     }
 })();

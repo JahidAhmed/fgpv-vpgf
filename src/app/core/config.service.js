@@ -43,6 +43,8 @@
         let isInitialized = false;
 
         const service = {
+            _sharedConfig_: null,
+
             currentLang,
             getCurrent,
             getOriginal,
