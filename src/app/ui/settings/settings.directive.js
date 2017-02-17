@@ -1,6 +1,8 @@
 (() => {
     'use strict';
 
+    const SETTINGS_CONTENT_PANEL = '.rv-settings-content-panel';
+
     const SETTING_SECTIONS = {
         display: [
             'boundingBox',
@@ -31,39 +33,66 @@
      * @function rvSettings
      * @return {object} directive body
      */
-    function rvSettings() {
+    function rvSettings($compile) {
         const directive = {
             restrict: 'E',
             templateUrl: 'app/ui/settings/settings.html',
             scope: {},
+            link,
             controller: Controller,
             controllerAs: 'self',
             bindToController: true
         };
 
         return directive;
+
+        function link(scope, element) {
+            let contentPanel;
+            const template = `<rv-settings-content block="self.block"></rv-settings-content>`;
+
+            scope.$watch('self.display.data', newLegendBlock => {
+                contentPanel = element.find(SETTINGS_CONTENT_PANEL);
+
+                if (newLegendBlock) {
+                    scope.self.block = newLegendBlock;
+                    contentPanel
+                        .empty()
+                        .append($compile(template)(scope));
+                } else {
+                    contentPanel.empty();
+                }
+            });
+        }
     }
 
     function Controller(stateManager, $scope, $timeout, geoService) {
         'ngInject';
         const self = this;
-        self.Math = window.Math;
-
-        // indicates which setting sections are displayed based on the available toc entry settings
-        self.settingSectionVisibility = {
-            display: true,
-            data: true
-        };
 
         self.display = stateManager.display.settings;
-        self.tocEntry = null;
+
+        // indicates which setting sections are displayed based on the available toc entry settings
+        /*self.settingSectionVisibility = {
+            display: true,
+            data: true
+        };*/
+
+
+        /*self.tocEntry = null;
         self.opacityValue = 0;
         self.toggleQuery = toggleQuery;
-        self.loadSnapshot = loadSnapshot;
+        self.loadSnapshot = loadSnapshot;*/
 
         // watch for changing display value and store reference to new tocEntry and its opacity value
         $scope.$watch('self.display.data', newValue => {
             if (newValue) {
+                //console.info('settings one', newValue);
+
+
+                // self.block = newValue;
+
+                /*
+
                 self.tocEntry = newValue;
                 if (self.tocEntry.options.opacity) {
                     self.opacityValue = self.tocEntry.options.opacity.value;
@@ -75,16 +104,16 @@
                         self.settingSectionVisibility[key] = value.some(element =>
                             typeof self.tocEntry.options[element] !== 'undefined'
                         )
-                    );
+                    );*/
             }
         });
 
-        $scope.$watch('self.display.data.options.boundingBox.value', val => {
+        /*$scope.$watch('self.display.data.options.boundingBox.value', val => {
             if (typeof val === 'undefined') {
                 return;
             }
             geoService.setBboxState(self.tocEntry, val);
-        });
+        });*/
 
         /**
         * Toggle the query value option. This option is use to let the layer appears in

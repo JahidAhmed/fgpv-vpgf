@@ -1,0 +1,8 @@
+<div ng-switch="self.layerProxy.infoType" class="rv-list-item-content rv-legend-{{ self.layerProxy.infoType }}">
+
+    <h3 class="md-subhead" ng-switch-when="title">{{ self.layerProxy.infoContent }}</h3>
+
+    <p ng-switch-when="text">{{ self.layerProxy.infoContent }}</p>
+
+    <img ng-src="{{ self.layerProxy.infoContent }}" alt="" ng-switch-when="image">
+</div>

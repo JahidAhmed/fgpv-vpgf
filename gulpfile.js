@@ -20,8 +20,8 @@ const merge = require('merge-stream');
 const lazypipe = require('lazypipe');
 const fs = require('fs');
 
-const jsDefaults = require('json-schema-defaults');
-const jsRefParser = require('json-schema-ref-parser');
+// const jsDefaults = require('json-schema-defaults');
+// const jsRefParser = require('json-schema-ref-parser');
 
 require('gulp-help')(gulp);
 
@@ -61,7 +61,9 @@ gulp.task('vet', 'Checks code against style guidelines', function () {
 });
 
 gulp.task('validate', 'Validate all config files against the config schema', function () {
-    return gulp.src(config.src + 'config*.json')
+    // disabling config validation
+    // TODO: upconvert schema 1->2 to validate
+    return gulp.src(config.src + 'config*._json')
         .pipe($.tv4(config.src + 'schema.json'))
         .pipe(through.obj(function (file, enc, callback) {
             callback(null, file);
@@ -187,7 +189,7 @@ function libbuild() {
  */
 function pluginbuild() {
     return gulp.src(config.jsCorePlugins)
-        .pipe($.babel({ presets: ['latest'] }))
+        .pipe($.babel({ presets: ['latest', 'stage-2'] }))
         .pipe($.concat(config.jsCorePluginFile));
 }
 
@@ -240,7 +242,7 @@ function jsbuild() {
         .pipe(constantServiceFilter.restore)
 
         .pipe($.plumber({ errorHandler: injectError }))
-        .pipe($.babel({ presets: ['latest'] }))
+        .pipe($.babel({ presets: ['latest', 'stage-2'] }))
         .pipe($.plumber.stop())
         .pipe($.ngAnnotate({
             remove: true,
@@ -279,7 +281,7 @@ gulp.task('jsrollup', 'Roll up all js into one file',
         const jsapp = jsbuild();
         const seed = gulp.src([config.jsGlobalRegistry, config.jsAppSeed])
             .pipe($.plumber({ errorHandler: injectError }))
-            .pipe($.babel({ presets: ['latest'] }))
+            .pipe($.babel({ presets: ['latest', 'stage-2'] }))
             .pipe($.plumber.stop());
 
         // global registry goes after the lib package
@@ -314,7 +316,8 @@ gulp.task('jsinjector', 'Copy fixed assets to the build directory',
         // the only one we have is Object.entries and it is very small
         // if it gets bigger we should split it into a separate file
         const injector = merge(
-            gulp.src(config.jsInjectorFile).pipe($.babel({ presets: ['latest'] })),
+            gulp.src(config.jsInjectorFile)
+                .pipe($.babel({ presets: ['latest', 'stage-2'] })),
             polyfills
         )
             .pipe($.order(config.injectorOrder))
@@ -676,6 +679,12 @@ function log(msg) {
  * Generates defaults from selected config schema definitions.
  */
 gulp.task('configdefaults', done => {
+    // do not generate config defaults
+    // TODO: check if this is needed at all for schema 2
+    done();
+
+    return true;
+    /*
     jsRefParser.dereference(config.schema).then(schema => {
         const defs = [
             'basicLayerOptionsNode',
@@ -693,7 +702,7 @@ gulp.task('configdefaults', done => {
         });
 
         done();
-    });
+    });*/
 });
 
 /**

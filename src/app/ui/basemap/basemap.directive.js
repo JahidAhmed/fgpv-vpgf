@@ -25,13 +25,26 @@
         return directive;
     }
 
-    function Controller(basemapService) {
+    function Controller(geoService, basemapService) {
         'ngInject';
         const self = this;
 
-        self.minimize = basemapService.close;
+        // TODO: update when config is typed
+        // TODO: wait on config ready event
+        self.geoService = geoService;
 
-        basemapService.setOnChangeCallback((projs, selectedBM) => {
+        // self.basemaps = geoService._map.basemaps;
+        // self.tileSchemas = geoService._map.tileSchemas;
+
+        // self.selectBasemap = basemapService.selectBasemap;
+        self.closeSelector = basemapService.close;
+
+        // TODO: remove
+        // basemapService.open();
+
+        //self.minimize = basemapService.close;
+
+        /*basemapService.setOnChangeCallback((projs, selectedBM) => {
             self.projections = projs;
             self.selectedWkid = selectedBM.wkid;
         });
@@ -39,6 +52,6 @@
         self.select = bm => {
             basemapService.select(bm);
             self.selectedWkid = basemapService.getSelected().wkid;
-        };
+        };*/
     }
 })();

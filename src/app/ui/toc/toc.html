@@ -33,6 +33,49 @@
 
         </div>
 
+        {{ self.configService._sharedConfig_.map._legendBlocks.name }}
+
+        <ul class="rv-legend-list rv-legend-root rv-legend-level-0" dx-start-with="self.configService._sharedConfig_.map._legendBlocks">
+        <!--ul class="rv-legend-list rv-legend-root rv-legend-level-0" dx-start-with="self.secondToc"-->
+
+            <li ng-repeat="block in $dxPrior.entries track by block.id"
+                class="rv-toggle-slide"
+                data-sort-group="{{ ::block.sortGroup }}">
+
+                <rv-legend-block
+                    ng-if="$dxPrior.blockType !== 'set'"
+                    class="rv-legend-{{ block.template }}"
+                    block="block"
+                    is-reorder="self.isReorder"
+                    ng-class="{ 'rv-selected': block.isSelected }"></rv-legend-block>
+
+                <rv-legend-block
+                    ng-if="$dxPrior.blockType === 'set'"
+                    class="rv-legend-{{ block.template }} rv-legend-set-{{ $dxPrior.id }}"
+                    block="block"
+                    is-reorder="self.isReorder"
+                    is-in-set="true"
+                    ng-class="{ 'rv-selected': block.isSelected }"></rv-legend-block>
+
+                <ul
+                    class="rv-legend-list rv-toggle-slide rv-legend-level-{{ ::$dxLevel }}"
+                    ng-if-start="block.blockType === 'group'"
+                    dx-connect="block"
+                    ng-show="block.isExpanded && !self.isReorder"></ul>
+
+                <div class="rv-shadow" ng-if-end></div>
+
+                <ul
+                    class="rv-legend-list rv-legend-set"
+                    ng-if="block.blockType === 'set'"
+                    dx-connect="block"></ul>
+
+
+                <md-progress-linear class="rv-progress-bottom" md-mode="indeterminate" ng-show="block.layerProxy.isRefreshing"></md-progress-linear>
+
+            </li>
+        </ul>
+
         <!--dragula='"bag-one"' dragula-scope="self.dragulaScope" dragula-model="::self.geoService.legend.items"-->
 
         <!-- Do not ask me what `dx-start-with` and `dx-connect` are and how this whole thing works as I'm not completely understan it myself. I'll update this comment when I get it. Read this is you are curious: https://github.com/dotJEM/angular-tree -->
