@@ -12,8 +12,136 @@
         .module('app.core')
         .factory('ConfigObject', ConfigObjectFactory);
 
-    function ConfigObjectFactory(gapiService) {
+    function ConfigObjectFactory(Geo, gapiService) {
 
+        // These are layer default values for controls, disabledControls, and state
+        const LAYER_DEFAULTS = {
+            [Geo.Layer.Types.ESRI_FEATURE]: {
+                state: {
+                    opacity: 1,
+                    visibility: true,
+                    boundingBox: false,
+                    query: true,
+                    snapshot: false
+                },
+                controls: [
+                    'opacity',
+                    'visibility',
+                    'boundingBox',
+                    'query',
+                    'snapshot',
+                    'metadata',
+                    'boundaryZoom',
+                    'refresh',
+                    'reload',
+                    'remove',
+                    'settings',
+                    'data'
+                ],
+                disabledControls: []
+            },
+            [Geo.Layer.Types.OGC_WMS]: {
+                state: {
+                    opacity: 1,
+                    visibility: true,
+                    boundingBox: false,
+                    query: true,
+                    snapshot: false
+                },
+                controls: [
+                    'opacity',
+                    'visibility',
+                    'boundingBox',
+                    'query',
+                    // 'snapshot',
+                    'metadata',
+                    'boundaryZoom',
+                    'refresh',
+                    'reload',
+                    'remove',
+                    'settings',
+                    // 'data'
+                ],
+                disabledControls: []
+            },
+            [Geo.Layer.Types.ESRI_DYNAMIC]: {
+                state: {
+                    opacity: 1,
+                    visibility: true,
+                    boundingBox: false,
+                    query: true,
+                    snapshot: false
+                },
+                controls: [
+                    'opacity',
+                    'visibility',
+                    'boundingBox',
+                    'query',
+                    // 'snapshot',
+                    'metadata',
+                    'boundaryZoom',
+                    'refresh',
+                    'reload',
+                    'remove',
+                    'settings',
+                    'data'
+                ],
+                disabledControls: []
+            },
+            [Geo.Layer.Types.ESRI_IMAGE]: {
+                state: {
+                    opacity: 1,
+                    visibility: true,
+                    boundingBox: false,
+                    query: false,
+                    snapshot: false
+                },
+                controls: [
+                    'opacity',
+                    'visibility',
+                    'boundingBox',
+                    'query',
+                    'snapshot',
+                    'metadata',
+                    'boundaryZoom',
+                    'refresh',
+                    'reload',
+                    'remove',
+                    'settings',
+                    'data'
+                ],
+                disabledControls: []
+            },
+            [Geo.Layer.Types.ESRI_TILE]: {
+                state: {
+                    opacity: 1,
+                    visibility: true,
+                    boundingBox: false,
+                    query: false,
+                    snapshot: false
+                },
+                controls: [
+                    'opacity',
+                    'visibility',
+                    'boundingBox',
+                    'query',
+                    'snapshot',
+                    'metadata',
+                    'boundaryZoom',
+                    'refresh',
+                    'reload',
+                    'remove',
+                    'settings',
+                    'data'
+                ],
+                disabledControls: []
+            }
+        };
+
+        /**
+         * Typed representation of a LodSet specified in the config.
+         * @class LodSet
+         */
         class LodSet {
             constructor({ id, lods }) {
                 this._id = id;
@@ -25,7 +153,8 @@
         }
 
         /**
-         * @param {Object} spatialReference spatialreference object in the form of { wkid: <Number> }
+         * Typed representation of an Extent specified in the config.
+         * @class ExtentSet
          */
         class ExtentSet {
             constructor({ id, spatialReference, default: _default, full, maximum }) {
@@ -40,10 +169,28 @@
             get id () { return this._id; }
             get spatialReference () { return this._spatialReference; }
 
+            /**
+             * Returns the default extent as an Esri extent object.
+             * @return {Object} Esri extent object
+             */
             get default () { return this._default; }
+            /**
+             * Returns the full extent as an Esri extent object.
+             * @return {Object} Esri extent object
+             */
             get full () { return this._full; }
+            /**
+             * Returns the maximum extent as an Esri extent object.
+             * @return {Object} Esri extent object
+             */
             get maximum () { return this._maximum; }
 
+            /**
+             * Converts JSON representation of an extent to Esri extent object.
+             * @private
+             * @param {Object} extent JSON representation of the extent in the form of { xmin: <Number>, xmax: <Number>, ymin: <Number>, ymax: <Number>, spatialReference: { wkid: <Number> }}
+             * @return {Object} returns Esri extent object
+             */
             _parseExtent(extent) {
                 const completeExtent = angular.extend(
                     {},
@@ -55,6 +202,10 @@
             }
         }
 
+        /**
+         * Typed representation of a TileSchema specified in the config.
+         * @class TileSchema
+         */
         class TileSchema {
             constructor({ id, lodSetId, name }, extentSet, lodSet) {
                 this._id = id;
@@ -85,6 +236,10 @@
             }
         }
 
+        /**
+         * Typed representation of a Basemap specified in the config.
+         * @class Basemap
+         */
         class Basemap {
             constructor({ id, name, description, type, layers, attribution }, tileSchema) {
                 this._id = id;
@@ -112,15 +267,176 @@
             select() { this._isSelected = true; return this; }
             deselect() { this._isSelected = false; return this; }
 
-            // convenience functions
+            /**
+             * Returns an array containing levels of details for the current basemap
+             * @return {Array} an array containing levels of details for the current basemap.
+             */
             get lods () { return this._tileSchema.lodSet.lods; }
 
+            /**
+             * Returns the wkid of the basemap projection.
+             * @return {Number} wkid of the basemap projection
+             */
             get wkid () { return this._tileSchema.extentSet.spatialReference.wkid; }
+
+            /**
+             * Returns the default extent as an Esri extent object.
+             * @return {Object} Esri extent object
+             */
             get default () { return this._tileSchema.extentSet.default; }
+            /**
+             * Returns the full extent as an Esri extent object.
+             * @return {Object} Esri extent object
+             */
             get full () { return this._tileSchema.extentSet.full; }
+            /**
+             * Returns the maximum extent as an Esri extent object.
+             * @return {Object} Esri extent object
+             */
             get maximum () { return this._tileSchema.extentSet.maximum; }
         }
 
+        /**
+         * Typed representation of a InfoSection specified in the config's structured legend.
+         * @class InfoSection
+         */
+        class InfoSection {
+            constructor(entrySource) {
+                this._infoType = entrySource.infoType;
+                this._content = entrySource.content;
+            }
+
+            get infoType () { return this._infoType; }
+            get content () { return this._content; }
+
+            get entryType () { return Legend.INFO; }
+        }
+
+        /**
+         * Typed representation of a VisibilitySet specified in the config's structured legend.
+         * @class VisibilitySet
+         */
+        class VisibilitySet {
+            constructor(visibilitySetSource) {
+                this._exclusiveVisibility = visibilitySetSource.exclusiveVisibility.map(childConfig =>
+                    Legend.makeChildObject(childConfig));
+            }
+
+            get exclusiveVisibility () { return this._exclusiveVisibility; }
+
+            get entryType () { return Legend.SET; }
+        }
+
+        /**
+         * Typed representation of a Entry specified in the config's structured legend.
+         * @class Entry
+         */
+        class Entry {
+            constructor(visibilitySetSource) {
+                this._layerId = visibilitySetSource.layerId;
+                this._controlledIds = visibilitySetSource.controlledIds || [];
+                this._entryIndex = visibilitySetSource.entryIndex;
+                this._entryId = visibilitySetSource.entryId;
+                this._coverIcon = visibilitySetSource.coverIcon;
+                this._symbologyStack = visibilitySetSource.symbologyStack;
+                this._symbologyRenderStyle = visibilitySetSource.symbologyRenderStyle || Entry.ICONS;
+            }
+
+            static ICONS = 'icons';
+            static IMAGES = 'images';
+
+            get layerId () { return this._layerId; }
+            get controlledIds () { return this._controlledIds; }
+            get entryIndex () { return this._entryIndex; }
+            get entryId () { return this._entryId; }
+            get coverIcon () { return this._coverIcon; }
+            get symbologyStack () { return this._symbologyStack; }
+            get symbologyRenderStyle () { return this._symbologyRenderStyle; }
+
+            get entryType () { return Legend.NODE; }
+        }
+
+        /**
+         * Typed representation of a EntryGroup specified in the config's structured legend.
+         * @class Entry
+         */
+        class EntryGroup {
+            constructor(entryGroupSource) {
+                this._name = entryGroupSource.name;
+                this._children = entryGroupSource.children.map(childConfig =>
+                    Legend.makeChildObject(childConfig));
+            }
+
+            get name () { return this._name; }
+            get children () { return this._children; }
+
+            get entryType () { return Legend.GROUP; }
+        }
+
+        /**
+         * Typed representation of a Legend specified in the config. If the legend's type is set as `autopopulate`, the structured legend (exclusively consisting of Entry objects) is generated based on the layer definition list.
+         * @class Legend
+         */
+        class Legend {
+            constructor(legendSource, layersSource) {
+                this._type = legendSource.type;
+
+                let rootChildren;
+
+                if (this._type === Legend.AUTOPOPULATE) {
+                    // since auto legend is a subset of structured legend, its children are automatically populated
+                    rootChildren = layersSource.map(layerDefinition =>
+                        ({ layerId: layerDefinition.id }));
+                } else {
+                    rootChildren = legendSource.root;
+                }
+
+                this._root = new EntryGroup({
+                    name: 'I\'m root',
+                    children: rootChildren
+                });
+            }
+
+            static STRUCTURED = 'structured';
+            static AUTOPOPULATE = 'autopopulate';
+
+            static INFO = 'legendInfo';
+            static NODE = 'legendNode';
+            static GROUP = 'legendGroup';
+            static SET = 'legendSet';
+
+            static TYPE_TO_CLASS = {
+                [Legend.INFO]: InfoSection,
+                [Legend.NODE]: Entry,
+                [Legend.GROUP]: EntryGroup,
+                [Legend.SET]: VisibilitySet
+            };
+
+            get type () { return this._type; }
+            get root () { return this._root; }
+
+            static detectChildType(child) {
+                if (typeof child.infoType !== 'undefined') {
+                    return Legend.INFO;
+                } else if (typeof child.exclusiveVisibility !== 'undefined') {
+                    return Legend.SET;
+                } else if (typeof child.children !== 'undefined') {
+                    return Legend.GROUP;
+                }
+
+                return Legend.NODE;
+            }
+
+            static makeChildObject(childConfig) {
+                const childType = Legend.detectChildType(childConfig);
+                return new Legend.TYPE_TO_CLASS[childType](childConfig);
+            }
+        }
+
+        /**
+         * Typed representation of a Map specified in the config.
+         * @class Map
+         */
         class Map {
             constructor(mapSource) {
                 this._source = mapSource;
@@ -160,7 +476,11 @@
                     this._basemaps[0])
                     .select();
 
-                // TODO: parser legend, layers, and components subsections
+                // TODO: parse and components subsections
+
+                this._layers = mapSource.layers.map(layerSource =>
+                    this._applyLayerDefaults(layerSource));
+                this._legend = new Legend(mapSource.legend, this._layers);
             }
 
             get source () { return this._source; }
@@ -169,10 +489,62 @@
             get basemaps () { return this._basemaps; }
             get extentSets () { return this._extentSets; }
             get lodSets () { return this._lodSets; }
+            get layers () { return this._layers; }
+            get legend () { return this._legend; }
 
             get selectedBasemap () { return this._basemaps.find(basemap => basemap.isSelected); }
+
+            /**
+             * Fills in the missing values in controls, disabledControls, and state with defaults.
+             * @function _applyLayerDefaults
+             * @private
+             * @param {Object} layerSource JSON object of the layer defintion from the config
+             * @return {Object} a copy of the layerSource with filled-in defaults; the original object is not modified
+             */
+            _applyLayerDefaults(layerSource) {
+                const defaults = LAYER_DEFAULTS[layerSource.layerType];
+
+                const layer = angular.copy(layerSource);
+
+                // taking the default state and overriding any options that are specified in the config
+                layer.state = angular.extend({}, defaults.state, layer.state);
+
+                if (typeof layer.controls === 'undefined') {
+                    layer.controls = defaults.controls;
+                } else {
+                    layer.controls = intersect(layer.controls, defaults.controls);
+                }
+
+                if (typeof layer.disabledControls === 'undefined') {
+                    layer.disabledControls = defaults.disabledControls;
+                } else {
+                    layer.disabledControls = intersect(layer.disabledControls, defaults.controls);
+                }
+
+                return layer;
+
+                /**
+                 * // TODO: move this somewhere else.
+                 *
+                 * Calculates the intersection between two arrays; does not filter out duplicates.
+                 *
+                 * @function intersect
+                 * @private
+                 * @param {Array} array1 first array
+                 * @param {Array} array2 second array
+                 * @return {Array} intersection of the first and second arrays
+                 */
+                function intersect(array1, array2) {
+                    return array1.filter(item =>
+                            array2.indexOf(item) !== -1);
+                }
+            }
         }
 
+        /**
+         * [partially]Typed representation of the app's config.
+         * @class ConfigObject
+         */
         class ConfigObject {
             /**
              *

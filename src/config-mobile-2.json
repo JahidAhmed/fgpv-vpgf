@@ -299,7 +299,8 @@
         "id": "scaleDep",
         "name": "Air Ozone Scale Dep",
         "url": "http://maps-cartes.ec.gc.ca/arcgis/rest/services/CESI/CESI_Air_Ozone/MapServer/2",
-        "layerType": "esriFeature"
+        "layerType": "esriFeature",
+        "disabledControls": [ "visibility" ]
       },
       {
         "id": "scaleDepDynamic",
@@ -319,7 +320,8 @@
           {
             "index": 4
           }
-        ]
+        ],
+        "controls": [ "feck" ]
       },
       {
         "id": "land_PubStdZone_detail_proj",
