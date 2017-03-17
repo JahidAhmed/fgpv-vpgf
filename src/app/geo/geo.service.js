@@ -15,7 +15,7 @@
         .factory('geoService', geoService);
 
     function geoService($http, $q, $rootScope, events, mapService, layerRegistry, configService,
-        identifyService, LayerBlueprint, ConfigObject) {
+        identifyService, /*LayerBlueprint,*/ ConfigObject, legendService) {
 
         // TODO update how the layerOrder works with the UI
         // Make the property read only. All angular bindings will be a one-way binding to read the state of layerOrder
@@ -94,13 +94,19 @@
 
             let config; // reference to the current config
 
+            let layers;
+
             return configService.getCurrent()
                 .then(cf => {
                     config = cf;
 
+                    configService._sharedConfig_ = new ConfigObject(config);
+
                     // TODO: remove after config is typed and returns proper typed objects;
                     // it's like this will have to be moved to the mapService or something
-                    state.configObject = service.configObject = new ConfigObject(config);
+                    state.configObject = service.configObject = configService._sharedConfig_;
+
+
                     // state._map = service._map = basemapService.constructBasemaps(config);
 
                     // assemble geo state object
@@ -110,9 +116,14 @@
                     // expose mapService on geoService
                     angular.extend(service, ms);
 
+                    layers = legendService.contructLegend(state.configObject.map.layers, state.configObject.map.legend);
+
+                    // layers.forEach(layer =>
+                        // state.mapService.mapObject.addLayer(layer._layer));
+
                     // basemapService.reload();
 
-                    return layerRegistry(state, config);
+                    return true; //layerRegistry(state, config);
                 })
                 .then(lr => {
                     // expose layerRegistry service on geoService
@@ -125,7 +136,7 @@
                     service.constructLayers(layerBlueprints);
                     */
 
-                    service.constructLayers([]);
+                    // service.constructLayers([]);
 
                     return identifyService(state);
                 })

@@ -19,6 +19,8 @@
     function LayerBlueprintFactory($q, LayerBlueprintUserOptions, gapiService, Geo, layerDefaults, LayerRecordFactory) {
         let idCounter = 0; // layer counter for generating layer ids
 
+        const { Layer: { Types: layerTypes }, Service: { Types: serviceTypes } } = Geo;
+
         // jscs doesn't like enhanced object notation
         // jscs:disable requireSpacesInAnonymousFunctionExpression
         class LayerBlueprint {
@@ -27,19 +29,19 @@
              * @param  {Object} initialConfig partial config, can be an empty object.
              * @param  {Function} epsgLookup a function which takes and EPSG code and returns a projection definition (see geoService for the exact signature)
              */
-            constructor(initialConfig, epsgLookup) {
-                this.initialConfig = {};
+            constructor(initialConfig) {
+                this.initialConfig = initialConfig;
                 this.config = {};
-                this._epsgLookup = epsgLookup;
+                // this._epsgLookup = epsgLookup;
 
-                if (typeof initialConfig !== 'undefined') {
+                /* if (typeof initialConfig !== 'undefined') {
                     this.initialConfig = initialConfig;
                     this.config = angular.merge({}, initialConfig);
                 }
 
                 this._applyDefaults();
 
-                this._userOptions = {};
+                this._userOptions = {};*/
             }
 
             /**
@@ -106,6 +108,27 @@
             generateLayer() {
                 throw new Error('Call generateLayer on a subclass instead.');
             }
+
+            static get LAYER_TYPE_TO_LAYER_RECORD () {
+                const gapiLayer = gapiService.gapi.layer;
+
+                return {
+                    [layerTypes.ESRI_TILE]: gapiLayer.createTileRecord,
+                    [layerTypes.ESRI_FEATURE]: gapiLayer.createFeatureRecord,
+                    [layerTypes.ESRI_IMAGE]: gapiLayer.createImageRecord,
+                    [layerTypes.ESRI_DYNAMIC]: gapiLayer.createDynamicRecord,
+                    [layerTypes.OGC_WMS]: gapiLayer.createWmsRecord
+                }
+            }
+
+            static SERVICE_TYPE_TO_LAYER_TYPE = {
+                [serviceTypes.FeatureLayer]: layerTypes.ESRI_FEATURE,
+                [serviceTypes.DynamicService]: layerTypes.ESRI_DYNAMIC,
+                [serviceTypes.RasterLayer]: layerTypes.ESRI_DYNAMIC,
+                [serviceTypes.TileService]: layerTypes.ESRI_TILE,
+                [serviceTypes.ImageService]: layerTypes.ESRI_IMAGE,
+                [serviceTypes.WMS]: layerTypes.OGC_WMS
+            }
         }
         // jscs:enable requireSpacesInAnonymousFunctionExpression
 
@@ -118,6 +141,15 @@
             [Geo.Service.Types.WMS]: Geo.Layer.Types.OGC_WMS
         };
 
+        // mappings
+        const LAYER_TYPE_TO_LAYER_RECORD = {
+            [layerTypes.ESRI_TILE]: 'createTileRecord',
+            [layerTypes.ESRI_FEATURE]: 'createFeatureRecord',
+            [layerTypes.ESRI_IMAGE]: 'createImageRecordBuilder',
+            [layerTypes.ESRI_DYNAMIC]: 'createDynamicRecord',
+            [layerTypes.OGC_WMS]: 'createWmsRecordBuilder'
+        };
+
         // jscs doesn't like enhanced object notation
         // jscs:disable requireSpacesInAnonymousFunctionExpression
         class LayerServiceBlueprint extends LayerBlueprint {
@@ -126,8 +158,12 @@
              * @param  {initialConfig} initialConfig partical config, __must__ contain a service `url`.
              * @param  {Function} epsgLookup a function which takes and EPSG code and returns a projection definition (see geoService for the exact signature)
              */
-            constructor(initialConfig, epsgLookup) {
-                if (typeof initialConfig.url === 'undefined') {
+            constructor(initialConfig) {
+                super(initialConfig);
+
+                return;
+
+                /*if (typeof initialConfig.url === 'undefined') {
                     // TODO: throw error ?
                     console.error('Service layer needs a url.');
                     return;
@@ -143,7 +179,7 @@
 
                 // if layerType is no specified, this is a user added layer; otherwise blueprint creation is deemed completed
                 // call GeoApi to predict its type
-                this._constructorPromise = this.layerType !== null ? $q.resolve() : this._fetchServiceInfo();
+                this._constructorPromise = this.layerType !== null ? $q.resolve() : this._fetchServiceInfo();*/
             }
 
             /**
@@ -163,8 +199,8 @@
                             // it is mandatory to set featureInfoMimeType attribute to get fct identifyOgcWmsLayer to work.
                             // get the first supported format available in the GetFeatureInfo section of the Capabilities XML.
                             const formatType = Object.values(data.queryTypes)
-                                                    .filter(format => typeof format === 'string')
-                                                    .find(format => format in Geo.Layer.Ogc.INFO_FORMAT_MAP);
+                                .filter(format => typeof format === 'string')
+                                .find(format => format in Geo.Layer.Ogc.INFO_FORMAT_MAP);
 
                             const featInfoMimeType = { featureInfoMimeType: formatType };
                             Object.assign(this.config, featInfoMimeType);
@@ -353,8 +389,10 @@
              * @param {Object} layerConfig a configuration fragment for a single layer
              * @return {Promise} resolving with a LayerRecord object matching one of the esri/layers objects based on the layer type
              */
-            generateLayer() {
-                return $q.resolve(LayerRecordFactory.makeServiceRecord(this.config, this._epsgLookup));
+            generateLayer () {
+
+                return LayerBlueprint.LAYER_TYPE_TO_LAYER_RECORD[this.initialConfig.layerType](this.initialConfig);
+                //return $q.resolve(LayerRecordFactory.makeServiceRecord(this.config, this._epsgLookup));
             }
         }
         // jscs:enable requireSpacesInAnonymousFunctionExpression

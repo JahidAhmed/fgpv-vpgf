@@ -27,11 +27,11 @@
         .module('app.geo')
         .factory('legendService', legendServiceFactory);
 
-    function legendServiceFactory(Geo, LegendBlock) {
+    function legendServiceFactory(Geo, LegendBlock, LayerBlueprint, configService, layerRegistry) {
 
-        /*const ref = {
+        const ref = {
 
-        };*/
+        };
 
         const service = {
             legend: null, // : new LegendGroup()
@@ -43,14 +43,35 @@
         /***/
 
         function contructLegend(layerDefinitions, legendStructure) {
-            service.legend = LegendBlock.Group({}, 'I\'m root');
 
-            // since auto legend is a subset of structured legend, its children are automatically populated
-            if (legendStructure.type === LEGEND.types.AUTOPOPULATE) {
-                legendStructure.children = autopopulateLegend(layerDefinitions);
-            }
+            legendStructure.root.children.forEach(ls => {
+                const layerDefinition = layerDefinitions.find(layerDefinition =>
+                    layerDefinition.id === ls.layerId);
 
-            detectLegendBlockType();
+                const proxy = layerRegistry.makeLayerRecord(layerDefinition);
+                const r = layerRegistry.loadLayerRecord(ls.layerId);
+            });
+
+            return;
+
+            /*service.legend = new LegendBlock.Group({}, 'I\'m root');
+
+
+            const mapConfig = configService._sharedConfig_.map;
+            const mapBody = mapConfig.body;
+
+            const layers = layerDefinitions.map(layerDefinition => {
+                return new LayerBlueprint.service(layerDefinition).generateLayer();
+            })
+
+            layers.forEach(layer =>
+                mapBody.addLayer(layer._layer));
+
+            return layers;*/
+        }
+
+        function addLayer(legendItem) {
+            const layerRecords = [layerRegistry.getLayerRecord(legendItemId)]; // this returns an existing or new layerRecords
         }
 
         /**
@@ -75,11 +96,6 @@
             }
 
             return LEGEND.blockTypes.NODE;
-        }
-
-        function autopopulateLegend(layerDefinitions) {
-            return layerDefinitions.map(layerDefinition =>
-                ({ layerId: layerDefinition.id }));
         }
     }
 

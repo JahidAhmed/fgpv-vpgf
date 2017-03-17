@@ -30,6 +30,7 @@
         const self = this;
 
         // TODO: update when config is typed
+        // TODO: wait on config ready event
         self.geoService = geoService;
 
         // self.basemaps = geoService._map.basemaps;

@@ -1,6 +1,8 @@
 (() => {
     'use strict';
 
+    const THROTTLE_COUNT = 1;
+
     /**
      * @ngdoc service
      * @module layerRegistry
@@ -18,32 +20,105 @@
         .module('app.geo')
         .factory('layerRegistry', layerRegistryFactory);
 
-    function layerRegistryFactory() {
+    function layerRegistryFactory(LayerBlueprint, configService) {
+        const service = {
+            constructLayers: () => {}, // TODO: remove crutch
 
-        return (geoState, config) => layerRegistry(geoState, config);
+            getLayerRecord,
+            makeLayerRecord,
+            loadLayerRecord
+        };
+
+        const ref = {
+            loadingQueue: [],
+            loadingCount: 0
+        };
 
         /***/
 
-        function layerRegistry() {
+        function getLayerRecord(id) {
+            const mapConfig = configService._sharedConfig_.map;
+            const layerRecords = mapConfig.layerRecords;
 
-            /*const ref = {
+            return layerRecords.find(layerRecord =>
+                layerRecord.config.id === id);
+        }
 
-            };*/
+        // layerDefinition must have id property
+        // TODO: make layerBluerprint return id of the layer defintion
+        function makeLayerRecord(layerDefinition) {
+            const layerRecords = configService._sharedConfig_.map.layerRecords;
 
-            const service = {
-                constructLayers: () => {}, // TODO: remove crutch
-
-                createLayerRecord
-            };
-
-            /***/
-
-            function createLayerRecord() {
-
+            let layerRecord = getLayerRecord(layerDefinition.id);
+            if (!layerRecord) {
+                layerRecord = new LayerBlueprint.service(layerDefinition).generateLayer();
+                layerRecords.push(layerRecord);
             }
 
-            return service;
+            return layerRecord.getProxy();
         }
+
+        function loadLayerRecord(id) { //, pos = null) {
+            const layerRecord = getLayerRecord(id);
+
+            if (layerRecord) {
+                ref.loadingQueue.push(layerRecord);
+                _loadNextLayerRecord();
+
+                return true;
+            } else {
+                return false;
+            }
+        }
+
+        /**
+         * Loads a LayerRecord from the `loadingQueue` by adding it to the map. If the throttle count is reached, waits until some of the currently loading layers finish (or error.)
+         *
+         * @function _loadNextLayerRecord
+         * @private
+         */
+        function _loadNextLayerRecord() {
+            if (ref.loadingCount >= THROTTLE_COUNT || ref.loadingQueue.length === 0) {
+                console.info('waiting', ref.loadingCount);
+                return;
+            }
+
+            const mapBody = configService._sharedConfig_.map.body;
+            const layerRecord = ref.loadingQueue.shift();
+
+            mapBody.addLayer(layerRecord._layer);
+            ref.loadingCount ++;
+
+            console.info('loading new one', ref.loadingCount, layerRecord.config.id);
+
+            let isRefreshed = false;
+            layerRecord.addStateListener(_onLayerRecordLoad);
+
+            /**
+             * Waits fro the layer to load or fail.
+             *
+             * // TODO: check if there is a better way to wait for layer to load than to wait for 'refresh' -> 'load' event chain
+             * // TODO: file-based layers don't fire these events; need a hack to handle those as well
+             * @param {String} state name of the new LayerRecord state
+             */
+            function _onLayerRecordLoad(state) {
+                console.info(layerRecord.config.id, state);
+
+                // TODO: add a reasonable timeout to prevent stalling with slow services
+                if (state === 'rv-refresh') {
+                    isRefreshed = true;
+                } else if (
+                    (isRefreshed && state === 'rv-loaded') ||
+                    (state === 'rv-error')
+                ) {
+                    layerRecord.removeStateListener(_onLayerRecordLoad);
+                    ref.loadingCount = Math.max(--ref.loadingCount, 0);
+                    _loadNextLayerRecord();
+                }
+            }
+        }
+
+        return service;
     }
 
     _layerRegistryFactory();

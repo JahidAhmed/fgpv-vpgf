@@ -15,7 +15,7 @@
         .factory('mapService', mapServiceFactory);
 
     function mapServiceFactory($q, $timeout, gapiService, storageService, $rootElement, $compile, $rootScope,
-        tooltipService, stateManager) {
+        tooltipService, stateManager, configService) {
 
         const settings = { zoomPromise: $q.resolve(), zoomCounter: 0 };
         return mapService;
@@ -102,6 +102,9 @@
                 // store map object in service
                 service.mapObject = mapObject;
 
+                configService._sharedConfig_.map.body = mapObject;
+
+
                 if (config.services && config.services.proxyUrl) {
                     gapiService.gapi.mapManager.setProxy(config.services.proxyUrl);
                 }
@@ -139,6 +142,13 @@
                 const onMapLoad = prepMapLoad();
 
                 service.mapManager = gapiService.gapi.mapManager.setupMap(mapObject, mapSettings);
+
+                const { BasemapControl, OverviewMapControl, ScalebarControl } = service.mapManager;
+
+                configService._sharedConfig_.map.components.basemap.body = BasemapControl;
+                configService._sharedConfig_.map.components.overviewMap.body = OverviewMapControl;
+                configService._sharedConfig_.map.components.scaleBar.body = ScalebarControl;
+
                 service.mapManager.BasemapControl.setBasemap(geoState.configObject.map.selectedBasemap.id);
 
                 service.mapManager.BasemapControl.basemapGallery.on('selection-change', event => {

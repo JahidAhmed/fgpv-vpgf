@@ -258,7 +258,7 @@
      * @private
      * @returns {Object}    the basemap object
      */
-    function _normalizeBasemap(basemap) {
+    /*function _normalizeBasemap(basemap) {
         return {
             name: basemap.name,
             description: basemap.description,
@@ -269,5 +269,5 @@
             selected: false,
             attribution: basemap.attribution
         };
-    }
+    }*/
 })();
