@@ -49,6 +49,9 @@
       "northArrow": {
         "enabled": true
       },
+      "basemap": {
+        "enabled": true
+      },
       "overviewMap": {
         "enabled": true,
         "layerType": "imagery"
@@ -303,27 +306,6 @@
         "disabledControls": [ "visibility" ]
       },
       {
-        "id": "scaleDepDynamic",
-        "name": "Air SO2 Scale Dep",
-        "url": "http://maps-cartes.ec.gc.ca/arcgis/rest/services/CESI/CESI_Air_SO2/MapServer",
-        "layerType": "esriDynamic",
-        "layerEntries": [
-          {
-            "index": 1
-          },
-          {
-            "index": 2
-          },
-          {
-            "index": 3
-          },
-          {
-            "index": 4
-          }
-        ],
-        "controls": [ "feck" ]
-      },
-      {
         "id": "land_PubStdZone_detail_proj",
         "name": "Land Pub Standard Zone Details",
         "url": "http://ec.gc.ca/arcgis/rest/services/data_donnees/be12386d/MapServer/0",
@@ -331,6 +313,21 @@
         "state": {
           "opacity": 0.1
         }
+      },
+      {
+        "id": "geomet_temp",
+        "name": "AGeoMet Temp",
+        "url": "http://geo.weather.gc.ca/geomet/",
+        "layerType": "ogcWms",
+        "featureInfoMimeType": "text/plain",
+        "state": {
+          "visibility": true
+        },
+        "layerEntries": [
+          {
+            "id": "GDPS.ETA_TT"
+          }
+        ]
       },
       {
         "id": "ecogeo",
@@ -354,20 +351,25 @@
         ]
       },
       {
-        "id": "geomet_temp",
-        "name": "GeoMet Temp",
-        "url": "http://geo.weather.gc.ca/geomet/",
-        "layerType": "ogcWms",
-        "featureInfoMimeType": "text/plain",
-        "state": {
-          "opacity": 0.4,
-          "visibility": false
-        },
+        "id": "scaleDepDynamic",
+        "name": "Air SO2 Scale Dep",
+        "url": "http://maps-cartes.ec.gc.ca/arcgis/rest/services/CESI/CESI_Air_SO2/MapServer",
+        "layerType": "esriDynamic",
         "layerEntries": [
           {
-            "id": "GDPS.ETA_TT"
+            "index": 1
+          },
+          {
+            "index": 2
+          },
+          {
+            "index": 3
+          },
+          {
+            "index": 4
           }
-        ]
+        ],
+        "controls": [ "feck" ]
       }
     ],
     "tileSchemas": [

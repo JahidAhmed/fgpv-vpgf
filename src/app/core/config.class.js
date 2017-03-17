@@ -309,7 +309,7 @@
             get infoType () { return this._infoType; }
             get content () { return this._content; }
 
-            get entryType () { return Legend.INFO; }
+            static get entryType () { return Legend.INFO; }
         }
 
         /**
@@ -324,7 +324,7 @@
 
             get exclusiveVisibility () { return this._exclusiveVisibility; }
 
-            get entryType () { return Legend.SET; }
+            static get entryType () { return Legend.SET; }
         }
 
         /**
@@ -353,7 +353,7 @@
             get symbologyStack () { return this._symbologyStack; }
             get symbologyRenderStyle () { return this._symbologyRenderStyle; }
 
-            get entryType () { return Legend.NODE; }
+            static get entryType () { return Legend.NODE; }
         }
 
         /**
@@ -370,7 +370,7 @@
             get name () { return this._name; }
             get children () { return this._children; }
 
-            get entryType () { return Legend.GROUP; }
+            static get entryType () { return Legend.GROUP; }
         }
 
         /**
@@ -385,8 +385,26 @@
 
                 if (this._type === Legend.AUTOPOPULATE) {
                     // since auto legend is a subset of structured legend, its children are automatically populated
-                    rootChildren = layersSource.map(layerDefinition =>
-                        ({ layerId: layerDefinition.id }));
+                    const sortGroups = Geo.Layer.SORT_GROUPS_;
+
+                    // with autolegend, the layer list is pre-sorted according to the sort groups, and layer names
+                    rootChildren = layersSource
+                        .sort((a,b) => {
+                                if (sortGroups[a.layerType] < sortGroups[b.layerType]) {
+                                    return -1;
+                                } else if ((sortGroups[a.layerType] > sortGroups[b.layerType])) {
+                                    return 1;
+                                } else if (a.name < b.name) {
+                                    return -1;
+                                } else if (a.name > b.name) {
+                                    return 1;
+                                }
+
+                                return 0;
+                        })
+                        .map(layerDefinition =>
+                            ({ layerId: layerDefinition.id }));
+
                 } else {
                     rootChildren = legendSource.root;
                 }
@@ -433,6 +451,91 @@
             }
         }
 
+        class ComponentBase {
+            constructor(source = { enabled: true }) {
+                this._source = source;
+
+                this._enabled = source.enabled;
+            }
+
+            get enabled () { return this._enabled; }
+
+            get body () { return this._body; }
+            set body (value) { this._body = value; }
+        }
+
+        class GeoSearchComponent extends ComponentBase {
+            constructor(source) {
+                super(source);
+
+                this._showGraphic = source.showGraphic;
+                this._showInfo = source.showInfo;
+            }
+
+            get showGraphic () { return this._showGraphic; }
+            get showInfo () { return this._showInfo; }
+        }
+
+        class MouseInfoComponent extends ComponentBase {
+            constructor(source) {
+                super(source);
+
+                this._spatialReference = source.spatialReference;
+            }
+
+            get spatialReference () { return this._spatialReference; }
+        }
+
+        class NorthArrowComponent extends ComponentBase {
+            constructor(source) {
+                super(source);
+            }
+        }
+
+        class OverviewMapComponent extends ComponentBase {
+            constructor(source) {
+                super(source);
+
+                this._maximizeButton = source.maximizeButton;
+                this._layerType = source.layerType;
+            }
+
+            get maximizeButton () { return this._maximizeButton; }
+            get layerType () { return this._layerType; }
+        }
+
+        class ScaleBarComponent extends ComponentBase {
+            constructor(source) {
+                super(source);
+            }
+        }
+
+        class BasemapComponent extends ComponentBase {
+            constructor(source) {
+                super(source);
+            }
+        }
+
+        class Components {
+            constructor(componentsSource) {
+                this._source = componentsSource;
+
+                this._geoSearch = new GeoSearchComponent(componentsSource.geoSearch);
+                this._mouseInfo = new MouseInfoComponent(componentsSource.mouseInfo);
+                this._northArray = new NorthArrowComponent(componentsSource.northArrow);
+                this._overviewMap = new OverviewMapComponent(componentsSource.overviewMap);
+                this._scaleBar = new ScaleBarComponent(componentsSource.scaleBar);
+                this._basemap = new BasemapComponent(componentsSource.basemap);
+            }
+
+            get geoSearch () { return this._geoSearch; }
+            get mouseInfo () { return this._mouseInfo; }
+            get northArray () { return this._northArrow; }
+            get overviewMap () { return this._overviewMap; }
+            get scaleBar () { return this._scaleBar; }
+            get basemap () { return this._basemap; }
+        }
+
         /**
          * Typed representation of a Map specified in the config.
          * @class Map
@@ -476,11 +579,13 @@
                     this._basemaps[0])
                     .select();
 
-                // TODO: parse and components subsections
+                // TODO: parse components subsections
 
                 this._layers = mapSource.layers.map(layerSource =>
                     this._applyLayerDefaults(layerSource));
                 this._legend = new Legend(mapSource.legend, this._layers);
+
+                this._components = new Components(mapSource.components);
             }
 
             get source () { return this._source; }
@@ -491,8 +596,18 @@
             get lodSets () { return this._lodSets; }
             get layers () { return this._layers; }
             get legend () { return this._legend; }
+            get components () { return this._components; }
 
             get selectedBasemap () { return this._basemaps.find(basemap => basemap.isSelected); }
+
+            _layerRecords = [];
+            _legendBlocks = [];
+
+            get layerRecords () { return this._layerRecords; }
+            get legendBlocks () { return this._legendBlocks; }
+
+            set body (value) { this._body = value; }
+            get body () { return this._body; }
 
             /**
              * Fills in the missing values in controls, disabledControls, and state with defaults.
