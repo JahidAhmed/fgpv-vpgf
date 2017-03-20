@@ -52,6 +52,12 @@
 
             rvLangSwitch: 'rvLangSwitch', // Fired when language is switch (loadNewLang function)
 
+            // config state transitions
+            rvCfgLoad: 'rvCfgLoad',
+            rvCfgInitialized: 'rvCfgInitialized',
+            rvCfgUpdated: 'rvCfgUpdated',
+            // TODO find a better name for this one:  rvCfgUpdating: 'rvCfgUpdating',
+
             rvMapPan: 'rvMapPan',
             rvExtentChange: 'extentChange' // TODO: rename event to `rvExtentChange` and all the instances that use hardcoded `extentChange` instance
         };
