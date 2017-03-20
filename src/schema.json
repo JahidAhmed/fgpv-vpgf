@@ -224,23 +224,14 @@
             "required": ["id"],
             "additionalProperties": false
         },
-        "dynamicChildOptionNode": {
-            "type": "object",
-            "properties": {
-                "index": { "type": "number", "description": "The index of the layer in the map service." },
-                "controls": { "$ref": "#/definitions/legendEntryControls" },
-                "state": { "$ref": "#/definitions/initialLayerSettings" }
-            },
-            "required": ["index"],
-            "additionalProperties": false
-        },
         "dynamicLayerEntryNode": {
             "type": "object",
             "properties": {
                 "index": { "type": "number", "description": "The index of the layer in the map service." },
                 "outfields": { "type": "string", "default": "*", "description": "A comma separated list of attribute names that should be requested on query." },
                 "controls": { "$ref": "#/definitions/legendEntryControls" },
-                "state": { "$ref": "#/definitions/initialLayerSettings" }
+                "state": { "$ref": "#/definitions/initialLayerSettings" },
+                "stateOnly": { "type": "boolean", "default": false, "description": "A flag indicating this entry is only for state tracking (i.e. it should not be displayed on the UI and all of the controls will be ignored" }
             },
             "required": ["index"],
             "additionalProperties": false
@@ -432,12 +423,6 @@
                     "items": { "$ref": "#/definitions/dynamicLayerEntryNode" },
                     "minItems": 1
                 },
-                "childOptions": {
-                    "type": "array",
-                    "items": { "$ref": "#/definitions/dynamicChildOptionNode" },
-                    "default": [],
-                    "description": "Settings for child layers not defined in layerEntries. I.e. sub layers that are not at the root level of the legend"
-                },
                 "tolerance": { "type": "number", "default": 5, "description": "Specifies the tolerance in pixels when determining if a feature was clicked. Should be non-negative integer" },
                 "extent": { "$ref": "#/definitions/extentWithReferenceNode" },
                 "controls": { "$ref": "#/definitions/legendEntryControls" },
@@ -529,7 +514,8 @@
                 "mouseInfo": { "type": "object", "properties": { "enabled": { "type": "boolean", "default": true }, "spatialReference": { "$ref": "#/definitions/spatialReferenceNode" } }},
                 "northArrow": { "type": "object", "properties": {"enabled": { "type": "boolean", "default": true } } },
                 "overviewMap": { "type": "object", "properties": { "enabled": { "type": "boolean", "default": true }, "maximizeButton": { "type": "boolean"}, "layerType": { "type": "string"} } },
-                "scaleBar": { "type": "object", "properties": {"enabled": { "type": "boolean", "default": true } } }
+                "scaleBar": { "type": "object", "properties": {"enabled": { "type": "boolean", "default": true } } },
+                "basemap": { "type": "object", "properties": {"enabled": { "type": "boolean", "default": true } } }
             }
         }
 
