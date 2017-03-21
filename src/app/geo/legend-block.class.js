@@ -35,7 +35,7 @@
             }
 
             get layerProxy () {
-                return this._layerProxy;
+                return this._layerProxy.main;
             }
 
             get blockType () {
@@ -72,12 +72,12 @@
             // TODO: turn state names and template names to consts
             get template () {
                 const stateToTemplate = {
-                    loading: () => 'placeholder',
-                    loaded: () => super.template,
-                    error: () => 'error'
+                    'rv-loading': () => 'placeholder',
+                    'rv-loaded': () => super.template,
+                    'rv-error': () => 'error'
                 };
 
-                return stateToTemplate[this._layerProxy.state]();
+                return stateToTemplate[this._layerProxy.main.state]();
             }
         }
 
@@ -92,12 +92,11 @@
                 this._blockType = 'set';
             }
 
-            get entries () { return this._entries;
-             }
+            get entries () { return this._entries; }
 
             addEntry (entry, position = this._entries.length) {
                 // TODO: consider using .includes; needs IE polyfill
-                if (['node', 'group'].indexOf(entry.blockType) === -1) {
+                /*if (['node', 'group'].indexOf(entry.blockType) === -1) {
                     throw new Error(`Legend visibility sets cannot be nested.`);
                 }
 
@@ -120,12 +119,12 @@
 
                 this._entryWatchers.splice(position, 0, entryWatcher);
                 this._entries.splice(position, 0, entry);
-
+                */
                 return this;
             }
 
             removeEntry (entry) {
-                const index = this._entries.indexOf(entry);
+                /*const index = this._entries.indexOf(entry);
 
                 if (index !== -1) {
                     this._entries.splice(index, 1);
@@ -138,7 +137,7 @@
                 if (this._entries.length === 0) {
                     this._selectedEntry = null;
                 }
-
+                */
                 return this;
             }
         }

@@ -16,7 +16,7 @@
 
     // jshint maxparams:14
     function tocService($q, $rootScope, $mdToast, $translate, layoutService, stateManager,
-                        geoService, metadataService, errorService, debounceService, $timeout, LegendBlock) {
+        geoService, metadataService, errorService, debounceService, $timeout, LegendBlock) {
 
         const service = {
             // method called by the options and flags set on the layer item

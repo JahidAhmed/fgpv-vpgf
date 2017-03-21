@@ -33,7 +33,10 @@
 
         </div>
 
-        <ul class="rv-legend-list rv-legend-root rv-legend-level-0" dx-start-with="self.secondToc">
+        {{ self.configService._sharedConfig_.map._legendBlocks.name }}
+
+        <ul class="rv-legend-list rv-legend-root rv-legend-level-0" dx-start-with="self.configService._sharedConfig_.map._legendBlocks">
+        <!--ul class="rv-legend-list rv-legend-root rv-legend-level-0" dx-start-with="self.secondToc"-->
 
             <li ng-repeat="block in $dxPrior.entries track by block.id"
                 class="rv-toggle-slide"

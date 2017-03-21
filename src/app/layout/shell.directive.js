@@ -69,6 +69,8 @@
                     });
                 }
             });
+
+            stateManager.setActive({ side: false }, 'mainToc')
         }
 
         /**

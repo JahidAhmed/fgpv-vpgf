@@ -100,7 +100,7 @@
                 .then(cf => {
                     config = cf;
 
-                    configService._sharedConfig_ = new ConfigObject(config);
+                    configService._sharedConfig_ = new ConfigObject.ConfigObject(config);
 
                     // TODO: remove after config is typed and returns proper typed objects;
                     // it's like this will have to be moved to the mapService or something

@@ -17,8 +17,134 @@
         .factory('LayerBlueprint', LayerBlueprintFactory);
 
     function LayerBlueprintFactory($q, LayerBlueprintUserOptions, gapiService, Geo, layerDefaults, LayerRecordFactory) {
+
+        // These are layer default values for controls, disabledControls, and state
+        const LAYER_DEFAULTS = {
+            [Geo.Layer.Types.ESRI_FEATURE]: {
+                state: {
+                    opacity: 1,
+                    visibility: true,
+                    boundingBox: false,
+                    query: true,
+                    snapshot: false
+                },
+                controls: [
+                    'opacity',
+                    'visibility',
+                    'boundingBox',
+                    'query',
+                    'snapshot',
+                    'metadata',
+                    'boundaryZoom',
+                    'refresh',
+                    'reload',
+                    'remove',
+                    'settings',
+                    'data'
+                ],
+                disabledControls: []
+            },
+            [Geo.Layer.Types.OGC_WMS]: {
+                state: {
+                    opacity: 1,
+                    visibility: true,
+                    boundingBox: false,
+                    query: true,
+                    snapshot: false
+                },
+                controls: [
+                    'opacity',
+                    'visibility',
+                    'boundingBox',
+                    'query',
+                    // 'snapshot',
+                    'metadata',
+                    'boundaryZoom',
+                    'refresh',
+                    'reload',
+                    'remove',
+                    'settings',
+                    // 'data'
+                ],
+                disabledControls: []
+            },
+            [Geo.Layer.Types.ESRI_DYNAMIC]: {
+                state: {
+                    opacity: 1,
+                    visibility: true,
+                    boundingBox: false,
+                    query: true,
+                    snapshot: false
+                },
+                controls: [
+                    'opacity',
+                    'visibility',
+                    'boundingBox',
+                    'query',
+                    // 'snapshot',
+                    'metadata',
+                    'boundaryZoom',
+                    'refresh',
+                    'reload',
+                    'remove',
+                    'settings',
+                    'data'
+                ],
+                disabledControls: []
+            },
+            [Geo.Layer.Types.ESRI_IMAGE]: {
+                state: {
+                    opacity: 1,
+                    visibility: true,
+                    boundingBox: false,
+                    query: false,
+                    snapshot: false
+                },
+                controls: [
+                    'opacity',
+                    'visibility',
+                    'boundingBox',
+                    'query',
+                    'snapshot',
+                    'metadata',
+                    'boundaryZoom',
+                    'refresh',
+                    'reload',
+                    'remove',
+                    'settings',
+                    'data'
+                ],
+                disabledControls: []
+            },
+            [Geo.Layer.Types.ESRI_TILE]: {
+                state: {
+                    opacity: 1,
+                    visibility: true,
+                    boundingBox: false,
+                    query: false,
+                    snapshot: false
+                },
+                controls: [
+                    'opacity',
+                    'visibility',
+                    'boundingBox',
+                    'query',
+                    'snapshot',
+                    'metadata',
+                    'boundaryZoom',
+                    'refresh',
+                    'reload',
+                    'remove',
+                    'settings',
+                    'data'
+                ],
+                disabledControls: []
+            }
+        };
+
         let idCounter = 0; // layer counter for generating layer ids
 
+        // destructure Geo into `layerTypes` and `serviceTypes`
         const { Layer: { Types: layerTypes }, Service: { Types: serviceTypes } } = Geo;
 
         // jscs doesn't like enhanced object notation
@@ -29,8 +155,8 @@
              * @param  {Object} initialConfig partial config, can be an empty object.
              * @param  {Function} epsgLookup a function which takes and EPSG code and returns a projection definition (see geoService for the exact signature)
              */
-            constructor(initialConfig) {
-                this.initialConfig = initialConfig;
+            constructor(source) {
+                this.initialConfig = this._applyLayerDefaults(source);
                 this.config = {};
                 // this._epsgLookup = epsgLookup;
 
@@ -42,6 +168,52 @@
                 this._applyDefaults();
 
                 this._userOptions = {};*/
+            }
+
+            /**
+             * Fills in the missing values in controls, disabledControls, and state with defaults.
+             * @function _applyLayerDefaults
+             * @private
+             * @param {Object} source JSON object of the layer defintion from the config
+             * @return {Object} a copy of the source with filled-in defaults; the original object is not modified
+             */
+            _applyLayerDefaults(source) {
+                const defaults = LAYER_DEFAULTS[source.layerType];
+
+                const sourceCopy = angular.copy(source);
+
+                // taking the default state and overriding any options that are specified in the config
+                sourceCopy.state = angular.extend({}, defaults.state, sourceCopy.state);
+
+                if (typeof sourceCopy.controls === 'undefined') {
+                    sourceCopy.controls = defaults.controls;
+                } else {
+                    sourceCopy.controls = intersect(sourceCopy.controls, defaults.controls);
+                }
+
+                if (typeof sourceCopy.disabledControls === 'undefined') {
+                    sourceCopy.disabledControls = defaults.disabledControls;
+                } else {
+                    sourceCopy.disabledControls = intersect(sourceCopy.disabledControls, defaults.controls);
+                }
+
+                return sourceCopy;
+
+                /**
+                 * // TODO: move this somewhere else.
+                 *
+                 * Calculates the intersection between two arrays; does not filter out duplicates.
+                 *
+                 * @function intersect
+                 * @private
+                 * @param {Array} array1 first array
+                 * @param {Array} array2 second array
+                 * @return {Array} intersection of the first and second arrays
+                 */
+                function intersect(array1, array2) {
+                    return array1.filter(item =>
+                            array2.indexOf(item) !== -1);
+                }
             }
 
             /**
@@ -158,8 +330,16 @@
              * @param  {initialConfig} initialConfig partical config, __must__ contain a service `url`.
              * @param  {Function} epsgLookup a function which takes and EPSG code and returns a projection definition (see geoService for the exact signature)
              */
-            constructor(initialConfig) {
-                super(initialConfig);
+            constructor(source) {
+
+                if (angular.isString(source)) {
+                    // assuming service URL is supplied
+                    // super({});
+                } else {
+                    // assuming a wellformed layer defintion object is supplied
+                    super(source);
+                }
+
 
                 return;
 

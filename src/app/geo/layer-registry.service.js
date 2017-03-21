@@ -1,7 +1,7 @@
 (() => {
     'use strict';
 
-    const THROTTLE_COUNT = 1;
+    const THROTTLE_COUNT = 2;
 
     /**
      * @ngdoc service
@@ -37,8 +37,7 @@
         /***/
 
         function getLayerRecord(id) {
-            const mapConfig = configService._sharedConfig_.map;
-            const layerRecords = mapConfig.layerRecords;
+            const layerRecords = configService._sharedConfig_.map.layerRecords;
 
             return layerRecords.find(layerRecord =>
                 layerRecord.config.id === id);
@@ -46,16 +45,17 @@
 
         // layerDefinition must have id property
         // TODO: make layerBluerprint return id of the layer defintion
-        function makeLayerRecord(layerDefinition) {
+        // TODO: decide what the input should be here
+        function makeLayerRecord(layerBlueprint) {
             const layerRecords = configService._sharedConfig_.map.layerRecords;
 
-            let layerRecord = getLayerRecord(layerDefinition.id);
+            let layerRecord = getLayerRecord(layerBlueprint.id);
             if (!layerRecord) {
-                layerRecord = new LayerBlueprint.service(layerDefinition).generateLayer();
+                layerRecord = layerBlueprint.generateLayer();
                 layerRecords.push(layerRecord);
             }
 
-            return layerRecord.getProxy();
+            return layerRecord;
         }
 
         function loadLayerRecord(id) { //, pos = null) {

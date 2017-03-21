@@ -1,7 +1,7 @@
 (() => {
     'use strict';
 
-    const LEGEND = {
+    /*const LEGEND = {
         types: {
             STRUCTURED: 'structured',
             AUTOPOPULATE: 'autopopulate'
@@ -12,7 +12,7 @@
             GROUP: 'legendGroup',
             SET: 'legendSet'
         }
-    };
+    };*/
 
     /**
      * @module legendService
@@ -27,7 +27,7 @@
         .module('app.geo')
         .factory('legendService', legendServiceFactory);
 
-    function legendServiceFactory(Geo, LegendBlock, LayerBlueprint, configService, layerRegistry) {
+    function legendServiceFactory(Geo, ConfigObject, LegendBlock, LayerBlueprint, configService, layerRegistry) {
 
         const ref = {
 
@@ -42,61 +42,227 @@
 
         /***/
 
+
+        // rename: construct config legend
         function contructLegend(layerDefinitions, legendStructure) {
+            // all layer defintions are passed as config fragments - turning them into layer blueprints
+            const layerBluePrints = layerDefinitions.map(layerDefinition =>
+                new LayerBlueprint.service(layerDefinition));
 
-            legendStructure.root.children.forEach(ls => {
-                const layerDefinition = layerDefinitions.find(layerDefinition =>
-                    layerDefinition.id === ls.layerId);
+            const rootGroup = makeLegendBlock(legendStructure.root, layerBluePrints);
 
-                const proxy = layerRegistry.makeLayerRecord(layerDefinition);
-                const r = layerRegistry.loadLayerRecord(ls.layerId);
-            });
+            configService._sharedConfig_.map._legendBlocks = rootGroup;
 
-            return;
-
-            /*service.legend = new LegendBlock.Group({}, 'I\'m root');
-
-
-            const mapConfig = configService._sharedConfig_.map;
-            const mapBody = mapConfig.body;
-
-            const layers = layerDefinitions.map(layerDefinition => {
-                return new LayerBlueprint.service(layerDefinition).generateLayer();
-            })
-
-            layers.forEach(layer =>
-                mapBody.addLayer(layer._layer));
-
-            return layers;*/
         }
 
-        function addLayer(legendItem) {
+        function addUserLayerItem(layerBlueprint) {
+            const blockConfig = { layerId: layerBlueprint.id };
+
+            makeLegendBlock(blockConfig, [layerBlueprint]);
+        }
+
+        function makeLegendBlock(blockConfig, layerBlueprints) {
+
+
+        /*}
+
+        // legendStructure is an array
+        function a(legendStructure, layerDefinitions) {*/
+            const TYPE_TO_BLOCK = {
+                [ConfigObject.Legend.INFO]: _makeInfoBlock,
+                [ConfigObject.Legend.NODE]: _makeNodeBlock,
+                [ConfigObject.Legend.GROUP]: _makeGroupBlock,
+                [ConfigObject.Legend.SET]: _makeSetBlock
+            };
+
+            const [ mainBlueprint, adjunctBlueprints ] = [
+                _getLayerBlueprint(blockConfig.layerId),
+                (blockConfig.controlledIds || []).map(id =>
+                    _getLayerBlueprint(id))
+            ];
+
+            const legendBlock = _makeBlock(blockConfig);
+
+            return legendBlock;
+
+            function _makeBlock(blockConfig) {
+                // dynamic layers render as LegendGroup blocks; all other layers are rendered as LegendNode blocks;
+                if (blockConfig.entryType === ConfigObject.Legend.NODE){
+                    if (mainBlueprint.layerType === Geo.Layer.Types.ESRI_DYNAMIC) {
+                        return _makeDynamicGroupBlock(blockConfig);
+                    }
+                }
+
+                return TYPE_TO_BLOCK[blockConfig.entryType](blockConfig);
+            }
+
+            function _getLayerBlueprint(id) {
+                const blueprint = layerBlueprints.find(blueprint =>
+                    blueprint.id === id);
+
+                // TODO: this should return something meaningful for info sections and maybe sets?
+
+                return blueprint;
+            }
+
+            function _makeGroupBlock(blockConfig) {
+                const proxies = {};
+
+                const group = new LegendBlock.Group(proxies, blockConfig.layerId);
+
+                blockConfig.children.forEach(childConfig => {
+                    const chidlBlock = _makeBlock(childConfig);
+                    group.addEntry(chidlBlock);
+                });
+
+                return group;
+            }
+
+            function _makeDynamicGroupBlock(blockConfig) {
+                const proxies = getLegendProxies(blockConfig);
+                // const childTreePromise = layerRegistry.getLayerRecord(legendItem.layerId).getChildTree();
+                const group = new LegendBlock.Group(proxies, blockConfig.layerId);
+
+                /*childTreePromise.then(childTree => {
+                    childTree.forEach(child => {
+                        let block;
+                        if (child.children) {
+                            block = _makeGroupBlock(child.id, child.children, proxy);
+                        } else {
+                            block = _makeNodeBlock(child.id, proxy);
+                        }
+
+                        group.addEntry(block);
+                    })
+                });*/
+
+                return group;
+            }
+
+            function _makeNodeBlock(blockConfig) {
+                const proxies = getLegendProxies(blockConfig);
+                const node = new LegendBlock.Node(proxies, blockConfig.layerId);
+
+                return node;
+            }
+
+            function _makeInfoBlock(blockConfig) {
+                const proxies = {};
+                const info = new LegendBlock.Info(proxies, blockConfig.layerId);
+
+                return info;
+            }
+
+            function _makeSetBlock() {}
+
+
+            function getLegendProxies(blockConfig) {
+                const mainLayerRecord = layerRegistry.makeLayerRecord(mainBlueprint);
+                layerRegistry.loadLayerRecord(blockConfig.layerId);
+
+                const adjunctLayerRecords = adjunctBlueprints.map(blueprint => {
+                    const layerRecord = layerRegistry.makeLayerRecord(blueprint);
+                    layerRegistry.loadLayerRecord(blueprint.id);
+                });
+
+                let mainProxy;
+
+                if (blockConfig.entryid) {
+                    // TODO: get WMS child proxy?
+                } else if (blockConfig.entryIndex) {
+                    mainProxy = mainLayerRecord.getChildProxy(blockConfig.entryIndex);
+                } else {
+                    mainProxy = mainLayerRecord.getProxy();
+                }
+
+                const adjunctProxies = adjunctLayerRecords
+                    .map(layerRecord =>
+                        layerRecord.getProxy());
+
+                return {
+                    main: mainProxy,
+                    adjunct: adjunctProxies
+                };
+            }
+
+
+
+            /*function detectType(legendItem) {
+                const layerDefinition = layerDefinitions.find(layerDefinition =>
+                    layerDefinition.id === legendItem.layerId);
+
+                // dynamic layers render as LegendGroup blocks; all other layers are rendered as LegendNode blocks;
+                if (legendChild.entryType === ConfigObject.Legend.NODE &&
+                    layerDefinition.layerType === Geo.Layer.Types.ESRI_DYNAMIC) {
+                    return TYPE_TO_BLOCK[ConfigObject.Legend.GROUP];
+                } else {
+                    return TYPE_TO_BLOCK[legendChild.entryType];
+                }
+            }*/
+        }
+
+
+
+        /*function n(legendItem, layerDefinition) {
+            const proxy = layerRegistry.makeLayerRecord(layerDefinition);
+            const r = layerRegistry.loadLayerRecord(ls.layerId);
+
+            const TYPE_TO_BLOCK2 = {
+                [ConfigObject.Legend.INFO]: () =>
+                    new LegendBlock.Info(proxy, legendItem.layerId),
+                [ConfigObject.Legend.NODE]: () => {
+                    if (legendChild.entryType === ConfigObject.Legend.NODE &&
+                        layerDefinition.layerType === Geo.Layer.Types.ESRI_DYNAMIC) {
+
+                        return new LegendBlock.Group(proxy, legendItem.layerId);
+                    } else {
+
+                    }
+                },
+                [ConfigObject.Legend.GROUP]: LegendBlock.Group,
+                [ConfigObject.Legend.SET]: LegendBlock.Set
+            };
+
+            const blockType = detectLegendBlockType(legendItem, layerDefinition);
+
+
+        }*/
+
+        /*function addLayer(legendItem) {
             const layerRecords = [layerRegistry.getLayerRecord(legendItemId)]; // this returns an existing or new layerRecords
         }
+
+        function _makeGroupBlock(legendItem, proxies) {
+            const group = new LegendBlock.Group(proxies, legendItem.layerId);
+
+            legendItem.children.forEach(child =>
+                group.addEntry(SELECTOR(child)));
+
+            return group;
+        }
+
+        function _makeNodeBlock() {}
+
+        function _makeInfoBlock() {}
+
+        function _makeSetBlock() {}
+*/
 
         /**
          * Matches a LegendBlock type to the legend child object from the legend structure.
          * @param {Object} legendChild legend child defintion object from the config
          */
-        function detectLegendBlockType(legendChild, layerDefinitions) {
-            if (typeof legendChild.infoType !== 'undefined') {
-                return LEGEND.blockTypes.INFO;
-            } else if (typeof legendChild.exclusiveVisibility !== 'undefined') {
-                return LEGEND.blockTypes.SET;
-            } else if (typeof legendChild.children !== 'undefined') {
-                return LEGEND.blockTypes.GROUP;
+        /*function detectLegendBlockType(legendChild) {
+            layerDefinition
+
+            // dynamic layers render as LegendGroup blocks; all other layers are rendered as LegendNode blocks;
+            if (legendChild.entryType === ConfigObject.Legend.NODE &&
+                layerDefinition.layerType === Geo.Layer.Types.ESRI_DYNAMIC) {
+                return _makeGroupBlock;
             } else {
-                const layerDefinition = layerDefinitions.find(ld =>
-                    ld.id === legendChild.layerId);
-
-                // dynamic layers render as LegendGroup blocks; all other layers are rendered as LegendNode blocks;
-                if (layerDefinition.layerType === Geo.Layer.Types.ESRI_DYNAMIC) {
-                    return LEGEND.blockTypes.GROUP;
-                }
+                return TYPE_TO_BLOCK[legendChild.entryType];
             }
-
-            return LEGEND.blockTypes.NODE;
-        }
+        }*/
     }
 
     _legendServiceFactory();

@@ -40,7 +40,7 @@
         self.closeSelector = basemapService.close;
 
         // TODO: remove
-        basemapService.open();
+        // basemapService.open();
 
         //self.minimize = basemapService.close;
 

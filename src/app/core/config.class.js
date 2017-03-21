@@ -14,130 +14,6 @@
 
     function ConfigObjectFactory(Geo, gapiService) {
 
-        // These are layer default values for controls, disabledControls, and state
-        const LAYER_DEFAULTS = {
-            [Geo.Layer.Types.ESRI_FEATURE]: {
-                state: {
-                    opacity: 1,
-                    visibility: true,
-                    boundingBox: false,
-                    query: true,
-                    snapshot: false
-                },
-                controls: [
-                    'opacity',
-                    'visibility',
-                    'boundingBox',
-                    'query',
-                    'snapshot',
-                    'metadata',
-                    'boundaryZoom',
-                    'refresh',
-                    'reload',
-                    'remove',
-                    'settings',
-                    'data'
-                ],
-                disabledControls: []
-            },
-            [Geo.Layer.Types.OGC_WMS]: {
-                state: {
-                    opacity: 1,
-                    visibility: true,
-                    boundingBox: false,
-                    query: true,
-                    snapshot: false
-                },
-                controls: [
-                    'opacity',
-                    'visibility',
-                    'boundingBox',
-                    'query',
-                    // 'snapshot',
-                    'metadata',
-                    'boundaryZoom',
-                    'refresh',
-                    'reload',
-                    'remove',
-                    'settings',
-                    // 'data'
-                ],
-                disabledControls: []
-            },
-            [Geo.Layer.Types.ESRI_DYNAMIC]: {
-                state: {
-                    opacity: 1,
-                    visibility: true,
-                    boundingBox: false,
-                    query: true,
-                    snapshot: false
-                },
-                controls: [
-                    'opacity',
-                    'visibility',
-                    'boundingBox',
-                    'query',
-                    // 'snapshot',
-                    'metadata',
-                    'boundaryZoom',
-                    'refresh',
-                    'reload',
-                    'remove',
-                    'settings',
-                    'data'
-                ],
-                disabledControls: []
-            },
-            [Geo.Layer.Types.ESRI_IMAGE]: {
-                state: {
-                    opacity: 1,
-                    visibility: true,
-                    boundingBox: false,
-                    query: false,
-                    snapshot: false
-                },
-                controls: [
-                    'opacity',
-                    'visibility',
-                    'boundingBox',
-                    'query',
-                    'snapshot',
-                    'metadata',
-                    'boundaryZoom',
-                    'refresh',
-                    'reload',
-                    'remove',
-                    'settings',
-                    'data'
-                ],
-                disabledControls: []
-            },
-            [Geo.Layer.Types.ESRI_TILE]: {
-                state: {
-                    opacity: 1,
-                    visibility: true,
-                    boundingBox: false,
-                    query: false,
-                    snapshot: false
-                },
-                controls: [
-                    'opacity',
-                    'visibility',
-                    'boundingBox',
-                    'query',
-                    'snapshot',
-                    'metadata',
-                    'boundaryZoom',
-                    'refresh',
-                    'reload',
-                    'remove',
-                    'settings',
-                    'data'
-                ],
-                disabledControls: []
-            }
-        };
-
         /**
          * Typed representation of a LodSet specified in the config.
          * @class LodSet
@@ -309,7 +185,7 @@
             get infoType () { return this._infoType; }
             get content () { return this._content; }
 
-            static get entryType () { return Legend.INFO; }
+            get entryType () { return Legend.INFO; }
         }
 
         /**
@@ -324,7 +200,7 @@
 
             get exclusiveVisibility () { return this._exclusiveVisibility; }
 
-            static get entryType () { return Legend.SET; }
+            get entryType () { return Legend.SET; }
         }
 
         /**
@@ -353,7 +229,7 @@
             get symbologyStack () { return this._symbologyStack; }
             get symbologyRenderStyle () { return this._symbologyRenderStyle; }
 
-            static get entryType () { return Legend.NODE; }
+            get entryType () { return Legend.NODE; }
         }
 
         /**
@@ -370,7 +246,7 @@
             get name () { return this._name; }
             get children () { return this._children; }
 
-            static get entryType () { return Legend.GROUP; }
+            get entryType () { return Legend.GROUP; }
         }
 
         /**
@@ -581,8 +457,7 @@
 
                 // TODO: parse components subsections
 
-                this._layers = mapSource.layers.map(layerSource =>
-                    this._applyLayerDefaults(layerSource));
+                this._layers = mapSource.layers;
                 this._legend = new Legend(mapSource.legend, this._layers);
 
                 this._components = new Components(mapSource.components);
@@ -601,59 +476,13 @@
             get selectedBasemap () { return this._basemaps.find(basemap => basemap.isSelected); }
 
             _layerRecords = [];
-            _legendBlocks = [];
+            _legendBlocks = {};
 
             get layerRecords () { return this._layerRecords; }
             get legendBlocks () { return this._legendBlocks; }
 
             set body (value) { this._body = value; }
             get body () { return this._body; }
-
-            /**
-             * Fills in the missing values in controls, disabledControls, and state with defaults.
-             * @function _applyLayerDefaults
-             * @private
-             * @param {Object} layerSource JSON object of the layer defintion from the config
-             * @return {Object} a copy of the layerSource with filled-in defaults; the original object is not modified
-             */
-            _applyLayerDefaults(layerSource) {
-                const defaults = LAYER_DEFAULTS[layerSource.layerType];
-
-                const layer = angular.copy(layerSource);
-
-                // taking the default state and overriding any options that are specified in the config
-                layer.state = angular.extend({}, defaults.state, layer.state);
-
-                if (typeof layer.controls === 'undefined') {
-                    layer.controls = defaults.controls;
-                } else {
-                    layer.controls = intersect(layer.controls, defaults.controls);
-                }
-
-                if (typeof layer.disabledControls === 'undefined') {
-                    layer.disabledControls = defaults.disabledControls;
-                } else {
-                    layer.disabledControls = intersect(layer.disabledControls, defaults.controls);
-                }
-
-                return layer;
-
-                /**
-                 * // TODO: move this somewhere else.
-                 *
-                 * Calculates the intersection between two arrays; does not filter out duplicates.
-                 *
-                 * @function intersect
-                 * @private
-                 * @param {Array} array1 first array
-                 * @param {Array} array2 second array
-                 * @return {Array} intersection of the first and second arrays
-                 */
-                function intersect(array1, array2) {
-                    return array1.filter(item =>
-                            array2.indexOf(item) !== -1);
-                }
-            }
         }
 
         /**
@@ -685,6 +514,9 @@
 
         }
 
-        return ConfigObject;
+        return {
+            ConfigObject,
+            Legend
+        };
     }
 })();
