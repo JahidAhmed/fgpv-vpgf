@@ -61,6 +61,8 @@
             makeLegendBlock(blockConfig, [layerBlueprint]);
         }
 
+
+
         function makeLegendBlock(blockConfig, layerBlueprints) {
 
             const TYPE_TO_BLOCK = {

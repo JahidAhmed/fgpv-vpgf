@@ -623,26 +623,39 @@
 
             get selectedBasemap () { return this._basemaps.find(basemap => basemap.isSelected); }
 
+            // --- //
+
             _layerRecords = [];
             _legendBlocks = {};
 
             get layerRecords () { return this._layerRecords; }
             get legendBlocks () { return this._legendBlocks; }
 
-            set body (value) { this._body = value; }
+            set body (value) {
+                if (this._body) {
+                    console.warn('Map body is already set.');
+                } else {
+                    this._body = value;
+                }
+             }
             get body () { return this._body; }
 
-            set mapManager (value) {
-                if (this._mapManager) {
-                    console.warn('MapManager is already set.');
+            set manager (value) {
+                if (this._manager) {
+                    console.warn('Map manager is already set.');
                 } else {
-                    this._mapManager = value;
-                    this.components.basemap.body = this._mapManager.BasemapControl;
-                    this.components.overviewMap.body = this._mapManager.OverviewMapControl;
-                    this.components.scaleBar.body = this._mapManager.ScalebarControl;
+                    // store references to esri objects
+                    this._manager = value;
+                    this.components.basemap.body = this._manager.BasemapControl;
+                    this.components.overviewMap.body = this._manager.OverviewMapControl;
+                    this.components.scaleBar.body = this._manager.ScalebarControl;
                 }
             }
-            get mapManager () { return this._mapManager; }
+            get manager () { return this._manager; }
+
+            _isLoading = true;
+            get isLoading () { return this._isLoading; }
+            set isLoading (value) { this._isLoading = value;}
         }
 
         /**

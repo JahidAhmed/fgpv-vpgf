@@ -33,6 +33,10 @@
 
             const blankBaseMapIdPattern = 'blank_basemap_';
 
+            const ref = {
+                timeoutHandle: null
+            };
+
             // this `service` object will be exposed through `geoService`
             const service = {
                 /**
@@ -74,8 +78,10 @@
              * @return {Object} returns `service` object
              */
             function buildMapObject() {
+                const gapi = gapiService.gapi;
+                const mapConfig = configService._sharedConfig_.map;
 
-                let mapObject;
+                let mapBody;
 
                 // reset before rebuilding the map if `geoState` already has an instance of mapService
                 if (typeof geoState.mapService !== 'undefined') {
@@ -88,34 +94,22 @@
                 }
 
                 // set selected base map id
-                setSelectedBaseMap(geoState.configObject.map.selectedBasemap);
+                // setSelectedBaseMap(geoState.configObject.map.selectedBasemap);
                 // setSelectedBaseMap(config.map.initialBasemapId || config.baseMaps[0].id, config);
 
                 // FIXME remove the hardcoded settings when we have code which does this properly
-                mapObject = gapiService.gapi.mapManager.Map(geoState.mapNode, {
-
-                    // basemap: 'gray',
-                    extent: geoState.configObject.map.selectedBasemap.default,
-                    lods: geoState.configObject.map.selectedBasemap.lods
+                mapBody = gapi.mapManager.Map(geoState.mapNode, { // TODO: need to find a place to store a reference to mapNode
+                    extent: mapConfig.selectedBasemap.default,
+                    lods: mapConfig.selectedBasemap.lods
                 });
 
                 // store map object in service
-                service.mapObject = mapObject;
+                // service.mapObject = mapObject;
 
-                configService._sharedConfig_.map.body = mapObject;
-
-
+                // TODO: convert service section of the config to typed objects
                 if (config.services && config.services.proxyUrl) {
-                    gapiService.gapi.mapManager.setProxy(config.services.proxyUrl);
+                    gapi.mapManager.setProxy(config.services.proxyUrl);
                 }
-
-                // setup map using configs
-                // FIXME: I should be migrated to the new config schema when geoApi is updated
-                const mapSettings = {
-                    basemaps: geoState.configObject.map.basemaps,
-                    scalebar: { enabled: false },
-                    overviewMap: { enabled: false }
-                };
 
                 /*
                 if (config.baseMaps) {
@@ -124,34 +118,47 @@
                 */
 
                 // TODO: components should be mandatory in the schema with value enabled false if not use
-                if (config.map.components.scaleBar && config.map.components.scaleBar.enabled) {
+                /*if (config.map.components.scaleBar && config.map.components.scaleBar.enabled) {
                     mapSettings.scalebar = {
                         enabled: true,
                         attachTo: 'bottom-left',
                         scalebarUnit: 'dual'
                     };
-                }
+                }*/
 
                 // TODO: components should be mandatory in the schema with value enabled false if not use
-                if (config.map.components.overviewMap && config.map.components.overviewMap.enabled) {
+                /*if (config.map.components.overviewMap && config.map.components.overviewMap.enabled) {
 
                     // FIXME: overviewMap has more settings
                     mapSettings.overviewMap = config.map.components.overviewMap;
-                }
+                }*/
 
-                const onMapLoad = prepMapLoad();
+                const onMapLoad = prepMapLoad(mapBody);
 
-                service.mapManager = gapiService.gapi.mapManager.setupMap(mapObject, mapSettings);
+                mapConfig.body = mapBody;
 
-                const { BasemapControl, OverviewMapControl, ScalebarControl } = service.mapManager;
+                // setup map using configs
+                // FIXME: I should be migrated to the new config schema when geoApi is updated
+                const mapSettings = {
+                    basemaps: mapConfig.basemaps,
+                    scalebar: mapConfig.components.scaleBar,
+                    overviewMap: mapConfig.components.overviewMap
+                };
+                mapConfig.manager = gapi.mapManager.setupMap(mapBody, mapSettings);
 
-                configService._sharedConfig_.map.components.basemap.body = BasemapControl;
-                configService._sharedConfig_.map.components.overviewMap.body = OverviewMapControl;
-                configService._sharedConfig_.map.components.scaleBar.body = ScalebarControl;
+                // service.mapManager = gapi.mapManager.setupMap(mapBody, mapSettings);
 
-                service.mapManager.BasemapControl.setBasemap(geoState.configObject.map.selectedBasemap.id);
+                // const { BasemapControl, OverviewMapControl, ScalebarControl } = service.mapManager;
 
-                service.mapManager.BasemapControl.basemapGallery.on('selection-change', event => {
+                // store references to esri objects
+                /* mapConfig.components.basemap.body = BasemapControl;
+                mapConfig.components.overviewMap.body = OverviewMapControl;
+                mapConfig.components.scaleBar.body = ScalebarControl; */
+
+                selectBasemap(mapConfig.selectedBasemap);
+                // service.mapManager.BasemapControl.setBasemap(geoState.configObject.map.selectedBasemap.id);
+
+                mapConfig.components.basemap.body.basemapGallery.on('selection-change', event => {
                     $rootElement.find('div.ovwContainer').append('<rv-overview-toggle></rv-overview-toggle>');
                     $compile($rootElement.find('rv-overview-toggle')[0])($rootScope);
 
@@ -181,12 +188,12 @@
                 }*/
 
                 // FIXME temp link for debugging
-                window.FGPV = {
+                /* window.FGPV = {
                     layers: service.layers
-                };
+                };*/
 
                 // store service in geoState
-                geoState.mapService = service;
+                // geoState.mapService = service;
 
                 // return a promise that resolves in the service once the map has loaded
                 return onMapLoad.then(() => service);
@@ -294,12 +301,19 @@
              * @param {object} selectedBaseMap selected basemap
              */
             function selectBasemap(basemap) {
+                const mapConfig = configService._sharedConfig_.map;
 
-                const currentBasemap = geoState.configObject.map.selectedBasemap.deselect();
+                const oldBasemap = mapConfig.selectedBasemap.deselect();
                 basemap.select();
 
-                const mapManager = service.mapManager;
-                mapManager.BasemapControl.setBasemap(basemap.id);
+                mapConfig.components.basemap.body.setBasemap(basemap.id);
+
+
+                // const currentBasemap = geoState.configObject.map.selectedBasemap.deselect();
+                // basemap.select();
+
+                // const mapManager = service.mapManager;
+                // mapManager.BasemapControl.setBasemap(basemap.id);
 
                 // TODO: put code loading new projections here; it shouldn't be in the basemap service;
                 /*if (currentBasemap.wkid !== basemap.wkid) {
@@ -800,11 +814,12 @@
             * @function prepMapLoad
             * @private
             */
-            function prepMapLoad() {
+            function prepMapLoad(mapBody) {
                 // we are returning a promise that resolves when the map load happens.
 
                 return $q(resolve => {
-                    const map = service.mapObject;
+                    const gapi = gapiService.gapi;
+                    // const map = service.mapObject;
                     // const lFullExtent = getFullExtFromExtentSets(config.map.extentSets);
                     // const lMaxExtent = getMaxExtFromExtentSets(config.map.extentSets);
 
@@ -813,11 +828,11 @@
 
                     setMapLoadingFlag(true);
 
-                    gapiService.gapi.events.wrapEvents(map, {
+                    gapi.events.wrapEvents(mapBody, {
                         load: () => {
                             // setup hilight layer
-                            geoState.hilight = gapiService.gapi.hilight.makeHilightLayer();
-                            map.addLayer(geoState.hilight);
+                            geoState.hilight = gapi.hilight.makeHilightLayer();
+                            mapBody.addLayer(geoState.hilight);
 
                             // setup full extent
                             // TODO: full and max extents can be retrieved directly from the selectedBasemap
@@ -832,14 +847,13 @@
                             resolve();
                         },
                         'update-start': () => {
-                            console.log('   Map update START!');
-
+                            console.log('map.service:   Map update START!');
                             setMapLoadingFlag(true, 300);
                         },
-                        'extent-change': data => $rootScope.$broadcast('extentChange', data),
+                        'extent-change': data =>
+                            $rootScope.$broadcast('extentChange', data),
                         'update-end': () => {
-                            console.log('   Map update END!');
-
+                            console.log('map.service:   Map update END!');
                             setMapLoadingFlag(false, 100);
                         }
                     });
@@ -867,8 +881,11 @@
              */
             function setMapLoadingFlag(isLoading = true, delay = 0) {
                 // need to wrap this in a timeout since these are esri events, Angular wouldn't pick up on any changes unless a new digest cycle is triggered
-                $timeout.cancel(service.loadingTimeout);
-                service.loadingTimeout = $timeout(() => service.mapObject.isMapLoading = isLoading, delay);
+                const mapConfig = configService._sharedConfig_.map;
+
+                $timeout.cancel(ref.timeoutHandle);
+                ref.timeoutHandle = $timeout(() =>
+                    (mapConfig.isMapLoading = isLoading), delay);
             }
 
             /**

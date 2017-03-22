@@ -17,7 +17,7 @@
         .directive('rvInitMap', rvInitMap);
 
     function rvInitMap($rootScope, geoService, events, storageService, mapService, gapiService, $rootElement,
-        $interval, globalRegistry) {
+        $interval, globalRegistry, configService) {
 
         // key codes that are currently active
         let keyMap = [];
@@ -44,7 +44,9 @@
             scope.$watch(() => geoService.isMapReady, () => {
                 if (geoService.isMapReady) {
                     // disable the vendor built keyboard support
-                    geoService.mapObject.disableKeyboardNavigation();
+                    // TODO: can this be moved to map service? as it seems to be always executed
+                    configService._sharedConfig_.map.body.disableKeyboardNavigation();
+
                     // reduce map animation time which in turn makes panning less jittery
                     gapiService.gapi.mapManager.mapDefault('panDuration', 0);
                     gapiService.gapi.mapManager.mapDefault('panRate', 0);
