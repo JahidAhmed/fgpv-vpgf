@@ -27,7 +27,8 @@
 </div>
 
 <div class="rv-list-item-controls">
-    <md-menu md-position-mode="target-right target" class="rv-list-item-control">
+    <md-menu md-position-mode="target-right target" class="rv-list-item-control"
+        ng-if="self.intersect(self.layerProxy.availableControls, ['metadata', 'settings', 'data', 'symbology', 'boundary', 'reload', 'remove']).length > 0">
         <md-button
             aria-label="{{ 'toc.entry.aria.openData' | translate }}"
             class="md-icon-button rv-button-40 rv-icon-20"

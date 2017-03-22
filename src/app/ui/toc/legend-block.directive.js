@@ -59,6 +59,8 @@
             // broadcasts symbology fanOut event down the scope chain
             self.fanOutSymbology = fanOutSymbology;
 
+            self.intersect = intersect;
+
             scope.$watch('self.block.template', newTemplate => {
                 if (newTemplate) {
                     const template = $templateCache.get(`app/ui/toc/templates/legend-${newTemplate}.html`);
@@ -75,6 +77,22 @@
              */
             function fanOutSymbology(value) {
                 scope.$broadcast('symbology', 'fanOut', value);
+            }
+
+            /**
+             * // TODO: move this somewhere else to avoid duplication
+             *
+             * Calculates the intersection between two arrays; does not filter out duplicates.
+             *
+             * @function intersect
+             * @private
+             * @param {Array} array1 first array
+             * @param {Array} array2 second array
+             * @return {Array} intersection of the first and second arrays
+             */
+            function intersect(array1, array2) {
+                return array1.filter(item =>
+                        array2.indexOf(item) !== -1);
             }
         }
     }
