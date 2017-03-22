@@ -16,7 +16,7 @@
         .module('app.geo')
         .factory('LayerBlueprint', LayerBlueprintFactory);
 
-    function LayerBlueprintFactory($q, LayerBlueprintUserOptions, gapiService, Geo, layerDefaults, LayerRecordFactory) {
+    function LayerBlueprintFactory($q, LayerBlueprintUserOptions, gapiService, Geo, layerDefaults, LayerRecordFactory, ConfigObject) {
 
         // These are layer default values for controls, disabledControls, and state
         const LAYER_DEFAULTS = {
@@ -147,6 +147,8 @@
         // destructure Geo into `layerTypes` and `serviceTypes`
         const { Layer: { Types: layerTypes }, Service: { Types: serviceTypes } } = Geo;
 
+
+
         // jscs doesn't like enhanced object notation
         // jscs:disable requireSpacesInAnonymousFunctionExpression
         class LayerBlueprint {
@@ -157,7 +159,11 @@
              */
             constructor(source) {
                 this.initialConfig = this._applyLayerDefaults(source);
-                this.config = {};
+
+                this._source = this._applyLayerDefaults(source);
+                this._config = new LayerBlueprint.LAYER_TYPE_TO_LAYER_NODE[this._source.layerType](this._source);
+
+
                 // this._epsgLookup = epsgLookup;
 
                 /* if (typeof initialConfig !== 'undefined') {
@@ -169,6 +175,14 @@
 
                 this._userOptions = {};*/
             }
+
+            get id () { return this.isReady ? this.config.id : '?'; }
+
+            get config () { return this._config; }
+            /**
+             * @returns {Object} layer node source config object with applied defaults
+             */
+            get source () { return this._source; }
 
             /**
              * Fills in the missing values in controls, disabledControls, and state with defaults.
@@ -279,6 +293,14 @@
              */
             generateLayer() {
                 throw new Error('Call generateLayer on a subclass instead.');
+            }
+
+            static LAYER_TYPE_TO_LAYER_NODE = {
+                [layerTypes.ESRI_TILE]: ConfigObject.layers.BasicLayerNode,
+                [layerTypes.ESRI_FEATURE]: ConfigObject.layers.FeatureLayerNode,
+                [layerTypes.ESRI_IMAGE]: ConfigObject.layers.BasicLayerNode,
+                [layerTypes.ESRI_DYNAMIC]: ConfigObject.layers.DynamicLayerNode,
+                [layerTypes.OGC_WMS]: ConfigObject.layers.WMSLayerNode
             }
 
             static get LAYER_TYPE_TO_LAYER_RECORD () {

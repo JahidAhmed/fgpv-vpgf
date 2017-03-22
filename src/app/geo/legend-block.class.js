@@ -24,7 +24,13 @@
 
                 this._id = id;
 
-                this._layerProxy = layerProxy;
+                this._layerProxy = layerProxy || { main: {} };
+
+                Object.defineProperty(this._layerProxy.main, 'isRefreshing', {
+                    get: () => false,
+                    enumerable: true,
+                    configurable: true
+                });
             }
 
             // _id;
@@ -62,12 +68,6 @@
             }
 
             // _isSelected = false;
-
-            link (layerProxy) {
-                this._layerProxy = layerProxy;
-
-                // this._layerProxy.onLoad = this.onLoad();
-            }
 
             // TODO: turn state names and template names to consts
             get template () {

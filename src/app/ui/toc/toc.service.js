@@ -312,11 +312,11 @@
 
         let idcounter = 0;
 
-        service.secondToc = {
+        /* service.secondToc = {
             entries: config.map(item => {
                 return item[0](item[1], item[2]);
             })
-        };
+        }; */
 
         function makeLegendNode(stringConfig) {
             const parts = stringConfig.split('|');

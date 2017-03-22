@@ -13,6 +13,145 @@
         .factory('ConfigObject', ConfigObjectFactory);
 
     function ConfigObjectFactory(Geo, gapiService) {
+        // abstract
+        class LayerNode {
+            /**
+             *
+             * @param {Object} source a well-formed layer config object
+             */
+            constructor(source) {
+                this._id = source.id;
+                this._layerType = source.layerType;
+                this._name = source.name;
+                this._url = source.url;
+                this._metadataUrl = source.metadataUrl;
+                this._catalogueUrl = source.catalogueUrl;
+                this._extent = source.extent ?
+                    gapiService.gapi.mapManager.getExtentFromJson(source.extent) :
+                    null;
+                this._controls = source.controls; // controls are defaulted in blueprint constructor
+                this._disabledControls = source.disabledControls; // controls are defaulted in blueprint constructor
+                this._state = new InitialLayerSettings(source.state); // state is defaulted in blueprint constructor
+            }
+
+            get id () { return this._id; }
+            get layerType () { return this._layerType; }
+            get name () { return this._name; }
+            get url () { return this._url; }
+            get metadataUrl () { return this._metadataUrl; }
+            get catalogueUrl () { return this._catalogueUrl; }
+            get extent () { return this._extent; }
+            get controls () { return this._controls; }
+            get disabledControls () { return this._disabledControls; }
+            get state () { return this._state; }
+        }
+
+        class InitialLayerSettings {
+            /**
+             *
+             * @param {Object} source a well-formed layer state object
+             */
+            constructor(source) {
+                this._opacity = source.opacity;
+                this._visibility = source.visibility;
+                this._boundingBox = source.boundingBox;
+                this._query = source.query;
+                this._snapshot = source.snapshot;
+            }
+
+            get opacity () { return this._opacity; }
+            get visibility () { return this._visibility; }
+            get boundingBox () { return this._boundingBox; }
+            get query () { return this._query; }
+            get snapshot () { return this._snapshot; }
+        }
+
+        class BasicLayerNode extends LayerNode {
+            constructor(source) {
+                super(source);
+            }
+        }
+
+        class FeatureLayerNode extends LayerNode {
+            constructor(source) {
+                super(source);
+
+                this._nameField = source.nameField;
+                this._tolerance = source.tolerance || 5;
+            }
+
+            get nameField () { return this._nameField; }
+            get tolerance () { return this._tolerance; }
+        }
+
+        // abstract
+        class LayerEntryNode {
+            constructor(source) {
+                this._controls = source.controls;
+                this._state = new InitialLayerSettings(source.state || {});
+            }
+
+            get controls () { return this._controls; }
+            get state () { return this._state; }
+        }
+
+        class WMSLayerEntryNode extends LayerEntryNode {
+            constructor(source) {
+                super(source);
+
+                this._id = source.id;
+                this._name = source.name;
+            }
+
+            get id () { return this._id; }
+            get name () { return this._id; }
+        }
+
+        class WMSLayerNode extends LayerNode {
+            constructor(source) {
+                super(source);
+
+                this._layerEntries = source.layerEntries.map(layerEntry =>
+                    (new WMSLayerEntryNode(layerEntry)));
+                this._featureInfoMimeType = source.featureInfoMimeType;
+                this._legendMimeType = source.legendMimeType;
+            }
+
+            get layerEntries () { return this._layerEntries; }
+            get featureInfoMimeType () { return this._featureInfoMimeType; }
+            get legendMimeType () { return this._legendMimeType; }
+        }
+
+        class DynamicLayerEntryNode extends LayerEntryNode {
+            constructor(source) {
+                super(source);
+
+                this._index = source.index;
+                this._outfields = source.outfields;
+                this._stateOnly = source.stateOnly;
+
+                this.isLayerEntry = true;
+            }
+
+            get index () { return this._id; }
+            get outfields () { return this._outfields; }
+            get stateOnly () { return this._stateOnly; }
+        }
+
+        class DynamicLayerNode extends LayerNode {
+            constructor(source) {
+                super(source);
+
+                this._layerEntries = source.layerEntries.map(layerEntry =>
+                    (new DynamicLayerEntryNode(layerEntry)));
+                this._childOptions = source.childOptions;
+                this._tolerance = source.tolerance;
+            }
+
+            get layerEntries () { return this._layerEntries; }
+            get childOptions () { return this._childOptions; }
+            get tolerance () { return this._tolerance; }
+        }
 
         /**
          * Typed representation of a LodSet specified in the config.
@@ -337,7 +476,13 @@
             get enabled () { return this._enabled; }
 
             get body () { return this._body; }
-            set body (value) { this._body = value; }
+            set body (value) {
+                if (this._body) {
+                    console.warn('Component\' body is already set');
+                } else {
+                    this._body = value;
+                }
+            }
         }
 
         class GeoSearchComponent extends ComponentBase {
@@ -384,6 +529,9 @@
             constructor(source) {
                 super(source);
             }
+
+            get attachTo () { return 'bottom-left'; }
+            get scalebarUnit () { return 'dual'; }
         }
 
         class BasemapComponent extends ComponentBase {
@@ -451,7 +599,7 @@
                 // calling select on a basemap only marks it as `selected`; to actually change the displayed basemap, call `changeBasemap` on `geoService`
                 (mapSource.initialBasemapId ?
                     this._basemaps.find(basemap =>
-                        basemap.id === this._initialBasemapId) :
+                        basemap.id === mapSource.initialBasemapId) :
                     this._basemaps[0])
                     .select();
 
@@ -483,6 +631,18 @@
 
             set body (value) { this._body = value; }
             get body () { return this._body; }
+
+            set mapManager (value) {
+                if (this._mapManager) {
+                    console.warn('MapManager is already set.');
+                } else {
+                    this._mapManager = value;
+                    this.components.basemap.body = this._mapManager.BasemapControl;
+                    this.components.overviewMap.body = this._mapManager.OverviewMapControl;
+                    this.components.scaleBar.body = this._mapManager.ScalebarControl;
+                }
+            }
+            get mapManager () { return this._mapManager; }
         }
 
         /**
@@ -516,7 +676,15 @@
 
         return {
             ConfigObject,
-            Legend
+
+            Legend,
+
+            layers: {
+                BasicLayerNode,
+                FeatureLayerNode,
+                DynamicLayerNode,
+                WMSLayerNode
+            }
         };
     }
 })();

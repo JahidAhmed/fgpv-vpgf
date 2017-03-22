@@ -44,12 +44,10 @@
         }
 
         // layerDefinition must have id property
-        // TODO: make layerBluerprint return id of the layer defintion
-        // TODO: decide what the input should be here
         function makeLayerRecord(layerBlueprint) {
             const layerRecords = configService._sharedConfig_.map.layerRecords;
 
-            let layerRecord = getLayerRecord(layerBlueprint.id);
+            let layerRecord = getLayerRecord(layerBlueprint.config.id);
             if (!layerRecord) {
                 layerRecord = layerBlueprint.generateLayer();
                 layerRecords.push(layerRecord);
@@ -79,7 +77,6 @@
          */
         function _loadNextLayerRecord() {
             if (ref.loadingCount >= THROTTLE_COUNT || ref.loadingQueue.length === 0) {
-                console.info('waiting', ref.loadingCount);
                 return;
             }
 
@@ -88,8 +85,6 @@
 
             mapBody.addLayer(layerRecord._layer);
             ref.loadingCount ++;
-
-            console.info('loading new one', ref.loadingCount, layerRecord.config.id);
 
             let isRefreshed = false;
             layerRecord.addStateListener(_onLayerRecordLoad);
@@ -102,8 +97,6 @@
              * @param {String} state name of the new LayerRecord state
              */
             function _onLayerRecordLoad(state) {
-                console.info(layerRecord.config.id, state);
-
                 // TODO: add a reasonable timeout to prevent stalling with slow services
                 if (state === 'rv-refresh') {
                     isRefreshed = true;

@@ -138,7 +138,9 @@
 
                     // service.constructLayers([]);
 
-                    return identifyService(state);
+                    // return identifyService(state);
+
+                    return true;
                 })
                 .then(id => {
                     // expose idenitifyService on geoService

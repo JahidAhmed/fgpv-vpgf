@@ -56,18 +56,13 @@
         }
 
         function addUserLayerItem(layerBlueprint) {
-            const blockConfig = { layerId: layerBlueprint.id };
+            const blockConfig = { layerId: layerBlueprint.config.id };
 
             makeLegendBlock(blockConfig, [layerBlueprint]);
         }
 
         function makeLegendBlock(blockConfig, layerBlueprints) {
 
-
-        /*}
-
-        // legendStructure is an array
-        function a(legendStructure, layerDefinitions) {*/
             const TYPE_TO_BLOCK = {
                 [ConfigObject.Legend.INFO]: _makeInfoBlock,
                 [ConfigObject.Legend.NODE]: _makeNodeBlock,
@@ -75,6 +70,8 @@
                 [ConfigObject.Legend.SET]: _makeSetBlock
             };
 
+            // real blueprints are only available on Legend.NODEs
+            // eerything else should have a fake main blueprint and no adjunct blueprints
             const [ mainBlueprint, adjunctBlueprints ] = [
                 _getLayerBlueprint(blockConfig.layerId),
                 (blockConfig.controlledIds || []).map(id =>
@@ -88,7 +85,7 @@
             function _makeBlock(blockConfig) {
                 // dynamic layers render as LegendGroup blocks; all other layers are rendered as LegendNode blocks;
                 if (blockConfig.entryType === ConfigObject.Legend.NODE){
-                    if (mainBlueprint.layerType === Geo.Layer.Types.ESRI_DYNAMIC) {
+                    if (mainBlueprint.config.layerType === Geo.Layer.Types.ESRI_DYNAMIC) {
                         return _makeDynamicGroupBlock(blockConfig);
                     }
                 }
@@ -96,22 +93,13 @@
                 return TYPE_TO_BLOCK[blockConfig.entryType](blockConfig);
             }
 
-            function _getLayerBlueprint(id) {
-                const blueprint = layerBlueprints.find(blueprint =>
-                    blueprint.id === id);
-
-                // TODO: this should return something meaningful for info sections and maybe sets?
-
-                return blueprint;
-            }
-
             function _makeGroupBlock(blockConfig) {
-                const proxies = {};
+                const proxies = { main: {} };
 
                 const group = new LegendBlock.Group(proxies, blockConfig.layerId);
 
                 blockConfig.children.forEach(childConfig => {
-                    const chidlBlock = _makeBlock(childConfig);
+                    const chidlBlock = makeLegendBlock(childConfig, layerBlueprints);
                     group.addEntry(chidlBlock);
                 });
 
@@ -120,21 +108,39 @@
 
             function _makeDynamicGroupBlock(blockConfig) {
                 const proxies = getLegendProxies(blockConfig);
-                // const childTreePromise = layerRegistry.getLayerRecord(legendItem.layerId).getChildTree();
                 const group = new LegendBlock.Group(proxies, blockConfig.layerId);
 
-                /*childTreePromise.then(childTree => {
-                    childTree.forEach(child => {
-                        let block;
-                        if (child.children) {
-                            block = _makeGroupBlock(child.id, child.children, proxy);
-                        } else {
-                            block = _makeNodeBlock(child.id, proxy);
-                        }
+                const layerRecord = layerRegistry.getLayerRecord(blockConfig.layerId);
+                layerRecord.addStateListener(_onLayerRecordLoad);
 
-                        group.addEntry(block);
-                    })
-                });*/
+                function _onLayerRecordLoad(state) {
+                    if (state === 'rv-loaded') {
+                        layerRecord.getChildTree().forEach(child =>
+                            _makeChildBlock(child, group));
+
+                        layerRecord.removeStateListener(_onLayerRecordLoad);
+                    }
+                }
+
+                function _makeChildBlock(child, parent) {
+                    let childBlock;
+                    const proxies = {
+                        main: layerRecord.getChildProxy(child.id),
+                        adjunct: []
+                    };
+
+                    if (child.children) {
+                        childBlock = new LegendBlock.Group(proxies, child.id)
+                        child.children.forEach(subChild =>
+                            _makeChildBlock(subChild, childBlock));
+                    } else {
+                        childBlock = new LegendBlock.Node(proxies, child.id);
+                    }
+
+                    parent.addEntry(childBlock);
+
+                    return childBlock;
+                }
 
                 return group;
             }
@@ -162,7 +168,7 @@
 
                 const adjunctLayerRecords = adjunctBlueprints.map(blueprint => {
                     const layerRecord = layerRegistry.makeLayerRecord(blueprint);
-                    layerRegistry.loadLayerRecord(blueprint.id);
+                    layerRegistry.loadLayerRecord(blueprint.config.id);
                 });
 
                 let mainProxy;
@@ -185,7 +191,13 @@
                 };
             }
 
+            function _getLayerBlueprint(id) {
+                const blueprint = layerBlueprints.find(blueprint =>
+                    blueprint.config.id === id);
 
+                // TODO: this should return something meaningful for info sections and maybe sets?
+                return blueprint;
+            }
 
             /*function detectType(legendItem) {
                 const layerDefinition = layerDefinitions.find(layerDefinition =>
