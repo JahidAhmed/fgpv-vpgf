@@ -276,7 +276,8 @@ $layer-item-height-touch: rem(7.2);
     // force-display list item controls when the list item gets focus or is hovered over
     &:hover, &.rv-selected {
         .rv-list-item-controls .rv-list-item-control {
-            display: flex !important;
+            display: block;
+            // display: inline-block !important;
         }
     }
 }
