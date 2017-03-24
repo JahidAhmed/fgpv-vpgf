@@ -13,7 +13,7 @@
         .module('app.geo')
         .factory('LegendBlock', LegendBlockFactory);
 
-    function LegendBlockFactory($rootScope) {
+    function LegendBlockFactory($rootScope, Geo) {
 
         /* -------- */
         // jscs:enable
@@ -26,11 +26,11 @@
 
                 this._layerProxy = layerProxy || { main: {} };
 
-                Object.defineProperty(this._layerProxy.main, 'isRefreshing', {
+                /*Object.defineProperty(this._layerProxy.main, 'isRefreshing', {
                     get: () => false,
                     enumerable: true,
                     configurable: true
-                });
+                });*/
             }
 
             // _id;
@@ -51,20 +51,27 @@
             get template () {
                 return this._blockType;
             }
+
+            static INFO = 'info';
+            static NODE = 'node';
+            static GROUP = 'group';
+            static SET = 'set';
         }
 
         class LegendInfo extends LegendBlock {
             constructor(...args) {
                 super(...args);
 
-                this._blockType = 'info';
+                this._blockType = LegendBlock.INFO;
             }
         }
 
+        // abstract
         class LegendEntry extends LegendBlock {
 
             constructor(...args) {
                 super(...args);
+
             }
 
             // _isSelected = false;
@@ -79,6 +86,12 @@
 
                 return stateToTemplate[this._layerProxy.main.state]();
             }
+
+            get sortGroup () {
+                const sortGroups = Geo.Layer.SORT_GROUPS_;
+
+                return sortGroups[this._layerProxy.main.layerType];
+            }
         }
 
         class LegendSet extends LegendEntry {
@@ -89,8 +102,10 @@
                 this._entries = [];
                 this._entryWatchers = [];
                 this._selectedEntry = null;
-                this._blockType = 'set';
+                this._blockType = LegendBlock.SET;
             }
+
+            // TODO: add walk to sets
 
             get entries () { return this._entries; }
 
@@ -147,7 +162,7 @@
             constructor(...args) {
                  super(...args);
 
-                 this._blockType = 'node';
+                 this._blockType = LegendBlock.NODE;
              }
 
             get isSelected () { return this._isSelected; }
@@ -180,7 +195,7 @@
 
                  this._entries = [];
 
-                 this._blockType = 'group';
+                 this._blockType = LegendBlock.GROUP;
 
                  this._isExpanded = true;
              }
@@ -226,9 +241,24 @@
 
                 return this;
             }
+
+            walk (callback) {
+                // roll in the results into a flat array
+                return [].concat.apply([], this.entries.map((entry, index) => {
+                    if (entry.blockType === 'group') {
+                        return [].concat(
+                            callback(entry, index, this),
+                            entry.walk(callback)
+                        );
+                    } else {
+                        return callback(entry, index, this);
+                    }
+                }));
+            }
         }
 
         const service = {
+            Block: LegendBlock,
             Node: LegendNode,
             Group: LegendGroup,
             Set: LegendSet,

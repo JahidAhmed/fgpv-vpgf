@@ -30,7 +30,7 @@
         return directive;
     }
 
-    function Controller(geoService, appInfo) {
+    function Controller(LegendBlock, geoService, appInfo, configService) {
         'ngInject';
         const self = this;
 
@@ -55,8 +55,8 @@
                 return;
             }
 
-            geoService.legend.items.forEach(item =>
-                item.setVisibility(value));
+            configService._sharedConfig_.map.legendBlocks.entries.forEach(block =>
+                block.layerProxy.setVisibility(value));
         }
 
         /**
@@ -71,15 +71,13 @@
                 return;
             }
 
-            // TODO: detaching ui from layer causes lots of errors in this function; disabling for now
-            return value;
-            /*
-            return geoService.legend
-                .walkItems(item =>
-                    (item.getVisibility()), true)
-                .every(item =>
-                    (item === value));
-            */
+            const isAllVisible = configService._sharedConfig_.map.legendBlocks
+                .walk(block =>
+                    block.layerProxy.visibility)
+                .every(isVisible =>
+                    isVisible === value);
+
+            return isAllVisible;
         }
     }
 })();

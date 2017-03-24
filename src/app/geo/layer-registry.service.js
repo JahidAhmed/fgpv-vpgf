@@ -20,10 +20,8 @@
         .module('app.geo')
         .factory('layerRegistry', layerRegistryFactory);
 
-    function layerRegistryFactory(LayerBlueprint, configService) {
+    function layerRegistryFactory(Geo, LayerBlueprint, configService) {
         const service = {
-            constructLayers: () => {}, // TODO: remove crutch
-
             getLayerRecord,
             makeLayerRecord,
             loadLayerRecord
@@ -40,7 +38,7 @@
             const layerRecords = configService._sharedConfig_.map.layerRecords;
 
             return layerRecords.find(layerRecord =>
-                layerRecord.config.id === id);
+                layerRecord.layerId === id);
         }
 
         // layerDefinition must have id property
@@ -56,6 +54,11 @@
             return layerRecord;
         }
 
+        /**
+         * Finds a layer record with the specified id and adds it to the map
+         * @param {Number} id layer record id to load on the map
+         * @return {Boolean} true if the layer record existed and was added to the map; false otherwise
+         */
         function loadLayerRecord(id) { //, pos = null) {
             const layerRecord = getLayerRecord(id);
 
@@ -94,7 +97,9 @@
              *
              * // TODO: check if there is a better way to wait for layer to load than to wait for 'refresh' -> 'load' event chain
              * // TODO: file-based layers don't fire these events; need a hack to handle those as well
+             * @function _onLayerRecordLoad
              * @param {String} state name of the new LayerRecord state
+             * @private
              */
             function _onLayerRecordLoad(state) {
                 // TODO: add a reasonable timeout to prevent stalling with slow services
@@ -107,7 +112,28 @@
                     layerRecord.removeStateListener(_onLayerRecordLoad);
                     ref.loadingCount = Math.max(--ref.loadingCount, 0);
                     _loadNextLayerRecord();
+
+                    // FIX: hover events are broken in geoApi at the moment
+                    //_setHoverTips(layerRecord);
                 }
+            }
+        }
+
+        function _setHoverTips(layerRecord) {
+            // TODO: layerRecord returns a promise on layerType to be consistent with dynamic children which don't know their type upfront
+            // to not wait on promise, check the layerRecord config
+            if (layerRecord.config.layerType !== Geo.Layer.Types.ESRI_FEATURE) {
+                return;
+            }
+
+            /* if (!layerRecord.config.tooltipEnabled) {
+                return;
+            } */
+
+            layerRecord.addHoverListener(_onHoverHandler);
+
+            function _onHoverHandler(data) {
+                console.info(data);
             }
         }
 
@@ -140,14 +166,19 @@
 
                 constructLayers,
                 removeLayer,
+
                 zoomToScale,
                 zoomToBoundary,
+
                 reloadLayer,
                 snapshotLayer,
+
                 aliasedFieldName,
+
                 getLayersByType,
                 getRcsLayerIDs,
                 getAllQueryableLayerRecords,
+
                 moveLayer,
                 checkDateType,
                 setBboxState,

@@ -73,7 +73,7 @@
             };
 
             // real blueprints are only available on Legend.NODEs
-            // eerything else should have a fake main blueprint and no adjunct blueprints
+            // everything else should have a fake main blueprint and no adjunct blueprints
             const [ mainBlueprint, adjunctBlueprints ] = [
                 _getLayerBlueprint(blockConfig.layerId),
                 (blockConfig.controlledIds || []).map(id =>

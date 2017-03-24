@@ -176,7 +176,7 @@
                 this._userOptions = {};*/
             }
 
-            get id () { return this.isReady ? this.config.id : '?'; }
+            // get id () { return this.isReady ? this.config.id : '?'; }
 
             get config () { return this._config; }
             /**
