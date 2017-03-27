@@ -30,20 +30,33 @@
         class VisibilityControl extends BaseControl {
             constructor (...args) {
                 super(...args);
-
-                this._controlName = 'visibility';
             }
 
-            get icon () {    return `toggle:check_box${this._layerProxy.visibility ? '' : '_outline_blank'}`; }
-            get label () {   return `toc.label.visibility.${this._layerProxy.visibility ? 'on' : 'off'}`; }
-            action () {      this._layerProxy.setVisibility(!this._layerProxy.visibility); }
+            _controlName = 'visibility';
+
+            get value () { return this._layerProxy.visibility; }
+            set value (value) { this.action(value); }
+
+            get icon () {    return `action:visibility`; }
+            get label () {   return `toc.label.visibility.off`; }
+
+            action (value = !this.value) {
+                this._layerProxy.setVisibility(value);
+            }
+        }
+
+        class VisibilityNodeControl extends VisibilityControl {
+            constructor (...args) {
+                super(...args);
+            }
+
+            get icon () {    return `toggle:check_box${this.value ? '' : '_outline_blank'}`; }
+            get label () {   return `toc.label.visibility.${this.value ? 'on' : 'off'}`; }
         }
 
         class VisibilitySetControl extends VisibilityControl {
             constructor (...args) {
                 super(...args);
-
-                this._controlName = 'visibility';
             }
 
             get icon () {    return `toggle:radio_button_${this._layerProxy.visibility ? '' : 'un'}checked`; }
@@ -57,8 +70,11 @@
                 this._controlName = 'opacity';
             }
 
-            get icon () {    return ''; }
-            get label () {   return ''; }
+            get value () { return this._layerProxy.opacity; }
+            set value (value) { this.action(value); }
+
+            get icon () {    return 'action:opacity'; }
+            get label () {   return 'settings.label.opacity'; }
             action (value) { this._layerProxy.setOpacity(value); }
         }
 
@@ -69,9 +85,19 @@
                 this._controlName = 'boundingBox';
             }
 
-            get icon () {    return ''; }
-            get label () {   return ''; }
-            action () { this._layerProxy.toggleBoundingBox(!this._layerProxy.boundingBox); }
+            // FIXME: remove hack!
+            _bbon = false;
+
+            get value () { return this._bbon; } // || this._layerProxy.boundingBox; } // TODO: return bbox visibility value
+            set value (value) { this.action(value); }
+
+            get icon () {    return 'community:cube-outline'; }
+            get label () {   return 'settings.label.boundingBox'; }
+            action (value = !this.value) {
+                console.info('bb changed');
+                this._bbon = value;
+                //this._layerProxy.toggleBoundingBox(value);
+            }
         }
 
         class QueryControl extends BaseControl {
@@ -93,9 +119,11 @@
                 this._controlName = 'snapshot';
             }
 
-            get icon () {    return ''; }
-            get label () {   return ''; }
-            action () {      this._layerProxy.toggleSnapshot(!this._layerProxy.snapshot); }
+            get value () { return this._layerProxy.snapshot; }
+
+            get icon () {    return 'action:cached'; }
+            get label () {   return 'settings.label.snapshot'; }
+            action () {      this._layerProxy.setSnapshot(); }
         }
 
         class MetadataControl extends BaseControl {
@@ -119,7 +147,7 @@
 
             get icon () {    return 'image:tune'; }
             get label () {   return 'toc.label.settings'; }
-            action () {      tocService.toggleSettings(this._layerProxy); }
+            action () {      tocService.toggleSettings(this._legendBlock); }
         }
 
         class OffscaleControl extends BaseControl {
@@ -359,6 +387,7 @@
             },
             control: {
                 visibility: VisibilityControl,
+                visibilitynode: VisibilityNodeControl,
                 visibilityset: VisibilitySetControl,
                 opacity: OpacityControl,
                 boundingbox: BoundingBoxControl,

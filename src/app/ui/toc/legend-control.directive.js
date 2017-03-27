@@ -56,6 +56,8 @@
 
             self.uiControl = LegendElementFactory.makeControl(self.block, self.name);
 
+            self.Math = window.Math;
+
             // if the control is undefined, selfdestruct
             if (!self.uiControl.isVisible && attr.persist !== 'true') {
                 el.remove();

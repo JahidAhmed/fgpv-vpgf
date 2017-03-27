@@ -23,7 +23,9 @@
             actions: {
                 toggleLayerGroup,
                 toggleLayerFiltersPanel
-            }
+            },
+
+            toggleSettings
         };
 
         // toc preset controls (options and flags displayed on the layer item)
@@ -636,14 +638,14 @@
         }
 
         /**
-         * Opens settings panel with settings from the provided layer object.
+         * Opens settings panel with settings from the provided legendBlock object.
          * @function toggleSettings
-         * @param  {Object} entry layer object whose settings should be opened.
+         * @param  {LegendBlock} legendBlock legendBlock object whose settings should be opened.
          */
-        function toggleSettings(entry) {
+        function toggleSettings(legendBlock) {
             const requester = {
-                id: entry.id,
-                name: entry.name
+                id: legendBlock.id,
+                name: legendBlock.layerProxy.name
             };
 
             const panelToClose = {
@@ -652,7 +654,7 @@
 
             stateManager
                 .setActive(panelToClose)
-                .then(() => stateManager.toggleDisplayPanel('sideSettings', entry, requester));
+                .then(() => stateManager.toggleDisplayPanel('sideSettings', legendBlock, requester));
         }
 
         /**
@@ -838,6 +840,8 @@
          * @param {Boolean} value defaults to true;
          */
         function setTocEntrySelectedState(id, value = true) {
+            return;
+
             const entry = geoService.legend.getItemById(id);
             if (entry) {
                 // toc entry is considered selected if its metadata, settings, or data panel is opened;

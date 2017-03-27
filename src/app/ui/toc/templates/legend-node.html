@@ -13,7 +13,7 @@
 
 <div class="rv-list-item-content">
     <div class="rv-list-item-name">
-        {{ self.layerProxy.name }}
+        {{ self.layerProxy.name }} - {{ self.block.sortGroup }}
     </div>
 
     <div class="rv-list-item-flags">
@@ -52,7 +52,7 @@
         </md-menu-content>
     </md-menu>
 
-    <rv-legend-control block="self.block" name="visibility{{ self.isInSet ? 'set' : '' }}" class="rv-stay-visible rv-list-item-control"></rv-legend-control>
+    <rv-legend-control block="self.block" name="visibility{{ self.isInSet ? 'set' : 'node' }}" class="rv-stay-visible rv-list-item-control"></rv-legend-control>
     <rv-legend-control block="self.block" name="offscale" class="rv-stay-visible rv-list-item-control"></rv-legend-control>
 </div>
 

@@ -212,6 +212,9 @@ $layer-item-height-touch: rem(7.2);
 
     .rv-list-item-body {
         @extend %body-element;
+        .rv-body-button span {
+            visibility: hidden;
+        }
     }
 
     .rv-list-item-content {
