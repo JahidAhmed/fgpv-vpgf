@@ -421,7 +421,7 @@
                             ({ layerId: layerDefinition.id }));
 
                 } else {
-                    rootChildren = legendSource.root;
+                    rootChildren = legendSource.root.children;
                 }
 
                 this._root = new EntryGroup({

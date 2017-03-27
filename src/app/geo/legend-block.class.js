@@ -103,6 +103,8 @@
                 this._entryWatchers = [];
                 this._selectedEntry = null;
                 this._blockType = LegendBlock.SET;
+
+                this._walk = ref.walkFunction.bind(this);
             }
 
             // TODO: add walk to sets
@@ -155,6 +157,10 @@
                 */
                 return this;
             }
+
+            walk (callback) {
+                return this._walk(callback);
+            }
         }
 
         class LegendNode extends LegendEntry {
@@ -194,10 +200,10 @@
                  super(...args);
 
                  this._entries = [];
+                 this._isExpanded = true;
 
                  this._blockType = LegendBlock.GROUP;
-
-                 this._isExpanded = true;
+                 this._walk = ref.walkFunction.bind(this);
              }
 
             // do we want to save this bit of ui (isExpanded) state in bookmark?
@@ -243,17 +249,7 @@
             }
 
             walk (callback) {
-                // roll in the results into a flat array
-                return [].concat.apply([], this.entries.map((entry, index) => {
-                    if (entry.blockType === 'group') {
-                        return [].concat(
-                            callback(entry, index, this),
-                            entry.walk(callback)
-                        );
-                    } else {
-                        return callback(entry, index, this);
-                    }
-                }));
+                return this._walk(callback);
             }
         }
 
@@ -265,6 +261,24 @@
             Info: LegendInfo
         };
 
+        const ref = {
+            walkFunction,
+        }
+
         return service;
+
+        function walkFunction(callback) {
+            // roll in the results into a flat array
+            return [].concat.apply([], this.entries.map((entry, index) => {
+                if (entry.blockType === 'group') {
+                    return [].concat(
+                        callback(entry, index, this),
+                        entry.walk(callback)
+                    );
+                } else {
+                    return callback(entry, index, this);
+                }
+            }));
+        }
     }
 })();

@@ -205,7 +205,7 @@
                     return queryMapserver(lastOID).then(oIDs => {
                         return validOIDs.concat(oIDs); // merge recursive list with own results
                     });
-                } else { // either query did not trigger a exceededTransferLimit exception, or this marks the end of the result set
+                } else { // either query did not trigger an exceededTransferLimit exception, or this marks the end of the result set
                     return validOIDs;
                 }
             });

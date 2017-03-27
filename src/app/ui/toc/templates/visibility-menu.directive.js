@@ -36,11 +36,15 @@
 
         self.appID = appInfo.id;
 
-        self.showAllLegendEntries = () => toggleLegendEntries();
-        self.hideAllLegendEntries = () => toggleLegendEntries(false);
+        self.showAllLegendEntries = () =>
+            toggleLegendEntries();
+        self.hideAllLegendEntries = () =>
+            toggleLegendEntries(false);
 
-        self.isAllLegendEntriesVisible = () => getLegendEntriesVisibility();
-        self.isAllLegendEntriesHidden = () => getLegendEntriesVisibility(false);
+        self.isAllLegendEntriesVisible = () =>
+            getLegendEntriesVisibility();
+        self.isAllLegendEntriesHidden = () =>
+            getLegendEntriesVisibility(false);
 
         /***/
 

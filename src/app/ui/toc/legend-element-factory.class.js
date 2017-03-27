@@ -217,23 +217,10 @@
                 super(...args);
 
                 this._controlName = 'type';
-
-                this._layerType = null;
-                this._geometryType = null;
-                this._featureCount = null;
-
-                this._layerProxy.layerType.then(layerType =>
-                    (this._layerType = layerType));
-
-                this._layerProxy.geometryType.then(geometryType =>
-                    (this._geometryType = geometryType));
-
-                this._layerProxy.featureCount.then(featureCount =>
-                    (this._featureCount = featureCount));
             }
 
             get _icons () {
-                const { _geometryType } = this;
+                const { geometryType } = this._layerProxy;
 
                 return {
                     get esriFeature () {
@@ -241,7 +228,7 @@
                             esriGeometryPoint: 'community:vector-point',
                             esriGeometryPolygon: 'community:vector-polygon',
                             esriGeometryPolyline: 'community:vector-polyline'
-                        }[_geometryType];
+                        }[geometryType];
                     },
                     esriDynamic: 'action:settings',
                     esriDynamicLayerEntry: 'image:photo',
@@ -265,28 +252,28 @@
             }
 
             get data () {
-                const { _layerType, _geometryType, _featureCount } = this;
+                const { layerType, geometryType, featureCount } = this._layerProxy;
 
                 const dataObject = {
                     get _default() {
                         return {
-                            count: _featureCount,
+                            count: featureCount,
 
                             // need to translate the substution variable itself; can't think of any other way :(
                             typeName: $translate
-                                .instant(`geometry.type.${_geometryType}`)
-                                .split('|')[_featureCount === 1 ? 0 : 1]
+                                .instant(`geometry.type.${geometryType}`)
+                                .split('|')[featureCount === 1 ? 0 : 1]
                         };
                     },
                     get esriFeature() { return this._default; },
                     get esriDynamic() { return this._default; }
-                }[_layerType];
+                }[layerType];
 
                 return dataObject || super.data;
             }
 
-            get icon () {    return this._icons[this._layerType]; }
-            get label () {   return this._labels[this._layerType]; /* include feature count and feature types ? */ }
+            get icon () {    return this._icons[this._layerProxy.layerType]; }
+            get label () {   return this._labels[this._layerProxy.layerType]; /* include feature count and feature types ? */ }
 
             get isVisible () { return true; }
         }
