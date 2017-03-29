@@ -20,4 +20,18 @@
         right: 0;
         width: 100%;
     }
+
+    .rv-spinning {
+        animation: spinloop 1.7s linear infinite;
+    }
+
+    @keyframes spinloop {
+        0% {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
+    }
 }

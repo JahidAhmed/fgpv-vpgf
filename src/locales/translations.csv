@@ -157,6 +157,8 @@ Table of Content remove action label,toc.label.action.remove,undo,annuler
 Table of Content filters label,toc.label.filters,,
 Table of Content filters tootlip,toc.tooltip.filters,,
 Table of Content feature layer flag label,toc.label.flag.feature,ESRI Feature Layer ({{count}} {{typeName}}),Couche d'éléments d'ESRI ({{count}} {{typeName}})
+,toc.label.flag.unresolved,Detecting layer type...,[fr] Detecting layer type...
+,toc.label.flag.unresolved,Cannot determine layer type,[fr] Cannot determine layer type
 Table of Content feature layer flag tootlip,toc.tooltip.flag.feature,ESRI Feature Layer ({{count}} {{typeName}}),Couche d'éléments d'ESRI ({{count}} {{typeName}})
 Table of Content dynamic layer flag label,toc.label.flag.dynamic,ESRI Dynamic Layer ({{count}} {{typeName}}),Couche dynamique d'ESRI ({{count}} {{typeName}})
 Table of Content dynamic layer flag tootlip,toc.tooltip.flag.dynamic,ESRI Dynamic Layer ({{count}} {{typeName}}),Couche dynamique d'ESRI ({{count}} {{typeName}})
