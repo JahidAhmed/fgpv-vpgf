@@ -34,6 +34,7 @@
     }
   },
   "map": {
+    "initialBasemapId": "baseSimple",
     "components": {
       "geoSearch": {
         "enabled": true,
@@ -295,7 +296,26 @@
       }
     ],
     "legend": {
-      "type": "autopopulate"
+      "type": "structured",
+      "root": {
+        "name": "root",
+        "children": [
+          {
+            "layerId": "scaleDep"
+          },
+          {
+            "name": "superGroup",
+            "children": [
+              {
+                "layerId": "esri_tile"
+              },
+              {
+                "layerId": "scaleDepDynamic"
+              }
+            ]
+          }
+        ]
+      }
     },
     "layers": [
       {
@@ -306,70 +326,48 @@
         "disabledControls": [ "visibility" ]
       },
       {
-        "id": "land_PubStdZone_detail_proj",
-        "name": "Land Pub Standard Zone Details",
-        "url": "http://ec.gc.ca/arcgis/rest/services/data_donnees/be12386d/MapServer/0",
-        "layerType": "esriFeature",
-        "state": {
-          "opacity": 0.1
-        }
-      },
-      {
-        "id": "geomet_temp",
-        "name": "AGeoMet Temp",
-        "url": "http://geo.weather.gc.ca/geomet/",
-        "layerType": "ogcWms",
-        "featureInfoMimeType": "text/plain",
-        "state": {
-          "visibility": true
-        },
-        "layerEntries": [
-          {
-            "id": "GDPS.ETA_TT"
-          }
-        ]
-      },
-      {
-        "id": "ecogeo",
-        "name": "Eco Geo",
-        "url": "http://section917.cloudapp.net/arcgis/rest/services/EcoGeo/MapServer",
-        "layerType": "esriDynamic",
-        "metadataUrl": "http://intranet.ecdmp-stage.cmc.ec.gc.ca/geonetwork/srv/eng/csw?service=CSW&version=2.0.2&request=GetRecordById&outputSchema=csw:IsoRecord&id=1c0eb1b2-93ae-49ae-a3ce-e495d8fd767b&_=1417717957845",
-        "layerEntries": [
-          {
-            "index": 6
-          },
-          {
-            "index": 7
-          },
-          {
-            "index": 8
-          },
-          {
-            "index": 9
-          }
-        ]
-      },
-      {
         "id": "scaleDepDynamic",
         "name": "Air SO2 Scale Dep",
         "url": "http://maps-cartes.ec.gc.ca/arcgis/rest/services/CESI/CESI_Air_SO2/MapServer",
         "layerType": "esriDynamic",
         "layerEntries": [
           {
-            "index": 1
+          "index": 3
           },
           {
-            "index": 2
+          "index": 2
           },
           {
-            "index": 3
-          },
-          {
-            "index": 4
+          "index": 4
           }
-        ],
-        "controls": [ "remove" ]
+        ]
+      },
+      {
+        "id":"esri_image",
+        "name": "Classified",
+        "layerType":"esriImage",
+        "url":"http://section917.cloudapp.net/arcgis/rest/services/TestData/LCV_AAFC_CLASSIFIED_30M_1995/ImageServer"
+      },
+      {
+        "id": "water_wells",
+        "name": "Groundwater Information Network - Water wells",
+        "url": "http://gin.gw-info.net/service/gin/wms/mediator/gin_en",
+        "layerType": "ogcWms",
+        "featureInfoMimeType": "text/plain",
+        "layerEntries": [
+          {
+          "id": "WaterWells"
+          }
+        ]
+      },
+      {
+        "id":"esri_tile",
+        "name": "Some tile basemap",
+        "layerType":"esriTile",
+        "url":"http://geoappext.nrcan.gc.ca/arcgis/rest/services/BaseMaps/CBME_CBCE_HS_RO_3978/MapServer",
+        "state": {
+          "opacity": 0.5
+        }
       }
     ],
     "tileSchemas": [
