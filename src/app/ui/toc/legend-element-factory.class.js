@@ -238,6 +238,7 @@
 
         class BaseFlag extends BaseElement {
             get data () { return {}; }
+            get style () { return ''; }
         }
 
         class TypeFlag extends BaseFlag {
@@ -247,10 +248,21 @@
                 this._controlName = 'type';
             }
 
+            // TODO: remove; geoapi will return unresolved while the layer type is retrieved and unknown if it cannot retrieve it from the service
+            static unresolvedType = 'unresolved';
+
+            get _styles () {
+                return {
+                    unresolved: 'rv-spinning'
+                };
+            }
+
             get _icons () {
                 const { geometryType } = this._layerProxy;
 
                 return {
+                    unknown: 'community:help',
+                    unresolved: 'action:cached',
                     get esriFeature () {
                         return {
                             esriGeometryPoint: 'community:vector-point',
@@ -269,6 +281,8 @@
 
             get _labels () {
                 return {
+                    unknown: 'toc.label.flag.unknown',
+                    unresolved: 'toc.label.flag.unresolved',
                     esriFeature: 'toc.label.flag.feature',
                     esriDynamic: 'toc.label.flag.dynamic',
                     esriDynamicLayerEntry: 'toc.label.flag.dynamic',
@@ -283,7 +297,9 @@
                 const { layerType, geometryType, featureCount } = this._layerProxy;
 
                 const dataObject = {
-                    get _default() {
+                    unknown: 'toc.label.flag.unknown',
+                    unresolved: {},
+                    get _countData() {
                         return {
                             count: featureCount,
 
@@ -293,15 +309,16 @@
                                 .split('|')[featureCount === 1 ? 0 : 1]
                         };
                     },
-                    get esriFeature() { return this._default; },
-                    get esriDynamic() { return this._default; }
-                }[layerType];
+                    get esriFeature() { return this._countData; },
+                    get esriDynamic() { return this._countData; }
+                }[layerType || TypeFlag.unresolvedType];
 
-                return dataObject || super.data;
+                return dataObject;
             }
 
-            get icon () {    return this._icons[this._layerProxy.layerType]; }
-            get label () {   return this._labels[this._layerProxy.layerType]; /* include feature count and feature types ? */ }
+            get style () {   return this._styles[this._layerProxy.layerType || TypeFlag.unresolvedType]; }
+            get icon () {    return this._icons[this._layerProxy.layerType || TypeFlag.unresolvedType]; }
+            get label () {   return this._labels[this._layerProxy.layerType || TypeFlag.unresolvedType]; /* include feature count and feature types ? */ }
 
             get isVisible () { return true; }
         }
