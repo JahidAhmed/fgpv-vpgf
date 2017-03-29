@@ -15,16 +15,18 @@
 
     function LegendBlockFactory($rootScope, Geo) {
 
+        let legendBlockCounter = 0;
+
         /* -------- */
         // jscs:enable
 
         // jscs:disable requireSpacesInAnonymousFunctionExpression
         class LegendBlock {
-            constructor (layerProxy, id) {
+            constructor (layerProxy) {
 
-                this._id = id;
+                // this._id = `${this.blockType}_${++legendBlockCounter}`;
 
-                this._layerProxy = layerProxy || { main: {} };
+                this._layerProxy = layerProxy;
 
                 /*Object.defineProperty(this._layerProxy.main, 'isRefreshing', {
                     get: () => false,
@@ -37,11 +39,15 @@
             // _layerProxy;
 
             get id () {
+                if (!this._id) {
+                    this._id = `${this.blockType}_${++legendBlockCounter}`;
+                }
+
                 return this._id;
             }
 
             get layerProxy () {
-                return this._layerProxy.main;
+                return this._layerProxy;
             }
 
             get blockType () {
@@ -61,9 +67,9 @@
         class LegendInfo extends LegendBlock {
             constructor(...args) {
                 super(...args);
-
-                this._blockType = LegendBlock.INFO;
             }
+
+            _blockType = LegendBlock.INFO;
         }
 
         // abstract
@@ -71,7 +77,6 @@
 
             constructor(...args) {
                 super(...args);
-
             }
 
             // _isSelected = false;
@@ -84,13 +89,19 @@
                     'rv-error': () => 'error'
                 };
 
-                return stateToTemplate[this._layerProxy.main.state]();
+                return stateToTemplate['rv-loaded' || this.layerProxy.state]();
             }
 
             get sortGroup () {
                 const sortGroups = Geo.Layer.SORT_GROUPS_;
 
-                return sortGroups[this._layerProxy.main.layerType];
+                return -1;
+
+                if (this.layerProxy.layerType) {
+                    return sortGroups[this.layerProxy.layerType];
+                }
+
+                return -1;
             }
         }
 
@@ -106,6 +117,8 @@
 
                 this._walk = ref.walkFunction.bind(this);
             }
+
+            _blockType = LegendBlock.SET;
 
             // TODO: add walk to sets
 
@@ -168,8 +181,9 @@
             constructor(...args) {
                  super(...args);
 
-                 this._blockType = LegendBlock.NODE;
              }
+
+            _blockType = LegendBlock.NODE;
 
             get isSelected () { return this._isSelected; }
 
@@ -202,9 +216,10 @@
                  this._entries = [];
                  this._isExpanded = true;
 
-                 this._blockType = LegendBlock.GROUP;
                  this._walk = ref.walkFunction.bind(this);
              }
+
+            _blockType = LegendBlock.GROUP;
 
             // do we want to save this bit of ui (isExpanded) state in bookmark?
             // _isExpanded = false;
