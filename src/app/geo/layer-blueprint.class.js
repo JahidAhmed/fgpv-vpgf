@@ -337,13 +337,13 @@
         };
 
         // mappings
-        const LAYER_TYPE_TO_LAYER_RECORD = {
+        /*const LAYER_TYPE_TO_LAYER_RECORD = {
             [layerTypes.ESRI_TILE]: 'createTileRecord',
             [layerTypes.ESRI_FEATURE]: 'createFeatureRecord',
             [layerTypes.ESRI_IMAGE]: 'createImageRecordBuilder',
             [layerTypes.ESRI_DYNAMIC]: 'createDynamicRecord',
             [layerTypes.OGC_WMS]: 'createWmsRecordBuilder'
-        };
+        };*/
 
         // jscs doesn't like enhanced object notation
         // jscs:disable requireSpacesInAnonymousFunctionExpression
