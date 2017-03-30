@@ -28,7 +28,7 @@
         .module('app.geo')
         .factory('legendService', legendServiceFactory);
 
-    function legendServiceFactory(Geo,  ConfigObject, LegendBlock, LayerBlueprint, gapiService, configService, layerRegistry) {
+    function legendServiceFactory(Geo, ConfigObject, LegendBlock, LayerBlueprint, gapiService, configService, layerRegistry) {
 
         const ref = {
 
@@ -121,19 +121,31 @@
              *
              * @function _makeDynamicGroupBlock
              * @private
-             * @param {Object} blockConfig legend entry config object
+             * @param {LayerNode} blockConfig legend entry config object
              * @return {LegendBlock.GROUP} the resulting LegendBlock.GROUP object
              */
             function _makeDynamicGroupBlock(blockConfig) {
                 const proxies = _getLegendProxies(blockConfig);
-                const legendEntryRecord = gapiLayer.createLegendEntryRecord({}, proxies.adjunct); // TODO: fix constructor call
-                legendEntryRecord.setMasterProxy(proxies.main);
-
-                const group = new LegendBlock.Group(legendEntryRecord.getProxy());
+                const group = new LegendBlock.Group(proxies.main.name);
 
                 // wait for the dynamic layer record to load to get its children
                 const layerRecord = layerRegistry.getLayerRecord(blockConfig.layerId);
                 layerRecord.addStateListener(_onLayerRecordLoad);
+
+
+
+                return group;
+                //
+
+                /*const proxies = _getLegendProxies(blockConfig);
+                const legendEntryRecord = gapiLayer.createLegendEntryRecord({}, proxies.adjunct); // TODO: fix constructor call
+                legendEntryRecord.setMasterProxy(proxies.main);
+
+                const _group = new LegendBlock.Group(legendEntryRecord.getProxy());
+
+                // wait for the dynamic layer record to load to get its children
+                const layerRecord = layerRegistry.getLayerRecord(blockConfig.layerId);
+                layerRecord.addStateListener(_onLayerRecordLoad);*/
 
                 /**
                  * A helper function to handle layerRecord state change. On loaded, it create child LegendBlocks for the dynamic layer and
@@ -166,11 +178,14 @@
                     const proxy = layerRecord.getChildProxy(child.id);
 
                     if (child.children) {
-                        childBlock = new LegendBlock.Group(proxy);
+                        childBlock = new LegendBlock.Group(child.id + 'blha');
                         child.children.forEach(subChild =>
                             _makeChildBlock(subChild, childBlock));
                     } else {
-                        childBlock = new LegendBlock.Node(proxy);
+                        childBlock = new LegendBlock.Node({ main: proxy, adjunct: []}, {}, {
+                            controls: [],
+                            disabledControls: []
+                        });
                     }
 
                     parent.addEntry(childBlock);
@@ -192,14 +207,12 @@
              * @return {LegendBlock.GROUP} the resulting LegendBlock.GROUP object
              */
             function _makeGroupBlock(blockConfig) {
-                const legendGroupRecord = gapiLayer.createLegendGroupRecord(blockConfig.name);
-                const group = new LegendBlock.Group(legendGroupRecord.getProxy());
+                const group = new LegendBlock.Group(blockConfig.name);
 
                 blockConfig.children.forEach(childConfig => {
                     const childBlock = _makeLegendBlock(childConfig, layerBlueprints);
 
                     group.addEntry(childBlock);
-                    legendGroupRecord.addChildProxy(childBlock.layerProxy);
                 });
 
                 return group;
@@ -216,17 +229,18 @@
              */
             function _makeNodeBlock(blockConfig) {
                 const proxies = _getLegendProxies(blockConfig);
-                const legendEntryRecord = gapiLayer.createLegendEntryRecord({}, proxies.adjunct);
-                legendEntryRecord.setMasterProxy(proxies.main);
+                // const legendEntryRecord = gapiLayer.createLegendEntryRecord({}, proxies.adjunct);
+                // legendEntryRecord.setMasterProxy(proxies.main, proxies.adjunct, blockConfig);
 
-                const node = new LegendBlock.Node(legendEntryRecord.getProxy());
+                const layerConfig = mainBlueprint.config;
+
+                const node = new LegendBlock.Node(proxies, blockConfig, layerConfig);
 
                 return node;
             }
 
             /**
-             * // TODO: implement
-             *
+             * Creates a LegendBlock.INFO object for a legend infor section specified in the legend.
              *
              * @function _makeInfoBlock
              * @private
@@ -234,11 +248,7 @@
              * @return {LegendBlock.INFO} the resulting LegendBlock.INFO object
              */
             function _makeInfoBlock(blockConfig) {
-                const proxies = {};
-
-                // makeInfoRecord
-
-                const info = new LegendBlock.Info(proxies, blockConfig.layerId);
+                const info = new LegendBlock.Info(blockConfig);
 
                 return info;
             }
@@ -267,6 +277,8 @@
                 const adjunctLayerRecords = adjunctBlueprints.map(blueprint => {
                     const layerRecord = layerRegistry.makeLayerRecord(blueprint);
                     layerRegistry.loadLayerRecord(blueprint.config.id);
+
+                    return layerRecord;
                 });
 
                 let mainProxy;

@@ -41,7 +41,8 @@
                     'reload',
                     'remove',
                     'settings',
-                    'data'
+                    'data',
+                    'symbology'
                 ],
                 disabledControls: []
             },
@@ -65,7 +66,8 @@
                     'reload',
                     'remove',
                     'settings',
-                    // 'data'
+                    // 'data',
+                    'symbology'
                 ],
                 disabledControls: []
             },
@@ -89,7 +91,8 @@
                     'reload',
                     'remove',
                     'settings',
-                    'data'
+                    'data',
+                    'symbology'
                 ],
                 disabledControls: []
             },
@@ -113,7 +116,8 @@
                     'reload',
                     'remove',
                     'settings',
-                    'data'
+                    'data',
+                    'symbology'
                 ],
                 disabledControls: []
             },
@@ -137,7 +141,8 @@
                     'reload',
                     'remove',
                     'settings',
-                    'data'
+                    'data',
+                    'symbology'
                 ],
                 disabledControls: []
             }

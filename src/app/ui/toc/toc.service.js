@@ -17,7 +17,7 @@
 
     // jshint maxparams:14
     function tocService($q, $rootScope, $mdToast, $translate, layoutService, stateManager,
-        geoService, metadataService, errorService, debounceService, $timeout, LegendBlock) {
+        geoService, metadataService, errorService, debounceService, $timeout, LegendBlock, configService) {
 
         const service = {
             // method called by the options and flags set on the layer item
@@ -651,7 +651,7 @@
         function toggleSettings(legendBlock) {
             const requester = {
                 id: legendBlock.id,
-                name: legendBlock.layerProxy.name
+                name: legendBlock.name
             };
 
             const panelToClose = {
@@ -755,11 +755,11 @@
          *         {state = true|undefined => pane visible,
          *          state = false => pane not visible}.
          */
-        function toggleMetadata(entry, state) {
+        function toggleMetadata(legendBlock, state) {
 
             const requester = {
-                id: entry.id,
-                name: entry.name
+                id: legendBlock.id,
+                name: legendBlock.layerProxy.name
             };
 
             const panelToClose = {
@@ -845,6 +845,8 @@
          * @param {Boolean} value defaults to true;
          */
         function setTocEntrySelectedState(id, value = true) {
+            console.log(configService);
+
             return;
 
             const entry = geoService.legend.getItemById(id);

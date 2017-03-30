@@ -301,7 +301,14 @@
         "name": "root",
         "children": [
           {
-            "layerId": "scaleDep"
+            "layerId": "scaleDep",
+            "controlledIds": [
+              "ecogeo"
+            ]
+          },
+          {
+            "infoType": "text",
+            "content": "Pages you view in incognito tabs won’t stick around in your browser’s history, cookie store, or search history."
           },
           {
             "name": "superGroup",
@@ -313,6 +320,28 @@
                 "layerId": "scaleDepDynamic"
               }
             ]
+          },
+          {
+            "name": "cat pictures",
+            "children": [
+              {
+                "infoType": "image",
+                "content": "https://advego.ru/uploads/scepsis/%D1%8F_%D1%81%D0%B4%D0%B5%D0%BB%D0%B0%D0%BB%D0%AA_32f0bf9b4f82c17317ae7bcb2e1a3d22.gif"
+              },
+              {
+                "infoType": "image",
+                "content": "https://s-media-cache-ak0.pinimg.com/originals/ac/cf/82/accf8215081bb1922ab317f31a6acb2b.gif"
+              },
+              {
+                "infoType": "image",
+                "content": "https://media.tenor.co/images/33065341659efcc8c214d8541e594124/tenor.gif"
+              },
+              {
+                "infoType": "image",
+                "content": "http://i3.kym-cdn.com/entries/icons/original/000/011/198/internet.gif"
+              }
+
+            ]
           }
         ]
       }
@@ -323,7 +352,14 @@
         "name": "Air Ozone Scale Dep",
         "url": "http://maps-cartes.ec.gc.ca/arcgis/rest/services/CESI/CESI_Air_Ozone/MapServer/2",
         "layerType": "esriFeature",
-        "disabledControls": [ "visibility" ]
+        "disabledControls": [ "opacity" ]
+      },
+      {
+        "id":"ecogeo",
+        "name": "Eco Geo",
+        "layerType":"esriFeature",
+        "url":"http://section917.cloudapp.net/arcgis/rest/services/EcoGeo/MapServer/6",
+        "metadataUrl": "http://intranet.ecdmp-stage.cmc.ec.gc.ca/geonetwork/srv/eng/csw?service=CSW&version=2.0.2&request=GetRecordById&outputSchema=csw:IsoRecord&id=1c0eb1b2-93ae-49ae-a3ce-e495d8fd767b&_=1417717957845"
       },
       {
         "id": "scaleDepDynamic",

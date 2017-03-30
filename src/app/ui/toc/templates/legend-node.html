@@ -1,19 +1,18 @@
 <div
     class="rv-list-item-body"
-    ng-mouseover="self.fanOutSymbology(true)"
-    ng-mouseleave="self.fanOutSymbology(false)">
+    ng-mouseover="self.block.symbologyStack.fanOut(true)"
+    ng-mouseleave="self.block.symbologyStack.fanOut(false)">
 
     <rv-legend-control block="self.block" template="body" name="data"></rv-legend-control>
 </div>
 
 <rv-symbology-stack
-    stack="self.layerProxy.symbology.stack"
-    render-style="self.layerProxy.symbology.renderStyle"
+    symbology="self.block.symbologyStack"
     container="self.element"></rv-symbology-stack>
 
 <div class="rv-list-item-content">
     <div class="rv-list-item-name">
-        {{ self.layerProxy.name }}
+        {{ self.block.name }} {{ self.block._mainProxy.state }}
     </div>
 
     <div class="rv-list-item-flags">
@@ -28,7 +27,7 @@
 
 <div class="rv-list-item-controls">
     <md-menu md-position-mode="target-right target" class="rv-list-item-control"
-        ng-if="self.intersect(self.layerProxy.availableControls, ['metadata', 'settings', 'data', 'symbology', 'boundary', 'reload', 'remove']).length > 0">
+        ng-if="self.intersect(self.block.availableControls, ['metadata', 'settings', 'data', 'symbology', 'boundary', 'reload', 'remove']).length > 0">
         <md-button
             aria-label="{{ 'toc.entry.aria.openData' | translate }}"
             class="md-icon-button rv-button-40 rv-icon-20"

@@ -33,8 +33,9 @@
             restrict: 'E',
             templateUrl: 'app/ui/toc/templates/symbology-stack.html',
             scope: {
-                stack: '=',
-                renderStyle: '=?',
+                symbology: '=',
+                // stack: '=',
+                // symbology.renderStyle: '=?',
                 container: '=?'
             },
             link: link,
@@ -51,7 +52,7 @@
             const self = scope.self;
 
             // if render style is not specified, symbology stack will not be interactive
-            self.isInteractive = typeof self.renderStyle !== 'undefined';
+            // self.isInteractive = typeof self.symbology.renderStyle !== 'undefined';
             self.isExpanded = false; // holds the state of symbology section
 
             self.expandSymbology = expandSymbology;
@@ -75,7 +76,7 @@
                 maxItemWidth: 350
             };
 
-            scope.$watchCollection('self.stack', (newStack, oldStack) => {
+            scope.$watchCollection('self.symbology.stack', (newStack, oldStack) => {
                 console.log('newStack, oldStack', newStack, oldStack);
 
                 if (newStack) {
@@ -88,6 +89,14 @@
                 }
             });
 
+            scope.$watch('self.symbology.isExpanded', (newValue, oldValue) =>
+                newValue !== oldValue ? self.expandSymbology(newValue) : angular.noop);
+
+            scope.$watch('self.symbology.isFannedOut', (newValue, oldValue) =>
+                newValue !== oldValue ? self.fanOutSymbology(newValue) : angular.noop);
+
+
+            /* this should not be needed after all
             const eventNameToAction = {
                 fanOut: self.fanOutSymbology,
                 expand: self.expandSymbology
@@ -95,6 +104,7 @@
 
             scope.$on('symbology', (event, name, value) =>
                 eventNameToAction[name](value));
+            */
 
             return true;
 
@@ -148,7 +158,7 @@
 
             // find and store references to relevant nodes
             function initializeTimelines() {
-                if (!self.isInteractive) {
+                if (!self.symbology.isInteractive) {
                     return;
                 }
 
@@ -221,7 +231,7 @@
 
                 // loop over ref.symbolItems, generate timeline for each one, increase total height
                 ref.symbolItems.reverse().forEach((symbolItem, index) => {
-                    const heightIncrease = legendItemTLgenerator[self.renderStyle](timeline, symbolItem, totalHeight,
+                    const heightIncrease = legendItemTLgenerator[self.symbology.renderStyle](timeline, symbolItem, totalHeight,
                         index === ref.symbolItems.length - 1);
 
                     totalHeight += heightIncrease;

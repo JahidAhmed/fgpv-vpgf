@@ -1,8 +1,8 @@
 <div
-    class="rv-symbology-container rv-render-{{ self.renderStyle }}"
-    ng-class='[{ "rv-expanded" : self.isExpanded }, { "rv-compound" : self.stack.length > 1 } ]'>
+    class="rv-symbology-container rv-render-{{ self.symbology.renderStyle }}"
+    ng-class='[{ "rv-expanded" : self.isExpanded }, { "rv-compound" : self.symbology.stack.length > 1 } ]'>
 
-    <div class="rv-symbol" ng-repeat="symbol in self.stack | rvReverse">
+    <div class="rv-symbol" ng-repeat="symbol in self.symbology.stack | rvReverse">
         <rv-svg class="rv-symbol-graphic" src="symbol.svgcode"></rv-svg>
         <div class="rv-symbol-label-container">
             <span class="rv-symbol-label">{{ symbol.name }}</span>
@@ -11,7 +11,7 @@
 
     <md-button
         class="rv-symbol-trigger rv-button-32 rv-icon-24 md-icon-button"
-        ng-if="self.isInteractive"
+        ng-if="self.symbology.isInteractive"
         ng-click="self.expandSymbology()"
         ng-focus="self.fanOutSymbology(true)"
         ng-blur="self.fanOutSymbology(false)"

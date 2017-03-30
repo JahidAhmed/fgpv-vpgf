@@ -51,13 +51,10 @@
             self.appID = appInfo.id;
 
             // a shorthand for less verbocity
-            self.layerProxy = self.block.layerProxy;
+            // self.layerProxy = self.block.layerProxy;
 
             // store reference to element on the scope so it can be passed to symbology stack as container
             self.element = element;
-
-            // broadcasts symbology fanOut event down the scope chain
-            self.fanOutSymbology = fanOutSymbology;
 
             self.intersect = intersect;
 
@@ -66,18 +63,10 @@
                     const template = $templateCache.get(`app/ui/toc/templates/legend-${newTemplate}.html`);
                     element.empty().append($compile(template)(scope));
 
+
                     console.log(self.block.id, newTemplate);
                 }
             });
-
-            /**
-             * @function fanOutSymbology
-             * @private
-             * @param {Boolean} value true - fanOut symbology stack; false - reverse;
-             */
-            function fanOutSymbology(value) {
-                scope.$broadcast('symbology', 'fanOut', value);
-            }
 
             /**
              * // TODO: move this somewhere else to avoid duplication
