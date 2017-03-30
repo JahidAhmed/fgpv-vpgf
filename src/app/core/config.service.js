@@ -37,7 +37,7 @@
         .module('app.core')
         .factory('configService', configService);
 
-    function configService($q, $rootScope, $rootElement, $timeout, $http, $translate, $mdToast, events) {
+    function configService($q, $rootScope, $rootElement, $timeout, $http, $translate, $mdToast, events, schemaUpgrade) {
         let initializePromise;
         let isInitialized = false;
 
@@ -98,7 +98,12 @@
 
             // unwrap the async value, since this should be accessed after rvCfgInitialized
             languages.forEach(lang => {
-                initialPromises[lang].then(cfg => { configs[lang] = cfg; });
+                initialPromises[lang].then(cfg => {
+                    if (schemaUpgrade.isV1Schema(cfg.version)) {
+                        cfg = schemaUpgrade.oneToTwo(cfg);
+                    }
+                    configs[lang] = cfg;
+                });
             });
 
             originalConfigs[langs[0]] = initialPromises[langs[0]];
@@ -156,6 +161,7 @@
                     // TODO: better way to handle when no languages are specified?
                 }
             }
+            languages.forEach(lang => startupRcsLayers[lang] = []);
 
             const configAttr = $rootElement.attr('rv-config');
             $translate.use(languages[0]);
@@ -164,63 +170,8 @@
             const svcAttr = $rootElement.attr('rv-service-endpoint');
             const keysAttr = $rootElement.attr('rv-keys');
             if (svcAttr) {
+                rcsLoader(svcAttr, keysAttr, languages);
             }
-            return;
-
-
-            // store the promise and return it on all future calls; this way initialize can be called one time only
-            initializePromise = $q((fulfill, reject) => {
-
-                // This function can only be called once.
-                if (isInitialized) {
-                    return fulfill();
-                }
-
-                // check if config attribute exist
-                if (configAttr) {
-
-                    // set the language right away and not wait the initialization to be fullfilled
-
-                    langs.forEach(lang => {
-                        originalConfigs[lang] = $q.all(partials[lang])
-                            .then(configParts => {
-                                // generate a blank config, merge in all the stuff we have loaded
-                                // the merged config is our promise result for all to use
-                                const newConfig = {
-                                    layers: []
-                                };
-                                mergeConfigParts(newConfig, configParts);
-                                return newConfig;
-                            })
-                            .catch(() => {
-                                // TODO: possibly retry rcsLoad?
-                                console.warn('RCS failed, starting app with file-only config.');
-                                const toast = $mdToast.simple()
-                                    .textContent($translate.instant('config.service.rcs.error'))
-                                    .action($translate.instant('config.service.rcs.action'))
-                                    .highlightAction(true)
-                                    .hideDelay(0)
-                                    .position('bottom rv-flex-global');
-                                $mdToast.show(toast);
-                                return configFile[lang];
-                            });
-                    });
-
-                    // initialize the app once the default language's config is loaded
-                    // FIXME: replace with getCurrent().then / originalConfigs[Default language] if we have a way to check
-                    originalConfigs[langs[0]]
-                        .then(() => {
-                            isInitialized = true;
-                            fulfill(originalConfigs[langs[0]]);
-                        })
-                        .catch(error => {
-                            reject(error);
-                            console.error(error);
-                        });
-                }
-            });
-
-            return initializePromise;
         }
 
         /**
@@ -418,7 +369,8 @@
                         resp.data.forEach(layerEntry => {
                             // if the key is wrong rcs will return null
                             if (layerEntry) {
-                                const layer = layerEntry.layers[0];
+                                let layer = layerEntry.layers[0];
+                                layer = schemaUpgrade.layerNodeUpgrade(layer);
                                 layer.origin = 'rcs';
                                 result.layers.push(layer);
                             }
