@@ -77,7 +77,7 @@
 
             const isAllVisible = configService._sharedConfig_.map.legendBlocks
                 .walk(block =>
-                    block.layerProxy.visibility)
+                    block.visibility)
                 .every(isVisible =>
                     isVisible === value);
 

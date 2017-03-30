@@ -60,9 +60,8 @@
             }
 
             configService._sharedConfig_.map.legendBlocks.walk(block => {
-                if (block.blockType === LegendBlock.Block.GROUP &&
-                    block.isExpanded !== value) {
-                    block.toggleExpansion();
+                if (block.blockType === LegendBlock.Block.GROUP) {
+                    block.expand(value);
                 }
             });
         }

@@ -122,6 +122,7 @@ Side Navigation touch mode,sidenav.label.touch,Touch Mode,Mode Tactile
 Side Navigation language,sidenav.label.language,Language,Langue
 Table of Content Unnamed service,toc.layer.unnamed,Unnamed Service #{{count}},Service sans nom #{{count}}
 Table of Content Layer open data panel aria label,toc.layer.aria.openData,Open data panel menu,Menu du panneau des données ouvertes
+Table of Content show symbology label,toc.layer.label.symbology,Legend,La légende
 Table of Content show symbology label,toc.layer.label.symbologyShow,Expand legend,Développer la légende
 Table of Content hide symbology label,toc.layer.label.symbologyHide,Hide legend,Masquer la légende
 Table of Content main title,toc.title,Layer Selector,Sélecteur de couche

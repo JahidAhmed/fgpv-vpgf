@@ -9,21 +9,23 @@
         class BaseElement {
             constructor (legendBlock) {
                 this._legendBlock = legendBlock;
-                this._layerProxy = this._legendBlock.layerProxy; // a shortcut
+                // this._layerProxy = this._legendBlock.layerProxy; // a shortcut
             }
+
+            get block () { return this._legendBlock; }
 
             get icon () {    return ''; }
             get label () {   return ''; }
             get tooltip () { return this.label; }
 
-            get isVisible () { return this._layerProxy.availableControls.indexOf(this._controlName) !== -1; }
+            get isVisible () { return this.block.availableControls.indexOf(this._controlName) !== -1; }
         }
 
         class BaseControl extends BaseElement {
             action () { }
 
             get isDisabled () {
-                return this._layerProxy.disabledControls.indexOf(this._controlName) !== -1;
+                return this.block.disabledControls.indexOf(this._controlName) !== -1;
             }
         }
 
@@ -34,14 +36,14 @@
 
             _controlName = 'visibility';
 
-            get value () { return this._layerProxy.visibility; }
+            get value () { return this.block.visibility; }
             set value (value) { this.action(value); }
 
             get icon () {    return `action:visibility`; }
             get label () {   return `toc.label.visibility.off`; }
 
             action (value = !this.value) {
-                this._layerProxy.setVisibility(value);
+                this.block.visibility = value;
             }
         }
 
@@ -59,8 +61,8 @@
                 super(...args);
             }
 
-            get icon () {    return `toggle:radio_button_${this._layerProxy.visibility ? '' : 'un'}checked`; }
-            get label () {   return `toc.label.visibility.${this._layerProxy.visibility ? 'on' : 'off'}`; }
+            get icon () {    return `toggle:radio_button_${this.visibility ? '' : 'un'}checked`; }
+            get label () {   return `toc.label.visibility.${this.visibility ? 'on' : 'off'}`; }
         }
 
         class OpacityControl extends BaseControl {
@@ -70,12 +72,12 @@
                 this._controlName = 'opacity';
             }
 
-            get value () { return this._layerProxy.opacity; }
+            get value () { return this.block.opacity; }
             set value (value) { this.action(value); }
 
             get icon () {    return 'action:opacity'; }
             get label () {   return 'settings.label.opacity'; }
-            action (value) { this._layerProxy.setOpacity(value); }
+            action (value) { this.block.setOpacity(value); }
         }
 
         class BoundingBoxControl extends BaseControl {
@@ -119,7 +121,7 @@
                 this._controlName = 'snapshot';
             }
 
-            get value () { return this._layerProxy.snapshot; }
+            get value () { return this.block.snapshot; }
 
             get icon () {    return 'action:cached'; }
             get label () {   return 'settings.label.snapshot'; }
@@ -135,7 +137,7 @@
 
             get icon () {    return 'action:description'; }
             get label () {   return 'toc.label.metadata'; }
-            action () {      tocService.toggleMetadata(this._layerProxy); }
+            action () {      tocService.toggleMetadata(this.block); }
         }
 
         class SettingsControl extends BaseControl {
@@ -147,7 +149,7 @@
 
             get icon () {    return 'image:tune'; }
             get label () {   return 'toc.label.settings'; }
-            action () {      tocService.toggleSettings(this._legendBlock); }
+            action () {      tocService.toggleSettings(this.block); }
         }
 
         class OffscaleControl extends BaseControl {
@@ -157,8 +159,8 @@
                 this._controlName = 'offscale';
             }
 
-            get icon () {    return `action:zoom_${this._layerProxy.outOfScale ? 'in' : 'out'}`; }
-            get label () {   return `toc.label.visibility.zoom${this._layerProxy.outOfScale ? 'In' : 'Out'}`; }
+            get icon () {    return `action:zoom_${this.block.outOfScale ? 'in' : 'out'}`; }
+            get label () {   return `toc.label.visibility.zoom${this.block.outOfScale ? 'In' : 'Out'}`; }
             action () {      geoService.zoomToScale(this._layerProxy); }
         }
 
@@ -221,18 +223,23 @@
             get label () {   return 'toc.label.reorder'; }
         }
 
+        /**
+         * SymbologyControl allows the user to expand the symbology stack.
+         */
         class SymbologyControl extends BaseControl {
             constructor (...args) {
                 super(...args);
 
                 this._controlName = 'symbology';
+
+                this._symbologyStack = this.block.symbologyStack;
             }
 
             get icon () {    return 'maps:layers'; }
-            get label () {   return 'toc.label.symbology'; }
+            get label () {   return 'toc.layer.label.symbology'; }
             action () {
-                this._legendBlock.toggleSymbology();
-                this._legendBlock.wiggleSymbology();
+                this._symbologyStack.expand(!this._symbologyStack.isExpanded);
+                this._symbologyStack.fanOut(!this._symbologyStack.isExpanded);
             }
         }
 
@@ -258,7 +265,7 @@
             }
 
             get _icons () {
-                const { geometryType } = this._layerProxy;
+                const { geometryType } = this.block;
 
                 return {
                     unknown: 'community:help',
@@ -294,7 +301,7 @@
             }
 
             get data () {
-                const { layerType, geometryType, featureCount } = this._layerProxy;
+                const { layerType, geometryType, featureCount } = this.block;
 
                 const dataObject = {
                     unknown: 'toc.label.flag.unknown',
@@ -316,9 +323,9 @@
                 return dataObject;
             }
 
-            get style () {   return this._styles[this._layerProxy.layerType || TypeFlag.unresolvedType]; }
-            get icon () {    return this._icons[this._layerProxy.layerType || TypeFlag.unresolvedType]; }
-            get label () {   return this._labels[this._layerProxy.layerType || TypeFlag.unresolvedType]; /* include feature count and feature types ? */ }
+            get style () {   return this._styles[this.block.layerType || TypeFlag.unresolvedType]; }
+            get icon () {    return this._icons[this.block.layerType || TypeFlag.unresolvedType]; }
+            get label () {   return this._labels[this.block.layerType || TypeFlag.unresolvedType]; /* include feature count and feature types ? */ }
 
             get isVisible () { return true; }
         }

@@ -33,8 +33,6 @@
 
         </div>
 
-        {{ self.configService._sharedConfig_.map._legendBlocks.name }}
-
         <ul class="rv-legend-list rv-legend-root rv-legend-level-0" dx-start-with="self.configService._sharedConfig_.map._legendBlocks">
         <!--ul class="rv-legend-list rv-legend-root rv-legend-level-0" dx-start-with="self.secondToc"-->
 
@@ -71,7 +69,7 @@
                     dx-connect="block"></ul>
 
 
-                <md-progress-linear class="rv-progress-bottom" md-mode="indeterminate" ng-show="block.layerProxy.isRefreshing"></md-progress-linear>
+                <md-progress-linear class="rv-progress-bottom" md-mode="indeterminate" ng-show="block.isRefreshing"></md-progress-linear>
 
             </li>
         </ul>
