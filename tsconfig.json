@@ -1,0 +1,17 @@
+{
+    "compilerOptions": {
+        "alwaysStrict": true,
+        "noImplicitAny": true,
+        "suppressImplicitAnyIndexErrors": true,
+        "pretty": true,
+        "strictNullChecks": true
+    },
+
+    "files": [
+        "./overrides.d.ts"
+    ],
+
+    "include": [
+        "./src/app/*/**/*.ts"
+    ]
+}

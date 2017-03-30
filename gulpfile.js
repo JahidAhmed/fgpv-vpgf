@@ -19,6 +19,7 @@ const through = require('through2');
 const merge = require('merge-stream');
 const lazypipe = require('lazypipe');
 const fs = require('fs');
+const ts = require('gulp-typescript');
 
 const jsDefaults = require('json-schema-defaults');
 const jsRefParser = require('json-schema-ref-parser');
@@ -181,6 +182,15 @@ function libbuild() {
         .pipe($.concat(config.jsLibFile));
 }
 
+function tsBuild() {
+    var tsProject = ts.createProject('tsconfig.json');
+
+    return tsProject.src()
+        .pipe(tsProject())
+        .js
+        .pipe($.concat('tss.js'));
+}
+
 /**
  * Concat and build core plugins.
  * @return {Stream}
@@ -275,6 +285,7 @@ gulp.task('jsrollup', 'Roll up all js into one file',
 
         const jslib = libbuild();
         const plugins = pluginbuild();
+        const ts = tsBuild();
         const jscache = templatecache();
         const jsapp = jsbuild();
         const seed = gulp.src([config.jsGlobalRegistry, config.jsAppSeed])
@@ -286,7 +297,7 @@ gulp.task('jsrollup', 'Roll up all js into one file',
         // app-seed `must` be the last item
 
         // merge all js streams to avoid writing individual files to disk
-        return merge(jslib, plugins, jscache, jsapp, seed) // merge doesn't guarantee file order :(
+        return merge(jslib, plugins, jscache, jsapp, ts, seed) // merge doesn't guarantee file order :(
             .pipe($.order(config.jsOrder))
             .pipe($.concat(config.jsCoreFile))
             // can't use lazy pipe with uglify

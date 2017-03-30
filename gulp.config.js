@@ -52,6 +52,7 @@ module.exports = function () {
             'lib.js',
             'global-registry.js',
             'app.js',
+            'tss.js',
             'templates.js',
             'focus-manager.js',
             'app-seed.js',
