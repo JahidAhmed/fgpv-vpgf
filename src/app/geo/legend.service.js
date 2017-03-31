@@ -74,7 +74,6 @@
          */
         function _makeLegendBlock(blockConfig, layerBlueprints) {
             const gapiLayer = gapiService.gapi.layer;
-
             const legendTypes = ConfigObject.TYPES.legend;
 
             const TYPE_TO_BLOCK = {
@@ -143,7 +142,9 @@
 
                 // wait for the dynamic layer record to load to get its children
                 const layerRecord = layerRegistry.getLayerRecord(blockConfig.layerId);
+
                 layerRecord.addStateListener(_onLayerRecordLoad);
+
 
                 const childControls = common.intersect(
                     layerConfig.controls,
@@ -162,24 +163,14 @@
                 function _onLayerRecordLoad(state) {
                     if (state === 'rv-loaded') {
 
-                        const children = layerRecord.getChildTree()
-                            // TODO: remove start
-                            .map(child => {
-                                child.entryIndex = child.id;
-                                if (child.children) {
-                                    child.name = child.id + 'blah';
-                                }
-
-                                return child;
-                            });
-                            // TODO: remove end
-
                         const tempGroupBlockConfig = new ConfigObject.legend.EntryGroup({
-                            children
+                            children: layerRecord.getChildTree()
                         });
 
+                        //common.$timeout(() => {
                         tempGroupBlockConfig.children.forEach(configBlock =>
                             _addChildBlock(configBlock, group));
+                        //}, 5000);
 
                         layerRecord.removeStateListener(_onLayerRecordLoad);
                     }

@@ -89,10 +89,10 @@
                 }
             });
 
-            scope.$watch('self.symbology.isExpanded', (newValue, oldValue) =>
+            scope.$watch('self.symbology.expanded', (newValue, oldValue) =>
                 newValue !== oldValue ? self.expandSymbology(newValue) : angular.noop);
 
-            scope.$watch('self.symbology.isFannedOut', (newValue, oldValue) =>
+            scope.$watch('self.symbology.fannedOut', (newValue, oldValue) =>
                 newValue !== oldValue ? self.fanOutSymbology(newValue) : angular.noop);
 
 

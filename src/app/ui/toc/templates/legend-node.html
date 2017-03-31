@@ -1,7 +1,7 @@
 <div
     class="rv-list-item-body"
-    ng-mouseover="self.block.symbologyStack.fanOut(true)"
-    ng-mouseleave="self.block.symbologyStack.fanOut(false)">
+    ng-mouseover="self.block.symbologyStack.fannedOut = true"
+    ng-mouseleave="self.block.symbologyStack.fannedOut = false">
 
     <rv-legend-control block="self.block" template="body" name="data"></rv-legend-control>
 </div>
