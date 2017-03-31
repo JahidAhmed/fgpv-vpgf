@@ -78,41 +78,29 @@
 
             const TYPE_TO_BLOCK = {
                 [legendTypes.INFO]: _makeInfoBlock,
-                [legendTypes.NODE]: _makeNodeBlock,
+                [legendTypes.NODE]: (blockConfig) => {
+                    // real blueprints are only available on Legend.NODEs
+                    const nodeBlueprints = {
+                        main: _getLayerBlueprint(blockConfig.layerId),
+                        adjunct: blockConfig.controlledIds.map(id => _getLayerBlueprint(id))
+                    };
+
+                    const nodeProxies = _getLegendBlockProxies(blockConfig, nodeBlueprints);
+
+                    // dynamic layers render as LegendGroup blocks; all other layers are rendered as LegendNode blocks;
+                    if (nodeBlueprints.main.config.layerType === Geo.Layer.Types.ESRI_DYNAMIC) {
+                        return _makeDynamicGroupBlock(blockConfig, nodeBlueprints.main, nodeProxies.adjunct);
+                    } else {
+                        return _makeNodeBlock(blockConfig, nodeBlueprints.main, nodeProxies);
+                    }
+                },
                 [legendTypes.GROUP]: _makeGroupBlock,
                 [legendTypes.SET]: _makeSetBlock
             };
 
-            // real blueprints are only available on Legend.NODEs
-            // everything else won't need proper blueprints
-            const [ mainBlueprint, adjunctBlueprints ] = [
-                _getLayerBlueprint(blockConfig.layerId),
-                (blockConfig.controlledIds || []).map(id =>
-                    _getLayerBlueprint(id))
-            ];
-
-            const legendBlock = _makeBlock(blockConfig);
+            const legendBlock = TYPE_TO_BLOCK[blockConfig.entryType](blockConfig);
 
             return legendBlock;
-
-            /**
-             * Determines with LegendBlock to build based on entryType and layerType.
-             *
-             * @function _makeBlock
-             * @private
-             * @param {Object} blockConfig legend entry config object
-             * @return {LegendBlock} the resulting LegendBlock object
-             */
-            function _makeBlock(blockConfig) {
-                // dynamic layers render as LegendGroup blocks; all other layers are rendered as LegendNode blocks;
-                if (blockConfig.entryType === legendTypes.NODE){
-                    if (mainBlueprint.config.layerType === Geo.Layer.Types.ESRI_DYNAMIC) {
-                        return _makeDynamicGroupBlock(blockConfig);
-                    }
-                }
-
-                return TYPE_TO_BLOCK[blockConfig.entryType](blockConfig);
-            }
 
             /**
              * Creates a LegendBlock.GROUP for a dynamic layer since it's represented in the UI as a group.
@@ -124,8 +112,7 @@
              * @param {LayerNode} blockConfig legend entry config object
              * @return {LegendBlock.GROUP} the resulting LegendBlock.GROUP object
              */
-            function _makeDynamicGroupBlock(blockConfig) {
-                const proxies = _getLegendProxies(blockConfig);
+            function _makeDynamicGroupBlock(blockConfig, mainBlueprint, adjunctProxies) {
                 const layerConfig = mainBlueprint.config;
 
                 // to create a group for a dynamic layer, create a entryGroup config object by using properties
@@ -268,13 +255,8 @@
              * @param {Object} blockConfig legend entry config object
              * @return {LegendBlock.NODE} the resulting LegendBlock.NODE object
              */
-            function _makeNodeBlock(blockConfig) {
-                const proxies = _getLegendProxies(blockConfig);
-                // const legendEntryRecord = gapiLayer.createLegendEntryRecord({}, proxies.adjunct);
-                // legendEntryRecord.setMasterProxy(proxies.main, proxies.adjunct, blockConfig);
-
+            function _makeNodeBlock(blockConfig, mainBlueprint, proxies) {
                 const layerConfig = mainBlueprint.config;
-
                 const node = new LegendBlock.Node(proxies, blockConfig, layerConfig);
 
                 return node;
@@ -306,21 +288,14 @@
              * Only entries (not groups or infos) can have direct proxies.
              * A config legend entry must have a main proxy, and can optionally have several adjunct proxies through `controlledIds` property.
              *
-             * @function _getLegendProxies
+             * @function _getLegendBlockProxies
              * @private
              * @param {Object} blockConfig legend entry config object
              * @return {Object} an object containing related proxies in the form of { main: <LayerProxy>, adjunct: [<LayerProxy>] }
              */
-            function _getLegendProxies(blockConfig) {
+            function _getLegendBlockProxies(blockConfig, { main: mainBlueprint, adjunct: adjunctBlueprints }) {
                 const mainLayerRecord = layerRegistry.makeLayerRecord(mainBlueprint);
-                layerRegistry.loadLayerRecord(blockConfig.layerId);
-
-                const adjunctLayerRecords = adjunctBlueprints.map(blueprint => {
-                    const layerRecord = layerRegistry.makeLayerRecord(blueprint);
-                    layerRegistry.loadLayerRecord(blueprint.config.id);
-
-                    return layerRecord;
-                });
+                layerRegistry.loadLayerRecord(mainBlueprint.config.id);
 
                 let mainProxy;
 
@@ -332,8 +307,14 @@
                     mainProxy = mainLayerRecord.getProxy();
                 }
 
-                const adjunctProxies = adjunctLayerRecords
-                    .map(layerRecord =>
+                const adjunctLayerRecords = adjunctBlueprints.map(blueprint => {
+                    const layerRecord = layerRegistry.makeLayerRecord(blueprint);
+                    layerRegistry.loadLayerRecord(blueprint.config.id);
+
+                    return layerRecord;
+                });
+
+                const adjunctProxies = adjunctLayerRecords.map(layerRecord =>
                         layerRecord.getProxy());
 
                 return {
@@ -357,83 +338,7 @@
                 // TODO: this should return something meaningful for info sections and maybe sets?
                 return blueprint;
             }
-
-            /*function detectType(legendItem) {
-                const layerDefinition = layerDefinitions.find(layerDefinition =>
-                    layerDefinition.id === legendItem.layerId);
-
-                // dynamic layers render as LegendGroup blocks; all other layers are rendered as LegendNode blocks;
-                if (legendChild.entryType === ConfigObject.Legend.NODE &&
-                    layerDefinition.layerType === Geo.Layer.Types.ESRI_DYNAMIC) {
-                    return TYPE_TO_BLOCK[ConfigObject.Legend.GROUP];
-                } else {
-                    return TYPE_TO_BLOCK[legendChild.entryType];
-                }
-            }*/
         }
-
-
-
-        /*function n(legendItem, layerDefinition) {
-            const proxy = layerRegistry.makeLayerRecord(layerDefinition);
-            const r = layerRegistry.loadLayerRecord(ls.layerId);
-
-            const TYPE_TO_BLOCK2 = {
-                [ConfigObject.Legend.INFO]: () =>
-                    new LegendBlock.Info(proxy, legendItem.layerId),
-                [ConfigObject.Legend.NODE]: () => {
-                    if (legendChild.entryType === ConfigObject.Legend.NODE &&
-                        layerDefinition.layerType === Geo.Layer.Types.ESRI_DYNAMIC) {
-
-                        return new LegendBlock.Group(proxy, legendItem.layerId);
-                    } else {
-
-                    }
-                },
-                [ConfigObject.Legend.GROUP]: LegendBlock.Group,
-                [ConfigObject.Legend.SET]: LegendBlock.Set
-            };
-
-            const blockType = detectLegendBlockType(legendItem, layerDefinition);
-
-
-        }*/
-
-        /*function addLayer(legendItem) {
-            const layerRecords = [layerRegistry.getLayerRecord(legendItemId)]; // this returns an existing or new layerRecords
-        }
-
-        function _makeGroupBlock(legendItem, proxies) {
-            const group = new LegendBlock.Group(proxies, legendItem.layerId);
-
-            legendItem.children.forEach(child =>
-                group.addEntry(SELECTOR(child)));
-
-            return group;
-        }
-
-        function _makeNodeBlock() {}
-
-        function _makeInfoBlock() {}
-
-        function _makeSetBlock() {}
-*/
-
-        /**
-         * Matches a LegendBlock type to the legend child object from the legend structure.
-         * @param {Object} legendChild legend child defintion object from the config
-         */
-        /*function detectLegendBlockType(legendChild) {
-            layerDefinition
-
-            // dynamic layers render as LegendGroup blocks; all other layers are rendered as LegendNode blocks;
-            if (legendChild.entryType === ConfigObject.Legend.NODE &&
-                layerDefinition.layerType === Geo.Layer.Types.ESRI_DYNAMIC) {
-                return _makeGroupBlock;
-            } else {
-                return TYPE_TO_BLOCK[legendChild.entryType];
-            }
-        }*/
     }
 
     _legendServiceFactory();
