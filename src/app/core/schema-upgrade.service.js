@@ -70,6 +70,7 @@
                 extentMap[es.id][key] = { xmax: es[key].xmax, xmin: es[key].xmin, ymax: es[key].ymax, ymin: es[key].ymin };
                 extentMap[es.id].spatialReference = es[key].spatialReference;
             });
+            console.info(extentMap[es.id]);
         });
         res.map.extentSets = Object.keys(extentMap).map(key => extentMap[key]);
 

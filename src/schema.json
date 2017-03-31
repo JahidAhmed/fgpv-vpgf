@@ -84,7 +84,7 @@
                 "full": { "$ref": "#/definitions/extentNode", "description": "The full extent (should give good view of the whole map, not necessarily the maximum extent); default will be used if not supplied." },
                 "maximum": { "$ref": "#/definitions/extentNode", "description": "The maximum extent; full or default extents will be used if not supplied." }
             },
-            "required": [ "id", "default" ],
+            "required": [ "id", "default", "spatialReference" ],
             "additionalProperties": false
         },
 

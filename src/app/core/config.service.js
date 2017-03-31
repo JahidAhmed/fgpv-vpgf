@@ -55,6 +55,8 @@
         const service = {
             _sharedConfig_: null,
 
+            configs,
+            loadingState,
             currentLang,
             getCurrent,
             getOriginal,
@@ -97,20 +99,22 @@
             }
 
             // unwrap the async value, since this should be accessed after rvCfgInitialized
-            languages.forEach(lang => {
-                initialPromises[lang].then(cfg => {
+            langs.forEach(lang => {
+                initialPromises[lang] = initialPromises[lang].then(cfg => {
                     if (schemaUpgrade.isV1Schema(cfg.version)) {
                         cfg = schemaUpgrade.oneToTwo(cfg);
                     }
                     configs[lang] = cfg;
+                    return cfg;
                 });
+                if (lang === langs[0]) {
+                    initialPromises[lang].then((cfg) => {
+                        loadingState = States.LOADED;
+                        $rootScope.$broadcast(events.rvCfgInitialized);
+                    });
+                }
             });
 
-            originalConfigs[langs[0]] = initialPromises[langs[0]];
-            initialPromises[langs[0]].then(cfgData => {
-                loadingState = States.LOADED;
-                $rootScope.$broadcast(events.rvCfgInitialized);
-            });
         }
 
         function rcsLoader(svcAttr, keysAttr, languages) {
@@ -191,7 +195,13 @@
          * @return {Promise}     The config promise object as described above
          */
         function getCurrent() {
-            return bookmarkConfig || originalConfigs[currentLang()];
+            return $q((resolve) => {
+                if (loadingState < States.LOADED) {
+                    $rootScope.$on(events.rvCfgInitialized, () => resolve(configs[currentLang()]));
+                } else {
+                    resolve(configs[currentLang()]);
+                }
+            });
         }
 
         /**
@@ -211,7 +221,7 @@
          * @return {Promise}    The config promise resolving with the lang's original config
          */
         function getOriginal() {
-            return originalConfigs[currentLang()];
+            return getCurrent();
         }
 
         /**
