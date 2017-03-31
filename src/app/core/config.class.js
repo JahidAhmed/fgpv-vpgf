@@ -35,6 +35,7 @@
                         'symbology',
                         'query',
                         'reload',
+                        'remove',
                         'settings'
                     ]
                 }

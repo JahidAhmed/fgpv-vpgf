@@ -26,17 +26,21 @@
 
             get isInteractive () {  return this._isInteractive; }
 
-            _isFannedOut = false;
-            _isExpanded = false;
+            _fannedOut = false;
+            _expanded = false;
 
             get stack () {          return this._proxy.symbology || this._blockConfig.symbologyStack; }
             get renderStyle () {    return this._blockConfig.symbologyRenderStyle; }
 
-            get isFannedOut () {    return this._isFannedOut; }
-            get isExpanded () {     return this._isExpanded; }
+            get fannedOut () {      return this._fannedOut; }
+            set fannedOut (value = !this.fannedOut) {
+                this._fannedOut = value;
+            }
 
-            fanOut (value = !this.isFannedOut) { this._isFannedOut = value; }
-            expand (value = !this.isExpanded) { this._isExpanded = value; }
+            get expanded () {       return this._expanded; }
+            set expanded (value = !this.expanded) {
+                this._expanded = value;
+            }
         }
 
         /* -------- */
@@ -102,7 +106,7 @@
             // get availableControls () { return this.config.controls; }
             // get disabledControls () { return this.config.controls; }
 
-            // _isSelected = false;
+            _isSelected = false;
 
             // TODO: turn state names and template names to consts
             /*get template () {
@@ -127,6 +131,9 @@
 
                 return -1;
             }*/
+
+            get isSelected () {         return this._isSelected; }
+            set isSelected (value) {      this._isSelected = value; return this; }
         }
 
         class LegendNode extends LegendEntry {
@@ -207,9 +214,6 @@
                 return this;
             }
 
-            get isSelected () {         return this._isSelected; }
-            set isSelect (value) {      this._isSelected = value; return this; }
-
             get symbologyStack () {     return this._symbologyStack; }
         }
 
@@ -227,7 +231,7 @@
                  super();
 
                  this._name = blockConfig.name;
-                 this._isExpanded = blockConfig.expanded;
+                 this._expanded = blockConfig.expanded;
                  this._availableControls = blockConfig.controls;
                  this._disabledControls = blockConfig.disabledControls;
 
@@ -251,14 +255,6 @@
                 } else {
                     return 'rv-loaded';
                 }
-
-                /*
-                const states = this.entries.map(entry =>
-                    entry.state);
-                const combinedState = this._aggregateStates(states);
-
-                return  combinedState;
-                */
             }
 
             get template () {
@@ -278,12 +274,38 @@
 
             get name () {                   return this._name; }
 
-            get isExpanded () {             return this._isExpanded; }
-            expand (value = !this.isExpanded) {
-                this._isExpanded = value; return this;
+            get visibility () {
+                return this._activeEntries.some(entry =>
+                    entry.visibility);
+            }
+            set visibility (value) {
+                this._activeEntries.forEach(entry =>
+                    entry.visibility = value);
+
+                return this;
+            }
+
+            get opacity () {                return false; this._mainProxy.opacity; }
+            set opacity (value) {
+                /*this._allProxies.forEach(proxy => {
+                    // TODO: try/catch
+                    proxy.setOpacity(value);
+                });
+
+                return this;*/
+            }
+
+            get expanded () {               return this._expanded; }
+            set expanded (value = !this.expanded) {
+                this._expanded = value;
             }
 
             get entries () {                return this._entries; }
+            get _activeEntries () {
+                return this.entries.filter(entry =>
+                    entry.blockType === LegendBlock.GROUP ||
+                    entry.blockType === LegendBlock.NODE);
+            }
 
             addEntry (entry, position = this._entries.length) {
                 this._entries.splice(position, 0, entry);

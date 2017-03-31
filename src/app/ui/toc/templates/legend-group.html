@@ -4,13 +4,13 @@
     <md-button
         ng-if="!self.isReorder"
         class="rv-body-button rv-button-square"
-        ng-click="self.block.expand()">
+        ng-click="self.block.expanded = !self.block.expanded">
     </md-button>
 </div>
 
 <div class="rv-icon-24 rv-list-item-toggle">
     <md-icon class="rv-transform-default"
-        ng-class="{ 'rv-rotate--180' : self.block.isExpanded && !self.isReorder }"
+        ng-class="{ 'rv-rotate--180' : self.block.expanded && !self.isReorder }"
         md-svg-src="hardware:keyboard_arrow_down"></md-icon>
 </div>
 
