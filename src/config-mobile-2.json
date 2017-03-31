@@ -312,6 +312,11 @@
           },
           {
             "name": "superGroup",
+            "expanded": true,
+            "controls": [
+              "visibility",
+              "settings"
+            ],
             "children": [
               {
                 "layerId": "esri_tile"

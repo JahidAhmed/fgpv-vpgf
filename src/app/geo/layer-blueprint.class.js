@@ -17,136 +17,7 @@
         .module('app.geo')
         .factory('LayerBlueprint', LayerBlueprintFactory);
 
-    function LayerBlueprintFactory($q, LayerBlueprintUserOptions, gapiService, Geo, layerDefaults, LayerRecordFactory, ConfigObject) {
-
-        // These are layer default values for controls, disabledControls, and state
-        const LAYER_DEFAULTS = {
-            [Geo.Layer.Types.ESRI_FEATURE]: {
-                state: {
-                    opacity: 1,
-                    visibility: true,
-                    boundingBox: false,
-                    query: true,
-                    snapshot: false
-                },
-                controls: [
-                    'opacity',
-                    'visibility',
-                    'boundingBox',
-                    'query',
-                    'snapshot',
-                    'metadata',
-                    'boundaryZoom',
-                    'refresh',
-                    'reload',
-                    'remove',
-                    'settings',
-                    'data',
-                    'symbology'
-                ],
-                disabledControls: []
-            },
-            [Geo.Layer.Types.OGC_WMS]: {
-                state: {
-                    opacity: 1,
-                    visibility: true,
-                    boundingBox: false,
-                    query: true,
-                    snapshot: false
-                },
-                controls: [
-                    'opacity',
-                    'visibility',
-                    'boundingBox',
-                    'query',
-                    // 'snapshot',
-                    'metadata',
-                    'boundaryZoom',
-                    'refresh',
-                    'reload',
-                    'remove',
-                    'settings',
-                    // 'data',
-                    'symbology'
-                ],
-                disabledControls: []
-            },
-            [Geo.Layer.Types.ESRI_DYNAMIC]: {
-                state: {
-                    opacity: 1,
-                    visibility: true,
-                    boundingBox: false,
-                    query: true,
-                    snapshot: false
-                },
-                controls: [
-                    'opacity',
-                    'visibility',
-                    'boundingBox',
-                    'query',
-                    // 'snapshot',
-                    'metadata',
-                    'boundaryZoom',
-                    'refresh',
-                    'reload',
-                    'remove',
-                    'settings',
-                    'data',
-                    'symbology'
-                ],
-                disabledControls: []
-            },
-            [Geo.Layer.Types.ESRI_IMAGE]: {
-                state: {
-                    opacity: 1,
-                    visibility: true,
-                    boundingBox: false,
-                    query: false,
-                    snapshot: false
-                },
-                controls: [
-                    'opacity',
-                    'visibility',
-                    'boundingBox',
-                    'query',
-                    'snapshot',
-                    'metadata',
-                    'boundaryZoom',
-                    'refresh',
-                    'reload',
-                    'remove',
-                    'settings',
-                    'data',
-                    'symbology'
-                ],
-                disabledControls: []
-            },
-            [Geo.Layer.Types.ESRI_TILE]: {
-                state: {
-                    opacity: 1,
-                    visibility: true,
-                    boundingBox: false,
-                    query: false,
-                    snapshot: false
-                },
-                controls: [
-                    'opacity',
-                    'visibility',
-                    'boundingBox',
-                    'query',
-                    'snapshot',
-                    'metadata',
-                    'boundaryZoom',
-                    'refresh',
-                    'reload',
-                    'remove',
-                    'settings',
-                    'data',
-                    'symbology'
-                ],
-                disabledControls: []
-            }
-        };
+    function LayerBlueprintFactory($q, LayerBlueprintUserOptions, gapiService, Geo, layerDefaults, LayerRecordFactory, ConfigObject, common) {
 
         let idCounter = 0; // layer counter for generating layer ids
 
@@ -198,7 +69,7 @@
              * @return {Object} a copy of the source with filled-in defaults; the original object is not modified
              */
             _applyLayerDefaults(source) {
-                const defaults = LAYER_DEFAULTS[source.layerType];
+                const defaults = ConfigObject.DEFAULTS.layer[source.layerType];
 
                 const sourceCopy = angular.copy(source);
 
@@ -208,32 +79,18 @@
                 if (typeof sourceCopy.controls === 'undefined') {
                     sourceCopy.controls = defaults.controls;
                 } else {
-                    sourceCopy.controls = intersect(sourceCopy.controls, defaults.controls);
+                    sourceCopy.controls = common.intersect(sourceCopy.controls, defaults.controls);
                 }
 
                 if (typeof sourceCopy.disabledControls === 'undefined') {
                     sourceCopy.disabledControls = defaults.disabledControls;
                 } else {
-                    sourceCopy.disabledControls = intersect(sourceCopy.disabledControls, defaults.controls);
+                    sourceCopy.disabledControls = common.intersect(sourceCopy.disabledControls, defaults.controls);
                 }
 
                 return sourceCopy;
 
-                /**
-                 * // TODO: move this somewhere else.
-                 *
-                 * Calculates the intersection between two arrays; does not filter out duplicates.
-                 *
-                 * @function intersect
-                 * @private
-                 * @param {Array} array1 first array
-                 * @param {Array} array2 second array
-                 * @return {Array} intersection of the first and second arrays
-                 */
-                function intersect(array1, array2) {
-                    return array1.filter(item =>
-                            array2.indexOf(item) !== -1);
-                }
+
             }
 
             /**

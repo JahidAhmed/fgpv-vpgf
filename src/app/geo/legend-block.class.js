@@ -18,8 +18,9 @@
         let legendBlockCounter = 0;
 
         class SymbologyStack {
-            constructor(symbology, isInteractive = false) {
-                this._symbology = symbology;
+            constructor(proxy, blockConfig, isInteractive = false) {
+                this._proxy = proxy;
+                this._blockConfig = blockConfig;
                 this._isInteractive = isInteractive;
             }
 
@@ -28,8 +29,8 @@
             _isFannedOut = false;
             _isExpanded = false;
 
-            get stack () {          return this._symbology.stack; }
-            get renderStyle () {    return this._symbology.renderStyle; }
+            get stack () {          return this._proxy.symbology || this._blockConfig.symbologyStack; }
+            get renderStyle () {    return this._blockConfig.symbologyRenderStyle; }
 
             get isFannedOut () {    return this._isFannedOut; }
             get isExpanded () {     return this._isExpanded; }
@@ -71,8 +72,8 @@
             // get layerProxy () {     return this._layerProxy; }
 
             get blockConfig () {    return this._blockConfig; }
-            get blockType () {      return this._blockType; }
-            get template () {       return this._blockType; }
+            // get blockType () {      return this._blockType; }
+            get template () {       return this.blockType; }
 
             static INFO = 'info';
             static NODE = 'node';
@@ -85,7 +86,7 @@
                 super({}, blockConfig);
             }
 
-            _blockType = LegendBlock.INFO;
+            get blockType () { return LegendBlock.INFO; }
 
             get infoType () {   return this.blockConfig.infoType; }
             get content () {    return this.blockConfig.content; }
@@ -145,10 +146,12 @@
                  }
 
                  this._aggregateStates = ref.aggregateStates;
-                 this._symbologyStack = new SymbologyStack(this._mainProxy.symbology, true);
+                 this._symbologyStack =
+                    new SymbologyStack(this._mainProxy, blockConfig, true);
              }
 
-            _blockType = LegendBlock.NODE;
+            //_blockType = LegendBlock.NODE;
+            get blockType () { return LegendBlock.NODE; }
 
             get _allProxies () {        return [this._mainProxy].concat(this._controlledProcies); }
 
@@ -220,24 +223,27 @@
         // who is responsible for populating legend groups with entries? legend service or the legend group itself
         class LegendGroup extends LegendEntry {
 
-             constructor(name, isExpanded = true) {
+             constructor(blockConfig) {
                  super();
 
-                 this._name = name;
-                 this._isExpanded = isExpanded;
+                 this._name = blockConfig.name;
+                 this._isExpanded = blockConfig.expanded;
+                 this._availableControls = blockConfig.controls;
+                 this._disabledControls = blockConfig.disabledControls;
 
                  this._aggregateStates = ref.aggregateStates;
                  this._walk = ref.walkFunction.bind(this);
              }
 
-            _blockType = LegendBlock.GROUP;
+            //_blockType = LegendBlock.GROUP;
+            get blockType () { return LegendBlock.GROUP; }
 
             _entries = [];
 
             // get _allProxies () {        return this.entries.map(entry => entry.layerProxy; }
 
-            get availableControls () {  return []; this._layerConfig.controls; }
-            get disabledControls () {   return []; this._layerConfig.disabledControls; }
+            get availableControls () {  return this._availableControls; }
+            get disabledControls () {   return this._disabledControls; }
 
             get state () {
                 if (this.entries.length === 0) {

@@ -12,7 +12,177 @@
         .module('app.core')
         .factory('ConfigObject', ConfigObjectFactory);
 
-    function ConfigObjectFactory(Geo, gapiService) {
+    function ConfigObjectFactory(Geo, gapiService, common) {
+
+        const TYPES = {
+            legend: {
+                INFO: 'legendInfo',
+                NODE: 'legendNode',
+                GROUP: 'legendGroup',
+                SET: 'legendSet',
+                STRUCTURED: 'structured',
+                AUTOPOPULATE: 'autopopulate'
+            }
+        };
+
+        // These are layer default values for controls, disabledControls, and state
+        const DEFAULTS = {
+            legend: {
+                [TYPES.legend.GROUP]: {
+                    controls: [
+                        'opacity',
+                        'visibility',
+                        'symbology',
+                        'query',
+                        'reload',
+                        'settings'
+                    ]
+                }
+            },
+            layer: {
+                [Geo.Layer.Types.ESRI_FEATURE]: {
+                    state: {
+                        opacity: 1,
+                        visibility: true,
+                        boundingBox: false,
+                        query: true,
+                        snapshot: false
+                    },
+                    controls: [
+                        'opacity',
+                        'visibility',
+                        'boundingBox',
+                        'query',
+                        'snapshot',
+                        'metadata',
+                        'boundaryZoom',
+                        'refresh',
+                        'reload',
+                        'remove',
+                        'settings',
+                        'data',
+                        'symbology'
+                    ],
+                    disabledControls: []
+                },
+                [Geo.Layer.Types.OGC_WMS]: {
+                    state: {
+                        opacity: 1,
+                        visibility: true,
+                        boundingBox: false,
+                        query: true,
+                        snapshot: false
+                    },
+                    controls: [
+                        'opacity',
+                        'visibility',
+                        'boundingBox',
+                        'query',
+                        // 'snapshot',
+                        'metadata',
+                        'boundaryZoom',
+                        'refresh',
+                        'reload',
+                        'remove',
+                        'settings',
+                        // 'data',
+                        'symbology'
+                    ],
+                    disabledControls: []
+                },
+                [Geo.Layer.Types.ESRI_DYNAMIC]: {
+                    state: {
+                        opacity: 1,
+                        visibility: true,
+                        boundingBox: false,
+                        query: true,
+                        snapshot: false
+                    },
+                    controls: [
+                        'opacity',
+                        'visibility',
+                        'boundingBox',
+                        'query',
+                        // 'snapshot',
+                        'metadata',
+                        'boundaryZoom',
+                        'refresh',
+                        'reload',
+                        'remove',
+                        'settings',
+                        'data',
+                        'symbology'
+                    ],
+                    childControls: [
+                        'opacity',
+                        'visibility',
+                        // 'boundingBox',
+                        'query',
+                        // 'snapshot',
+                        'metadata',
+                        'boundaryZoom',
+                        'refresh',
+                        // 'reload',
+                        'remove',
+                        'settings',
+                        'data',
+                        'symbology'
+                    ],
+                    disabledControls: [],
+                },
+                [Geo.Layer.Types.ESRI_IMAGE]: {
+                    state: {
+                        opacity: 1,
+                        visibility: true,
+                        boundingBox: false,
+                        query: false,
+                        snapshot: false
+                    },
+                    controls: [
+                        'opacity',
+                        'visibility',
+                        'boundingBox',
+                        'query',
+                        'snapshot',
+                        'metadata',
+                        'boundaryZoom',
+                        'refresh',
+                        'reload',
+                        'remove',
+                        'settings',
+                        'data',
+                        'symbology'
+                    ],
+                    disabledControls: []
+                },
+                [Geo.Layer.Types.ESRI_TILE]: {
+                    state: {
+                        opacity: 1,
+                        visibility: true,
+                        boundingBox: false,
+                        query: false,
+                        snapshot: false
+                    },
+                    controls: [
+                        'opacity',
+                        'visibility',
+                        'boundingBox',
+                        'query',
+                        'snapshot',
+                        'metadata',
+                        'boundaryZoom',
+                        'refresh',
+                        'reload',
+                        'remove',
+                        'settings',
+                        'data',
+                        'symbology'
+                    ],
+                    disabledControls: []
+                }
+            }
+        };
+
         // abstract
         class LayerNode {
             /**
@@ -324,7 +494,7 @@
             get infoType () { return this._infoType; }
             get content () { return this._content; }
 
-            get entryType () { return Legend.INFO; }
+            get entryType () { return TYPES.legend.INFO; }
         }
 
         /**
@@ -339,7 +509,7 @@
 
             get exclusiveVisibility () { return this._exclusiveVisibility; }
 
-            get entryType () { return Legend.SET; }
+            get entryType () { return TYPES.legend.SET; }
         }
 
         /**
@@ -368,7 +538,7 @@
             get symbologyStack () { return this._symbologyStack; }
             get symbologyRenderStyle () { return this._symbologyRenderStyle; }
 
-            get entryType () { return Legend.NODE; }
+            get entryType () { return TYPES.legend.NODE; }
         }
 
         /**
@@ -380,12 +550,18 @@
                 this._name = entryGroupSource.name;
                 this._children = entryGroupSource.children.map(childConfig =>
                     Legend.makeChildObject(childConfig));
+                this._controls = common.intersect(entryGroupSource.controls, DEFAULTS.legend[TYPES.legend.GROUP].controls);
+                this._disabledControls = entryGroupSource.disabledControls || [];
+                this._expanded = entryGroupSource.expanded || false;
             }
 
             get name () { return this._name; }
             get children () { return this._children; }
+            get controls () { return this._controls; }
+            get disabledControls () { return this._disabledControls; }
+            get expanded () { return this._expanded; }
 
-            get entryType () { return Legend.GROUP; }
+            get entryType () { return TYPES.legend.GROUP; }
         }
 
         /**
@@ -398,7 +574,7 @@
 
                 let rootChildren;
 
-                if (this._type === Legend.AUTOPOPULATE) {
+                if (this._type === TYPES.legend.AUTOPOPULATE) {
                     // since auto legend is a subset of structured legend, its children are automatically populated
                     const sortGroups = Geo.Layer.SORT_GROUPS_;
 
@@ -430,19 +606,11 @@
                 });
             }
 
-            static STRUCTURED = 'structured';
-            static AUTOPOPULATE = 'autopopulate';
-
-            static INFO = 'legendInfo';
-            static NODE = 'legendNode';
-            static GROUP = 'legendGroup';
-            static SET = 'legendSet';
-
             static TYPE_TO_CLASS = {
-                [Legend.INFO]: InfoSection,
-                [Legend.NODE]: Entry,
-                [Legend.GROUP]: EntryGroup,
-                [Legend.SET]: VisibilitySet
+                [TYPES.legend.INFO]: InfoSection,
+                [TYPES.legend.NODE]: Entry,
+                [TYPES.legend.GROUP]: EntryGroup,
+                [TYPES.legend.SET]: VisibilitySet
             };
 
             get type () { return this._type; }
@@ -450,14 +618,14 @@
 
             static detectChildType(child) {
                 if (typeof child.infoType !== 'undefined') {
-                    return Legend.INFO;
+                    return TYPES.legend.INFO;
                 } else if (typeof child.exclusiveVisibility !== 'undefined') {
-                    return Legend.SET;
+                    return TYPES.legend.SET;
                 } else if (typeof child.children !== 'undefined') {
-                    return Legend.GROUP;
+                    return TYPES.legend.GROUP;
                 }
 
-                return Legend.NODE;
+                return TYPES.legend.NODE;
             }
 
             static makeChildObject(childConfig) {
@@ -690,14 +858,23 @@
         return {
             ConfigObject,
 
-            Legend,
+            legend: {
+                Legend,
+                Entry,
+                InfoSection,
+                EntryGroup,
+                VisibilitySet
+            },
 
             layers: {
                 BasicLayerNode,
                 FeatureLayerNode,
                 DynamicLayerNode,
                 WMSLayerNode
-            }
+            },
+
+            TYPES,
+            DEFAULTS
         };
     }
 })();
