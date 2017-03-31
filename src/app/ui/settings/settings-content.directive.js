@@ -22,18 +22,35 @@
      * @function rvSettingsContent
      * @return {object} directive body
      */
-    function rvSettingsContent() {
+    function rvSettingsContent(common) {
         const directive = {
             restrict: 'E',
             templateUrl: 'app/ui/settings/settings-content.html',
             scope: {
                 block: '='
             },
-            controller: () => {},
+            controller: Controller,
             controllerAs: 'self',
             bindToController: true
         };
 
         return directive;
+    }
+
+    function Controller(common) {
+        'ngInject';
+        const self = this;
+
+        self.checkAvailableControls = checkAvailableControls;
+
+        /**
+         * @function checkAvailableControls
+         * @private
+         * @param {String} names
+         * @return {Boolean} true if at least one of the supplied control names is available in block
+         */
+        function checkAvailableControls(names) {
+            return common.intersect(self.block.availableControls, names.split('|')).length > 0;
+        }
     }
 })();
