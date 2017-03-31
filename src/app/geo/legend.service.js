@@ -27,7 +27,7 @@
         .module('app.geo')
         .factory('legendService', legendServiceFactory);
 
-    function legendServiceFactory(Geo, ConfigObject, LegendBlock, LayerBlueprint, gapiService, configService, layerRegistry) {
+    function legendServiceFactory(Geo, ConfigObject, LegendBlock, LayerBlueprint, gapiService, configService, layerRegistry, common) {
 
         const ref = {
 
@@ -75,11 +75,13 @@
         function _makeLegendBlock(blockConfig, layerBlueprints) {
             const gapiLayer = gapiService.gapi.layer;
 
+            const legendTypes = ConfigObject.TYPES.legend;
+
             const TYPE_TO_BLOCK = {
-                [ConfigObject.Legend.INFO]: _makeInfoBlock,
-                [ConfigObject.Legend.NODE]: _makeNodeBlock,
-                [ConfigObject.Legend.GROUP]: _makeGroupBlock,
-                [ConfigObject.Legend.SET]: _makeSetBlock
+                [legendTypes.INFO]: _makeInfoBlock,
+                [legendTypes.NODE]: _makeNodeBlock,
+                [legendTypes.GROUP]: _makeGroupBlock,
+                [legendTypes.SET]: _makeSetBlock
             };
 
             // real blueprints are only available on Legend.NODEs
@@ -104,7 +106,7 @@
              */
             function _makeBlock(blockConfig) {
                 // dynamic layers render as LegendGroup blocks; all other layers are rendered as LegendNode blocks;
-                if (blockConfig.entryType === ConfigObject.Legend.NODE){
+                if (blockConfig.entryType === legendTypes.NODE){
                     if (mainBlueprint.config.layerType === Geo.Layer.Types.ESRI_DYNAMIC) {
                         return _makeDynamicGroupBlock(blockConfig);
                     }
@@ -125,26 +127,29 @@
              */
             function _makeDynamicGroupBlock(blockConfig) {
                 const proxies = _getLegendProxies(blockConfig);
-                const group = new LegendBlock.Group(proxies.main.name);
+                const layerConfig = mainBlueprint.config;
+
+                // to create a group for a dynamic layer, create a entryGroup config object by using properties
+                // from dynamic layer definition config object
+                const derivedEntryGroupConfig = {
+                    name: layerConfig.name,
+                    children: [],
+                    controls: layerConfig.controls,
+                    disabledControls: layerConfig.disabledControls
+                };
+                const entryGroup = new ConfigObject.legend.EntryGroup(derivedEntryGroupConfig);
+
+                const group = new LegendBlock.Group(entryGroup);
 
                 // wait for the dynamic layer record to load to get its children
                 const layerRecord = layerRegistry.getLayerRecord(blockConfig.layerId);
                 layerRecord.addStateListener(_onLayerRecordLoad);
 
-
+                const childControls = common.intersect(
+                    layerConfig.controls,
+                    ConfigObject.DEFAULTS.layer[Geo.Layer.Types.ESRI_DYNAMIC].childControls);
 
                 return group;
-                //
-
-                /*const proxies = _getLegendProxies(blockConfig);
-                const legendEntryRecord = gapiLayer.createLegendEntryRecord({}, proxies.adjunct); // TODO: fix constructor call
-                legendEntryRecord.setMasterProxy(proxies.main);
-
-                const _group = new LegendBlock.Group(legendEntryRecord.getProxy());
-
-                // wait for the dynamic layer record to load to get its children
-                const layerRecord = layerRegistry.getLayerRecord(blockConfig.layerId);
-                layerRecord.addStateListener(_onLayerRecordLoad);*/
 
                 /**
                  * A helper function to handle layerRecord state change. On loaded, it create child LegendBlocks for the dynamic layer and
@@ -156,11 +161,53 @@
                  */
                 function _onLayerRecordLoad(state) {
                     if (state === 'rv-loaded') {
-                        layerRecord.getChildTree().forEach(child =>
-                            _makeChildBlock(child, group));
+
+                        const children = layerRecord.getChildTree()
+                            // TODO: remove start
+                            .map(child => {
+                                child.entryIndex = child.id;
+                                if (child.children) {
+                                    child.name = child.id + 'blah';
+                                }
+
+                                return child;
+                            });
+                            // TODO: remove end
+
+                        const tempGroupBlockConfig = new ConfigObject.legend.EntryGroup({
+                            children
+                        });
+
+                        tempGroupBlockConfig.children.forEach(configBlock =>
+                            _addChildBlock(configBlock, group));
 
                         layerRecord.removeStateListener(_onLayerRecordLoad);
                     }
+                }
+
+                function _addChildBlock(childBlockConfig, parent) {
+                    let childBlock;
+
+                    if (childBlockConfig.children) {
+                        childBlock = new LegendBlock.Group(childBlockConfig);
+
+                        child.children.forEach(subChildBlockConfig =>
+                            _addChildBlock(subChildBlockConfig, childBlock));
+                    } else {
+                        const proxies = {
+                            main: layerRecord.getChildProxy(childBlockConfig.entryIndex),
+                            adjunct: []
+                        };
+
+                        const derivedLayerConfig = {
+                            controls: childControls,
+                            disabledControls: layerConfig.disabledControls
+                        };
+
+                        childBlock = new LegendBlock.Node(proxies, childBlockConfig, derivedLayerConfig);
+                    }
+
+                    parent.addEntry(childBlock);
                 }
 
                 /**
@@ -177,11 +224,17 @@
                     const proxy = layerRecord.getChildProxy(child.id);
 
                     if (child.children) {
+                        const childBlockConfig = {
+                            name: child.name
+                        }
+
                         childBlock = new LegendBlock.Group(child.id + 'blha');
                         child.children.forEach(subChild =>
                             _makeChildBlock(subChild, childBlock));
                     } else {
-                        childBlock = new LegendBlock.Node({ main: proxy, adjunct: []}, {}, {
+                        childBlock = new LegendBlock.Node({ main: proxy, adjunct: []}, {
+                            symbologyRenderStyle: 'icons'
+                        }, {
                             controls: [],
                             disabledControls: []
                         });
@@ -191,8 +244,6 @@
 
                     return childBlock;
                 }
-
-                return group;
             }
 
             /**
@@ -206,7 +257,7 @@
              * @return {LegendBlock.GROUP} the resulting LegendBlock.GROUP object
              */
             function _makeGroupBlock(blockConfig) {
-                const group = new LegendBlock.Group(blockConfig.name);
+                const group = new LegendBlock.Group(blockConfig);
 
                 blockConfig.children.forEach(childConfig => {
                     const childBlock = _makeLegendBlock(childConfig, layerBlueprints);

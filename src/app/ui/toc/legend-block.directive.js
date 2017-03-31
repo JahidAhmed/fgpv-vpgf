@@ -21,7 +21,7 @@
         .module('app.ui')
         .directive('rvLegendBlock', rvLegendBlock);
 
-    function rvLegendBlock(tocService, $compile, $templateCache, appInfo) {
+    function rvLegendBlock(tocService, $compile, $templateCache, appInfo, common) {
         const directive = {
             restrict: 'E',
             scope: {
@@ -56,7 +56,7 @@
             // store reference to element on the scope so it can be passed to symbology stack as container
             self.element = element;
 
-            self.intersect = intersect;
+            self.intersect = common.intersect;
 
             scope.$watch('self.block.template', newTemplate => {
                 if (newTemplate) {
@@ -67,22 +67,6 @@
                     console.log(self.block.id, newTemplate);
                 }
             });
-
-            /**
-             * // TODO: move this somewhere else to avoid duplication
-             *
-             * Calculates the intersection between two arrays; does not filter out duplicates.
-             *
-             * @function intersect
-             * @private
-             * @param {Array} array1 first array
-             * @param {Array} array2 second array
-             * @return {Array} intersection of the first and second arrays
-             */
-            function intersect(array1, array2) {
-                return array1.filter(item =>
-                        array2.indexOf(item) !== -1);
-            }
         }
     }
 })();
