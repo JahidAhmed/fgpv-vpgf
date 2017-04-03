@@ -61,8 +61,8 @@
                 super(...args);
             }
 
-            get icon () {    return `toggle:radio_button_${this.visibility ? '' : 'un'}checked`; }
-            get label () {   return `toc.label.visibility.${this.visibility ? 'on' : 'off'}`; }
+            get icon () {    return `toggle:radio_button_${this.value ? '' : 'un'}checked`; }
+            get label () {   return `toc.label.visibility.${this.value ? 'on' : 'off'}`; }
         }
 
         class OpacityControl extends BaseControl {

@@ -305,6 +305,7 @@
             get entries () {                return this._entries; }
             get _activeEntries () {
                 return this.entries.filter(entry =>
+                    entry.blockType === LegendBlock.SET ||
                     entry.blockType === LegendBlock.GROUP ||
                     entry.blockType === LegendBlock.NODE);
             }
@@ -340,60 +341,97 @@
                 this._selectedEntry = null;
                 this._blockType = LegendBlock.SET;
 
+                const propertyName = 'visibility';
+                const decorator = value => {
+                    if (value) {
+                        this.visibility = false;
+                    }
+                };
+                this._descriptors = {
+                    [LegendBlock.NODE]: this._decorateDescriptor(LegendNode.prototype, propertyName, decorator),
+                    [LegendBlock.GROUP]: this._decorateDescriptor(LegendGroup.prototype, propertyName, decorator)
+                }
+
                 this._walk = ref.walkFunction.bind(this);
             }
 
-            _blockType = LegendBlock.SET;
+            get blockType () { return LegendBlock.SET; }
 
-            // TODO: add walk to sets
-
-            get entries () { return this._entries; }
-
-            addEntry (entry, position = this._entries.length) {
-                // TODO: consider using .includes; needs IE polyfill
-                /*if (['node', 'group'].indexOf(entry.blockType) === -1) {
-                    throw new Error(`Legend visibility sets cannot be nested.`);
-                }
-
-                if (this._entries.length === 0) {
-                    this._selectedEntry = entry;
-
-                    entry.layerProxy.setVisibility(true);
+            get visibility () {
+                return this._activeEntries.some(entry =>
+                    entry.visibility);
+            }
+            set visibility (value) {
+                if (value && !this.visibility) {
+                    // `this.visibility` will be `false` if there is no entries, so calling [0] should be safe
+                    this._activeEntries[0].visibility = true;
                 } else {
-                    entry.layerProxy.setVisibility(false);
+                    this._activeEntries.forEach(entry =>
+                        entry.visibility = value);
                 }
 
-                // return a watch deregister function
-                const entryWatcher = $rootScope.$watch(() => entry.layerProxy.visibility, newValue => {
-                    if (newValue) {
-                        this._entries
-                            .filter(_entry => _entry !== entry)
-                            .forEach(_entry => _entry.layerProxy.setVisibility(false));
-                    }
-                });
-
-                this._entryWatchers.splice(position, 0, entryWatcher);
-                this._entries.splice(position, 0, entry);
-                */
                 return this;
             }
 
+            _decorateDescriptor(prototype, propertyName, decorator) {
+                const descriptor = getPropertyDescriptor(prototype, propertyName);
+                const method = descriptor.set;
+                descriptor.set = function (value) {
+                    decorator(value);
+                    method.call(this, value);
+                };
+
+                return descriptor;
+            }
+
+            get _activeEntries () {
+                return this.entries.filter(entry =>
+                    entry.blockType === LegendBlock.GROUP ||
+                    entry.blockType === LegendBlock.NODE);
+            }
+            get entries () { return this._entries; }
+            addEntry (entry, position = this._entries.length) {
+                // since a set can have at most one visible child,
+                // as soon as there is one visible chilld, turn all subsequent children off
+                if (this.visibility) {
+                    entry.visibility = false;
+                }
+                this._entries.splice(position, 0, entry);
+
+                const legendSet = this;
+
+                const descriptor = entry.blockType === LegendBlock.NODE ?
+                    this._descriptors[LegendBlock.NODE] :
+                    this._descriptors[LegendBlock.GROUP];
+
+                const propertyName = 'visibility';
+                Object.defineProperty(entry, propertyName, descriptor);
+                Object.defineProperty(entry, 'highlightSet', {
+                    get: function () { return legendSet._highlightSet; },
+                    set: function (value) {
+                        legendSet._highlightSet = value;
+                    }
+                });
+
+                entry.highlightSet = false;
+
+                return this;
+            }
+
+            get highlightSet() { return this._highlightSet; }
+
             removeEntry (entry) {
-                /*const index = this._entries.indexOf(entry);
+                const index = this._entries.indexOf(entry);
 
                 if (index !== -1) {
                     this._entries.splice(index, 1);
-
-                    // stop the watch and remove the watcher
-                    this._entryWatchers[index]();
-                    this._entryWatchers.splice(index, 1);
                 }
 
-                if (this._entries.length === 0) {
-                    this._selectedEntry = null;
-                }
-                */
                 return this;
+            }
+
+            setVisibility (...args) {
+                console.log(args);
             }
 
             walk (callback) {
@@ -411,8 +449,9 @@
 
         const ref = {
             walkFunction,
-            aggregateStates
-        }
+            aggregateStates,
+            getPropertyDescriptor
+        };
 
         return service;
 
@@ -437,6 +476,28 @@
                     return callback(entry, index, this);
                 }
             }));
+        }
+
+        /**
+         * Returns a property descritpion of the specified object.
+         *
+         * @function getPropertyDescriptor
+         * @private
+         * @param {Object} obj
+         * @param {String} property property name
+         */
+        function getPropertyDescriptor(obj, property) {
+            if (obj === null) {
+                return null;
+            }
+
+            const descriptor = Object.getOwnPropertyDescriptor(obj, property);
+
+            if (obj.hasOwnProperty(property)) {
+                return Object.getOwnPropertyDescriptor(obj, property);
+            } else {
+                return getPropertyDescriptor(Object.getPrototypeOf(obj), property);
+            }
         }
     }
 })();
