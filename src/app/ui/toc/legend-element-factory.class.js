@@ -77,7 +77,9 @@
 
             get icon () {    return 'action:opacity'; }
             get label () {   return 'settings.label.opacity'; }
-            action (value) { this.block.setOpacity(value); }
+            action (value = 1) {
+                this.block.opacity = value;
+            }
         }
 
         class BoundingBoxControl extends BaseControl {
