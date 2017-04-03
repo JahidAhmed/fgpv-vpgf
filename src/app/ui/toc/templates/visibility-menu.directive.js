@@ -60,7 +60,7 @@
             }
 
             configService._sharedConfig_.map.legendBlocks.entries.forEach(block =>
-                block.layerProxy.setVisibility(value));
+                (block.visibility = value));
         }
 
         /**

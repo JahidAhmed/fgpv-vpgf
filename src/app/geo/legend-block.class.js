@@ -136,6 +136,8 @@
             set isSelected (value) {      this._isSelected = value; return this; }
         }
 
+
+
         class LegendNode extends LegendEntry {
 
             constructor(proxies, blockConfig, layerConfig) {
@@ -148,8 +150,8 @@
 
                  // dynamic children might not support opacity
                  // TODO: check controlled proxies as well
-                 if (!this._mainProxy.isOpacityAvailable) {
-                    // removeFromArray(this.availableControls, 'opacity');
+                 if (!this._mainProxy.supportsOpacity) {
+                    removeFromArray(this.availableControls, 'opacity');
                  }
 
                  this._aggregateStates = ref.aggregateStates;

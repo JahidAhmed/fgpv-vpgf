@@ -61,7 +61,7 @@
 
             configService._sharedConfig_.map.legendBlocks.walk(block => {
                 if (block.blockType === LegendBlock.Block.GROUP) {
-                    block.expand(value);
+                    (block.expand = value);
                 }
             });
         }
@@ -80,11 +80,11 @@
 
             const isAllExpanded = configService._sharedConfig_.map.legendBlocks
                 .walk(block =>
-                    block.blockType === LegendBlock.Block.GROUP ? block.isExpanded : null)
-                .filter(isExpanded =>
-                    isExpanded !== null)
-                .every(isExpanded =>
-                    isExpanded === value);
+                    block.blockType === LegendBlock.Block.GROUP ? block.expanded : null)
+                .filter(expanded =>
+                    expanded !== null)
+                .every(expanded =>
+                    expanded === value);
 
             return isAllExpanded;
         }
