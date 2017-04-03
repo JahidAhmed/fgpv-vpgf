@@ -89,7 +89,7 @@
             } catch (e) {
                 if (window.hasOwnProperty(configAttr)) {
                     const config = window[configAttr];
-                    config.forEach(lang => initialPromises[lang] = $q.resolve(config[lang]));
+                    langs.forEach(lang => initialPromises[lang] = $q.resolve(config[lang]));
                 } else {
                     remoteConfig = true;
                     langs.forEach(lang => {
