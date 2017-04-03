@@ -322,7 +322,7 @@
                 "layerId": "esri_tile"
               },
               {
-                "layerId": "scaleDepDynamic"
+                "layerId": "ecogeofull"
               }
             ]
           },
@@ -367,6 +367,27 @@
         "metadataUrl": "http://intranet.ecdmp-stage.cmc.ec.gc.ca/geonetwork/srv/eng/csw?service=CSW&version=2.0.2&request=GetRecordById&outputSchema=csw:IsoRecord&id=1c0eb1b2-93ae-49ae-a3ce-e495d8fd767b&_=1417717957845"
       },
       {
+        "id": "ecogeofull",
+        "name": "Eco Geo",
+        "layerType": "esriDynamic",
+        "layerEntries": [
+          {
+            "index": 8,
+            "data": {
+              "enabled": false
+            }
+          },
+          {
+            "index": 7
+          },
+          {
+            "index": 9
+          }
+        ],
+        "url": "http://section917.cloudapp.net/arcgis/rest/services/EcoGeo/MapServer",
+        "metadataUrl": "http://intranet.ecdmp-stage.cmc.ec.gc.ca/geonetwork/srv/eng/csw?service=CSW&version=2.0.2&request=GetRecordById&outputSchema=csw:IsoRecord&id=1c0eb1b2-93ae-49ae-a3ce-e495d8fd767b&_=1417717957845"
+      },
+      {
         "id": "scaleDepDynamic",
         "name": "Air SO2 Scale Dep",
         "url": "http://maps-cartes.ec.gc.ca/arcgis/rest/services/CESI/CESI_Air_SO2/MapServer",
@@ -381,7 +402,10 @@
           {
           "index": 4
           }
-        ]
+        ],
+        "state": {
+          "visibility": false
+        }
       },
       {
         "id":"esri_image",
