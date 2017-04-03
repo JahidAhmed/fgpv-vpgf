@@ -58,15 +58,23 @@ $layer-item-height-touch: rem(7.2);
         }
     }
 
+    ul.rv-legend-set-highlight > li  > rv-legend-block rv-legend-control[name="visibilityset"] {
+        &:before, &:after {
+            background-color: rgba($accent-color, 0.1);
+        }
+    }
+
     ul.rv-legend-set > li {
         > rv-legend-block {
             rv-legend-control[name="visibilityset"] {
+
+
                 &:before, &:after {
                     content: "";
                     position: absolute;
                     height: 60px;
                     width: 40px;
-                    // background-color: rgba($accent-color, 0.1);
+                    //background-color: rgba($accent-color, 0.1);
                     top: -10px;
                     left: 0;
                     /* opacity: 0.1; */

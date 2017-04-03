@@ -65,9 +65,9 @@
 
                 <ul
                     class="rv-legend-list rv-legend-set"
+                    ng-class="{ 'rv-legend-set-highlight': block.highlightSet }"
                     ng-if="block.blockType === 'set'"
                     dx-connect="block"></ul>
-
 
                 <md-progress-linear class="rv-progress-bottom" md-mode="indeterminate" ng-show="block.isRefreshing"></md-progress-linear>
 

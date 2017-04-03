@@ -210,12 +210,12 @@
                         child.children.forEach(subChild =>
                             _makeChildBlock(subChild, childBlock));
                     } else {
-                        childBlock = new LegendBlock.Node({ main: proxy, adjunct: []}, {
+                        childBlock = new LegendBlock.Node({ main: proxy, adjunct: [] }, {
                             symbologyRenderStyle: 'icons'
                         }, {
-                            controls: [],
-                            disabledControls: []
-                        });
+                                controls: [],
+                                disabledControls: []
+                            });
                     }
 
                     parent.addEntry(childBlock);
@@ -280,11 +280,21 @@
              * @function _makeSetBlock
              * @private
              */
-            function _makeSetBlock() {}
+            function _makeSetBlock(blockConfig) {
+                const set = new LegendBlock.Set(blockConfig);
+
+                blockConfig.exclusiveVisibility.forEach(childConfig => {
+                    const childBlock = _makeLegendBlock(childConfig, layerBlueprints);
+
+                    set.addEntry(childBlock);
+                });
+
+                return set;
+            }
 
 
             /**
-             * A helper function creating (if don't exist) appropriate layerRecord for a provided entry config object and returns their proxy objects.
+             * A helper function creating (if doesn't exist) appropriate layerRecord for a provided entry config object and returns their proxy objects.
              * Only entries (not groups or infos) can have direct proxies.
              * A config legend entry must have a main proxy, and can optionally have several adjunct proxies through `controlledIds` property.
              *
@@ -315,7 +325,7 @@
                 });
 
                 const adjunctProxies = adjunctLayerRecords.map(layerRecord =>
-                        layerRecord.getProxy());
+                    layerRecord.getProxy());
 
                 return {
                     main: mainProxy,
