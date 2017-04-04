@@ -300,22 +300,74 @@
       "root": {
         "name": "root",
         "children": [
-
-
           {
-            "layerId": "esri_tile"
+            "layerId": "scaleDep",
+            "controlledIds": [
+              "ecogeo"
+            ]
           },
           {
-            "layerId": "ecogeofull"
+            "infoType": "text",
+            "content": "Pages you view in incognito tabs won’t stick around in your browser’s history, cookie store, or search history."
           },
           {
-            "layerId": "powerplant100mw-2"
+            "name": "superGroup",
+            "expanded": true,
+            "controls": [
+              "visibility",
+              "settings"
+            ],
+            "children": [
+              {
+                "layerId": "esri_tile"
+              },
+              {
+                "layerId": "ecogeofull"
+              }
+            ]
           },
           {
-            "layerId": "powerplant100mw-3"
+            "name": "A Group with a Visibility Set",
+            "expanded": true,
+            "controls": [
+              "visibility"
+            ],
+            "children": [
+              {
+                "exclusiveVisibility": [
+                  {
+                    "layerId": "powerplant100mw-2"
+                  },
+                  {
+                    "layerId": "powerplant100mw-3"
+                  },
+                  {
+                    "layerId": "powerplant100mw-1"
+                  }
+                ]
+              }
+            ]
           },
           {
-            "layerId": "powerplant100mw-1"
+            "name": "Cat GIFs",
+            "children": [
+              {
+                "infoType": "image",
+                "content": "https://advego.ru/uploads/scepsis/%D1%8F_%D1%81%D0%B4%D0%B5%D0%BB%D0%B0%D0%BB%D0%AA_32f0bf9b4f82c17317ae7bcb2e1a3d22.gif"
+              },
+              {
+                "infoType": "image",
+                "content": "https://s-media-cache-ak0.pinimg.com/originals/ac/cf/82/accf8215081bb1922ab317f31a6acb2b.gif"
+              },
+              {
+                "infoType": "image",
+                "content": "https://media.tenor.co/images/33065341659efcc8c214d8541e594124/tenor.gif"
+              },
+              {
+                "infoType": "image",
+                "content": "http://i3.kym-cdn.com/entries/icons/original/000/011/198/internet.gif"
+              }
+            ]
           }
         ]
       }
@@ -326,7 +378,7 @@
         "name": "Power Plants, 2",
         "layerType": "esriFeature",
         "state": {
-          "visibility": true
+          "visibility": false
         },
         "url": "http://geoappext.nrcan.gc.ca/arcgis/rest/services/NACEI/energy_infrastructure_of_north_america_en/MapServer/2"
       },
@@ -344,7 +396,7 @@
         "name": "Power Plants, 1",
         "layerType": "esriFeature",
         "state": {
-          "visibility": true
+          "visibility": false
         },
         "url": "http://geoappext.nrcan.gc.ca/arcgis/rest/services/NACEI/energy_infrastructure_of_north_america_en/MapServer/1"
       },
