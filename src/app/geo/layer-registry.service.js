@@ -2,6 +2,7 @@
     'use strict';
 
     const THROTTLE_COUNT = 2;
+    const THROTTLE_TIMEOUT = 3000;
 
     /**
      * @ngdoc service
@@ -20,7 +21,7 @@
         .module('app.geo')
         .factory('layerRegistry', layerRegistryFactory);
 
-    function layerRegistryFactory(Geo, LayerBlueprint, configService) {
+    function layerRegistryFactory($timeout, Geo, LayerBlueprint, configService) {
         const service = {
             getLayerRecord,
             makeLayerRecord,
@@ -86,11 +87,17 @@
             const mapBody = configService._sharedConfig_.map.body;
             const layerRecord = ref.loadingQueue.shift();
 
+            let isRefreshed = false;
+            layerRecord.addStateListener(_onLayerRecordLoad);
+
             mapBody.addLayer(layerRecord._layer);
             ref.loadingCount ++;
 
-            let isRefreshed = false;
-            layerRecord.addStateListener(_onLayerRecordLoad);
+            // when a layer takes too long to load, it could be a slow service or a failed service
+            // in any case, the queue will advance after THROTTLE_TIMEOUT
+            // failed layers will be marked as failed when the finally resolve
+            // slow layers will load on their own at some point
+            const throttleTimeoutHandle = $timeout(_advanceLoadingQueue, THROTTLE_TIMEOUT);
 
             /**
              * Waits fro the layer to load or fail.
@@ -102,7 +109,6 @@
              * @private
              */
             function _onLayerRecordLoad(state) {
-                // TODO: add a reasonable timeout to prevent stalling with slow services
                 if (state === 'rv-refresh') {
                     isRefreshed = true;
                 } else if (
@@ -110,12 +116,18 @@
                     (state === 'rv-error')
                 ) {
                     layerRecord.removeStateListener(_onLayerRecordLoad);
-                    ref.loadingCount = Math.max(--ref.loadingCount, 0);
-                    _loadNextLayerRecord();
 
+                    $timeout.cancel(throttleTimeoutHandle);
+                    _advanceLoadingQueue();
                     // FIX: hover events are broken in geoApi at the moment
                     //_setHoverTips(layerRecord);
                 }
+            }
+
+            function _advanceLoadingQueue() {
+                console.info('avancidng que');
+                ref.loadingCount = Math.max(--ref.loadingCount, 0);
+                _loadNextLayerRecord();
             }
         }
 
