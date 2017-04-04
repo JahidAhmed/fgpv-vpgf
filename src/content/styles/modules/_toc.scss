@@ -58,29 +58,31 @@ $layer-item-height-touch: rem(7.2);
         }
     }
 
-    ul.rv-legend-set-highlight > li  > rv-legend-block rv-legend-control[name="visibilityset"] {
+    rv-legend-block rv-legend-control[name="visibilityset"] {
+        height: 100%;
+        display: flex;
+        align-items: center;
+    }
+
+    ul.rv-legend-set-highlight > li > rv-legend-block rv-legend-control[name="visibilityset"] {
         &:before, &:after {
-            background-color: rgba($accent-color, 0.1);
+            background-color: rgba($accent-color, 0.075);
         }
     }
 
     ul.rv-legend-set > li {
         > rv-legend-block {
             rv-legend-control[name="visibilityset"] {
-
-
                 &:before, &:after {
                     content: "";
                     position: absolute;
-                    height: 60px;
-                    width: 40px;
-                    //background-color: rgba($accent-color, 0.1);
-                    top: -10px;
+                    top: 0;
                     left: 0;
-                    /* opacity: 0.1; */
+                    bottom: 0;
+                    right: 0;
                     border: 1px solid transparent;
-
                     pointer-events: none;
+                    transition: background-color $swift-ease-in-duration $swift-ease-in-out-timing-function;
                 }
             }
         }
@@ -204,6 +206,10 @@ $layer-item-height-touch: rem(7.2);
             }
         }
 
+        rv-legend-control {
+            display: flex;
+        }
+
         rv-legend-control,
         .rv-list-item-control {
             .md-icon-button {
@@ -263,6 +269,8 @@ $layer-item-height-touch: rem(7.2);
 %list-item-control-section {
     .rv-list-item-controls {
         display: flex;
+        align-items: center;
+        height: 100%;
 
         .rv-list-item-control {
             position: relative;
@@ -292,7 +300,8 @@ $layer-item-height-touch: rem(7.2);
     // force-display list item controls when the list item gets focus or is hovered over
     &:hover, &.rv-selected {
         .rv-list-item-controls .rv-list-item-control {
-            display: block;
+            display: flex;
+            //display: block;
             // display: inline-block !important;
         }
     }

@@ -341,18 +341,29 @@
                 this._selectedEntry = null;
                 this._blockType = LegendBlock.SET;
 
-                const propertyName = 'visibility';
-                const decorator = value => {
-                    if (value) {
-                        this.visibility = false;
-                    }
-                };
-                this._descriptors = {
-                    [LegendBlock.NODE]: this._decorateDescriptor(LegendNode.prototype, propertyName, decorator),
-                    [LegendBlock.GROUP]: this._decorateDescriptor(LegendGroup.prototype, propertyName, decorator)
-                }
-
                 this._walk = ref.walkFunction.bind(this);
+            }
+
+            _highlightSet = false;
+
+            _decorateDescriptor(prototype, propertyName, decorator) {
+                const descriptor = getPropertyDescriptor(prototype, propertyName);
+                let method;
+
+                _updateProperty('set');
+                _updateProperty('get');
+
+                return descriptor;
+
+                function _updateProperty(name) {
+                    if (decorator[name]) {
+                        method = descriptor[name] || angular.noop;
+                        descriptor[name] = function (value) {
+                            decorator[name](value);
+                            method.call(this, value);
+                        };
+                    }
+                }
             }
 
             get blockType () { return LegendBlock.SET; }
@@ -373,17 +384,6 @@
                 return this;
             }
 
-            _decorateDescriptor(prototype, propertyName, decorator) {
-                const descriptor = getPropertyDescriptor(prototype, propertyName);
-                const method = descriptor.set;
-                descriptor.set = function (value) {
-                    decorator(value);
-                    method.call(this, value);
-                };
-
-                return descriptor;
-            }
-
             get _activeEntries () {
                 return this.entries.filter(entry =>
                     entry.blockType === LegendBlock.GROUP ||
@@ -398,20 +398,31 @@
                 }
                 this._entries.splice(position, 0, entry);
 
-                const legendSet = this;
+                // used to propagate positive visibility change up to the containing LegendSet object
+                const visibilityDecorator = {
+                    set: value => {
+                        if (value) {
+                            this.visibility = false;
+                        }
+                    }};
 
-                const descriptor = entry.blockType === LegendBlock.NODE ?
-                    this._descriptors[LegendBlock.NODE] :
-                    this._descriptors[LegendBlock.GROUP];
+                const visibilityPrototype = entry.blockType === LegendBlock.NODE ?
+                    LegendNode.prototype : LegendGroup.prototype;
 
-                const propertyName = 'visibility';
-                Object.defineProperty(entry, propertyName, descriptor);
-                Object.defineProperty(entry, 'highlightSet', {
-                    get: function () { return legendSet._highlightSet; },
-                    set: function (value) {
-                        legendSet._highlightSet = value;
+                const visibilityDescriptor =
+                    this._decorateDescriptor(visibilityPrototype, 'visibility', visibilityDecorator);
+
+                // LegendSet and the contained LegendBlock object will share a reference to `highlightSet` property
+                // which the legend block temlate will use to highlight set elements when hovered/focused
+                const highlightSetDescriptor = {
+                    get: () => { return this._highlightSet; },
+                    set: value => {
+                        this._highlightSet = value;
                     }
-                });
+                };
+
+                Object.defineProperty(entry, 'visibility', visibilityDescriptor);
+                Object.defineProperty(entry, 'highlightSet', highlightSetDescriptor);
 
                 entry.highlightSet = false;
 
