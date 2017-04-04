@@ -398,7 +398,7 @@
                 }
                 this._entries.splice(position, 0, entry);
 
-                // used to propagate positive visibility change up to the containing LegendSet object
+                // used to propagate positive visibility change up to the containing LegendSet object to turn off all other entries
                 const visibilityDecorator = {
                     set: value => {
                         if (value) {
