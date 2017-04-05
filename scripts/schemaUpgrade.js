@@ -32,7 +32,7 @@ if (errs) {
     console.log('Schema is valid');
 }
 
-if (upg.v1_schema_versions.indexOf(cfg.version) > -1) {
+if (upg.V1_SCHEMA_VERSIONS.indexOf(cfg.version) > -1) {
     cfg = upg.oneToTwo(cfg);
 } else {
     console.log('No schema conversion required');

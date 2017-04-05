@@ -50,8 +50,10 @@
                 isActive: false,
                 isCompleted: false,
                 onContinue: uploadOnContinue,
-                onCancel: () => onCancel(self.upload.step),
-                onKeypress: (event) => { if (event.keyCode === keyNames.ENTER) { uploadOnContinue(); } }, // check if enter key have been pressed and call the next step if so
+                onCancel: () =>
+                    onCancel(self.upload.step),
+                onKeypress: event =>
+                    { if (event.keyCode === keyNames.ENTER) { uploadOnContinue(); } }, // check if enter key have been pressed and call the next step if so
                 reset: uploadReset,
                 focus: 'dataUpload'
             },

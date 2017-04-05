@@ -13,10 +13,18 @@
         .module('app.geo')
         .factory('LegendBlock', LegendBlockFactory);
 
-    function LegendBlockFactory($rootScope, Geo) {
+    function LegendBlockFactory() {
 
         let legendBlockCounter = 0;
 
+        const ref = {
+            walkFunction,
+            aggregateStates,
+            getPropertyDescriptor
+        };
+
+        // jscs doesn't like enhanced object notation
+        // jscs:disable requireSpacesInAnonymousFunctionExpression
         class SymbologyStack {
             constructor(proxy, blockConfig, isInteractive = false) {
                 this._proxy = proxy;
@@ -26,8 +34,8 @@
 
             get isInteractive () {  return this._isInteractive; }
 
-            _fannedOut = false;
-            _expanded = false;
+            _fannedOut = false; // jshint ignore:line
+            _expanded = false; // jshint ignore:line
 
             get stack () {          return this._proxy.symbology || this._blockConfig.symbologyStack; }
             get renderStyle () {    return this._blockConfig.symbologyRenderStyle; }
@@ -79,10 +87,10 @@
             // get blockType () {      return this._blockType; }
             get template () {       return this.blockType; }
 
-            static INFO = 'info';
-            static NODE = 'node';
-            static GROUP = 'group';
-            static SET = 'set';
+            static INFO = 'info'; // jshint ignore:line
+            static NODE = 'node'; // jshint ignore:line
+            static GROUP = 'group'; // jshint ignore:line
+            static SET = 'set'; // jshint ignore:line
         }
 
         class LegendInfo extends LegendBlock {
@@ -106,7 +114,7 @@
             // get availableControls () { return this.config.controls; }
             // get disabledControls () { return this.config.controls; }
 
-            _isSelected = false;
+            _isSelected = false; // jshint ignore:line
 
             // TODO: turn state names and template names to consts
             /*get template () {
@@ -220,7 +228,7 @@
         }
 
         function removeFromArray(array, name) {
-            var index = array.indexOf(name);
+            let index = array.indexOf(name);
             if (index !== -1) {
                 array.splice(index, 1);
             }
@@ -282,12 +290,12 @@
             }
             set visibility (value) {
                 this._activeEntries.forEach(entry =>
-                    entry.visibility = value);
+                    (entry.visibility = value));
 
                 return this;
             }
 
-            get opacity () {                return false; this._mainProxy.opacity; }
+            get opacity () {                return false; }
             set opacity (value) {
                 /*this._allProxies.forEach(proxy => {
                     // TODO: try/catch
@@ -378,7 +386,7 @@
                     this._activeEntries[0].visibility = true;
                 } else {
                     this._activeEntries.forEach(entry =>
-                        entry.visibility = value);
+                        (entry.visibility = value));
                 }
 
                 return this;
@@ -415,7 +423,8 @@
                 // LegendSet and the contained LegendBlock object will share a reference to `highlightSet` property
                 // which the legend block temlate will use to highlight set elements when hovered/focused
                 const highlightSetDescriptor = {
-                    get: () => { return this._highlightSet; },
+                    get: () =>
+                        this._highlightSet,
                     set: value => {
                         this._highlightSet = value;
                     }
@@ -449,6 +458,8 @@
                 return this._walk(callback);
             }
         }
+        // jscs doesn't like enhanced object notation
+        // jscs:enable requireSpacesInAnonymousFunctionExpression
 
         const service = {
             Block: LegendBlock,
@@ -456,12 +467,6 @@
             Group: LegendGroup,
             Set: LegendSet,
             Info: LegendInfo
-        };
-
-        const ref = {
-            walkFunction,
-            aggregateStates,
-            getPropertyDescriptor
         };
 
         return service;

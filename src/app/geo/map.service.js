@@ -32,7 +32,7 @@
                 }
             });
 
-            const blankBaseMapIdPattern = 'blank_basemap_';
+            // const blankBaseMapIdPattern = 'blank_basemap_';
 
             const ref = {
                 timeoutHandle: null
@@ -163,6 +163,8 @@
                     $rootElement.find('div.ovwContainer').append('<rv-overview-toggle></rv-overview-toggle>');
                     $compile($rootElement.find('rv-overview-toggle')[0])($rootScope);
 
+                    console.log(event);
+
                     //TODO: fix code setting basempa attribution
                     /*
                     // get selected basemap configuration
@@ -210,7 +212,7 @@
              * @function getFullExtFromExtentSets
              * @private
              */
-            function getFullExtFromExtentSets(extentSets) {
+            /*function getFullExtFromExtentSets(extentSets) {
 
                 // FIXME: default basemap should be indicated in the config as well
                 // const currentBasemapExtentSetId = '123456789';
@@ -237,7 +239,7 @@
                 } else {
                     return null;
                 }
-            }
+            }*/
 
             /**
              * Retrieve maximum extent from extentSets.
@@ -246,7 +248,7 @@
              * @returns {Object|Null} the maximum extent as defined by the config. null if nothing is defined.
              * @private
              */
-            function getMaxExtFromExtentSets(extentSets) {
+            /*function getMaxExtFromExtentSets(extentSets) {
 
                 if (extentSets) {
                     // In configSchema, at least one extent for a basemap
@@ -266,18 +268,18 @@
                 } else {
                     return null;
                 }
-            }
+            }*/
 
             /**
              * Retrieve default extent from extentSets.
              * @function getDefaultExtFromExtentSets
              * @private
              */
-            function getDefaultExtFromExtentSets(extentSets) {
+            /*function getDefaultExtFromExtentSets(extentSets) {
                 // TODO: Need to handle cases where an extentset not defined
                 return extentSets.find(extentSet => extentSet.id === geoState.selectedBaseMapExtentSetId)
                     .default;
-            }
+            }*/
 
             /**
              * Retrieve level of details array from config for current basemap.
@@ -408,6 +410,7 @@
              * @function setAttribution
              * @param {Object} config base map configuration
              */
+            // eslint-disable-next-line complexity
             function setAttribution(config) {
                 const cfgAtt = config.attribution;
                 const attNode = $(service.mapObject.attribution.listNode.parentNode);
@@ -535,9 +538,8 @@
                 // if triggers when layer has no service, or all geometry is on client, in which case we use local geometry instead of pulling from server
                 // snapshot mode is set by the constant MODE_SNAPSHOT that maps to 0 in esri's api for FeatureLayer
                 if (layerObj.graphics) {
-                    const myG = layerObj.graphics.find(g => {
-                        return g.attributes[layerObj.objectIdField] === objId;
-                    });
+                    const myG = layerObj.graphics.find(g =>
+                        g.attributes[layerObj.objectIdField] === objId);
                     if (myG) {
                         result.graphic = myG;
                         result.source = 'layer';
@@ -802,7 +804,7 @@
             * @param {Object} mapSR    the spatial reference of the map
             * @returns {Object}        extent cast in Extent prototype, and in map spatial reference
             */
-            function enhanceConfigExtent(extent, mapSR) {
+            /*function enhanceConfigExtent(extent, mapSR) {
                 // const realExtent = gapiService.gapi.mapManager.getExtentFromJson(extent);
 
                 if (gapiService.gapi.proj.isSpatialRefEqual(mapSR, extent.spatialReference)) {
@@ -812,7 +814,7 @@
                     // need to re-project
                     return gapiService.gapi.proj.projectEsriExtent(realExtent, mapSR);
                 }
-            }
+            }*/
 
             /**
             * Ready a trigger on the map load event.

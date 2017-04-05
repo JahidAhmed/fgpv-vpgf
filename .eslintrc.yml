@@ -1,5 +1,8 @@
 parser: "babel-eslint"
 
+globals:
+  angular: true
+
 ecmaFeatures:
   modules: true
   jsx: true
@@ -10,6 +13,8 @@ env:
   es6: true
   jquery: true
   node: true
+  protractor: true
+  jasmine: true
 
 # http://eslint.org/docs/rules/
 rules:
@@ -40,13 +45,13 @@ rules:
   no-unexpected-multiline: 2
   no-unreachable: 2
   use-isnan: 2
-  valid-jsdoc: 0
+  valid-jsdoc: 1
   valid-typeof: 2
 
   # Best Practices
   accessor-pairs: 2
   block-scoped-var: 0
-  complexity: [2, 6]
+  complexity: [1, 7]
   consistent-return: 0
   curly: 0
   default-case: 0
@@ -57,7 +62,7 @@ rules:
   no-alert: 2
   no-caller: 2
   no-case-declarations: 2
-  no-div-regex: 2
+  no-div-regex: 1
   no-else-return: 0
   no-empty-pattern: 2
   no-eq-null: 2
@@ -113,13 +118,13 @@ rules:
   no-shadow-restricted-names: 2
   no-shadow: 0
   no-undef-init: 2
-  no-undef: 0
+  no-undef: 2
   no-undefined: 0
   no-unused-vars: 0
   no-use-before-define: ["error", { "functions": false }]
 
   # Node.js and CommonJS
-  callback-return: 2
+  callback-return: 1
   global-require: 2
   handle-callback-err: 2
   no-mixed-requires: 0
@@ -143,7 +148,7 @@ rules:
   func-style: 0
   id-length: 0
   id-match: 0
-  indent: 0
+  indent: 1
   jsx-quotes: 0
   key-spacing: 0
   linebreak-style: 0
@@ -162,7 +167,7 @@ rules:
   no-inline-comments: 0
   no-lonely-if: 0
   no-mixed-spaces-and-tabs: 0
-  no-multiple-empty-lines: 0
+  no-multiple-empty-lines: 1
   no-negated-condition: 0
   no-nested-ternary: 0
   no-new-object: 0

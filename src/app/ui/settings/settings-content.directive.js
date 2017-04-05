@@ -22,7 +22,7 @@
      * @function rvSettingsContent
      * @return {object} directive body
      */
-    function rvSettingsContent(common) {
+    function rvSettingsContent() {
         const directive = {
             restrict: 'E',
             templateUrl: 'app/ui/settings/settings-content.html',

@@ -28,11 +28,7 @@
         .module('app.geo')
         .factory('legendService', legendServiceFactory);
 
-    function legendServiceFactory(Geo, ConfigObject, LegendBlock, LayerBlueprint, gapiService, configService, layerRegistry, common) {
-
-        const ref = {
-
-        };
+    function legendServiceFactory(Geo, ConfigObject, LegendBlock, LayerBlueprint, configService, layerRegistry, common) {
 
         const service = {
             legend: null, // : new LegendGroup()
@@ -43,7 +39,6 @@
 
         /***/
 
-
         // rename: construct config legend
         function contructLegend(layerDefinitions, legendStructure) {
             // all layer defintions are passed as config fragments - turning them into layer blueprints
@@ -53,16 +48,14 @@
             // in structured legend, the legend's root is actually a group, although it's not visible
             const rootGroup = _makeLegendBlock(legendStructure.root, layerBluePrints);
 
-
             configService._sharedConfig_.map._legendBlocks = rootGroup;
         }
 
-        function addUserLayerItem(layerBlueprint) {
+        /*function addUserLayerItem(layerBlueprint) {
             const blockConfig = { layerId: layerBlueprint.config.id };
 
             _makeLegendBlock(blockConfig, [layerBlueprint]);
-        }
-
+        }*/
 
         /**
          * Recursively turns legend entry and group config objects into UI LegendBlock components.
@@ -74,12 +67,11 @@
          * @return {LegendBlcok} the resulting LegendBlock object
          */
         function _makeLegendBlock(blockConfig, layerBlueprints) {
-            const gapiLayer = gapiService.gapi.layer;
             const legendTypes = ConfigObject.TYPES.legend;
 
             const TYPE_TO_BLOCK = {
                 [legendTypes.INFO]: _makeInfoBlock,
-                [legendTypes.NODE]: (blockConfig) => {
+                [legendTypes.NODE]: blockConfig => {
                     // real blueprints are only available on Legend.NODEs
                     const nodeBlueprints = {
                         main: _getLayerBlueprint(blockConfig.layerId),
@@ -115,6 +107,9 @@
              */
             function _makeDynamicGroupBlock(blockConfig, mainBlueprint, adjunctProxies) {
                 const layerConfig = mainBlueprint.config;
+
+                // TODO: handle adjunct proxies; they need to be converted to invisible Legendblocks and added to the group
+                console.log(adjunctProxies);
 
                 // to create a group for a dynamic layer, create a entryGroup config object by using properties
                 // from dynamic layer definition config object
@@ -170,7 +165,7 @@
                     if (childBlockConfig.children) {
                         childBlock = new LegendBlock.Group(childBlockConfig);
 
-                        child.children.forEach(subChildBlockConfig =>
+                        childBlockConfig.children.forEach(subChildBlockConfig =>
                             _addChildBlock(subChildBlockConfig, childBlock));
                     } else {
                         const proxies = {
@@ -198,15 +193,12 @@
                  * @param {LegendBlock.GROUP} parent LegendBlock.GROUP object; immediate parent of the child provided
                  * @return {LegendBlock} resulting LegendBlock object
                  */
-                function _makeChildBlock(child, parent) {
+                /*function _makeChildBlock(child, parent) {
                     let childBlock;
                     const proxy = layerRecord.getChildProxy(child.id);
 
                     if (child.children) {
-                        const childBlockConfig = {
-                            name: child.name
-                        }
-
+                        // TODO: for complex dynamic layers, subgroups need names
                         childBlock = new LegendBlock.Group(child.id + 'blha');
                         child.children.forEach(subChild =>
                             _makeChildBlock(subChild, childBlock));
@@ -222,7 +214,7 @@
                     parent.addEntry(childBlock);
 
                     return childBlock;
-                }
+                }*/
             }
 
             /**
@@ -293,7 +285,6 @@
                 return set;
             }
 
-
             /**
              * A helper function creating (if doesn't exist) appropriate layerRecord for a provided entry config object and returns their proxy objects.
              * Only entries (not groups or infos) can have direct proxies.
@@ -312,6 +303,7 @@
 
                 if (blockConfig.entryid) {
                     // TODO: get WMS child proxy?
+                    console.log('wms child proxy, get out');
                 } else if (blockConfig.entryIndex) {
                     mainProxy = mainLayerRecord.getChildProxy(blockConfig.entryIndex);
                 } else {

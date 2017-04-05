@@ -62,9 +62,8 @@
             }
 
             return $http.get(`http://epsg.io/${lookup}.proj4`)
-                .then(response => {
-                    return response.data;
-                })
+                .then(response =>
+                    response.data)
                 .catch(err => {
                     RV.logger.warn('geoService', 'proj4 style projection lookup failed with error', err);
                     // jscs check doesn't realize return null; returns a promise

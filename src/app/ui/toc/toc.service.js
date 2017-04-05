@@ -122,13 +122,11 @@
             flags: {
                 type: {
                     icon: {
-                        esriFeature: type => {
-                            return {
+                        esriFeature: type => ({
                                 esriGeometryPoint: 'community:vector-point',
                                 esriGeometryPolygon: 'community:vector-polygon',
                                 esriGeometryPolyline: 'community:vector-polyline'
-                            }[type];
-                        },
+                            }[type]),
                         esriDynamic: 'action:settings',
                         esriDynamicLayerEntry: 'image:photo',
                         ogcWms: 'image:photo',
@@ -202,15 +200,15 @@
             }
         };
 
-        let symbologySample;
+        // let symbologySample;
 
         /* jshint ignore:start */
         // jscs:disable
-        symbologySample = [{'name':'0', 'svgcode':'<svg id=\'SvgjsSvg1081\' width=\'32\' height=\'32\' xmlns=\'http://www.w3.org/2000/svg\' version=\'1.1\' xmlns:xlink=\'http://www.w3.org/1999/xlink\' xmlns:svgjs=\'http://svgjs.com/svgjs\' viewBox=\'0 0 32 32\'><defs id=\'SvgjsDefs1082\'></defs><path id=\'SvgjsPath1083\' d=\'M19.5 16L16 12.5L12.5 16L16 19.5Z \' fill-opacity=\'1\' fill=\'#dcdcdc\' stroke-miterlimit=\'4\' stroke-linejoin=\'miter\' stroke-linecap=\'square\' stroke-opacity=\'1\' stroke=\'#828282\' stroke-width=\'1\' transform=\'matrix(1, 0, 0, 1, 0, 0)\'></path></svg>'}, {'name':'1', 'svgcode':'<svg id=\'SvgjsSvg1084\' width=\'32\' height=\'32\' xmlns=\'http://www.w3.org/2000/svg\' version=\'1.1\' xmlns:xlink=\'http://www.w3.org/1999/xlink\' xmlns:svgjs=\'http://svgjs.com/svgjs\' viewBox=\'0 0 32 32\'><defs id=\'SvgjsDefs1085\'></defs><path id=\'SvgjsPath1086\' d=\'M20 16L16 12L12 16L16 20Z \' fill-opacity=\'1\' fill=\'#00617f\' stroke-miterlimit=\'4\' stroke-linejoin=\'miter\' stroke-linecap=\'square\' stroke-opacity=\'1\' stroke=\'#828282\' stroke-width=\'1\' transform=\'matrix(1, 0, 0, 1, 0, 0)\'></path></svg>'}, {'name':'2', 'svgcode':'<svg id=\'SvgjsSvg1087\' width=\'32\' height=\'32\' xmlns=\'http://www.w3.org/2000/svg\' version=\'1.1\' xmlns:xlink=\'http://www.w3.org/1999/xlink\' xmlns:svgjs=\'http://svgjs.com/svgjs\' viewBox=\'0 0 32 32\'><defs id=\'SvgjsDefs1088\'></defs><path id=\'SvgjsPath1089\' d=\'M21 16L16 11L11 16L16 21Z \' fill-opacity=\'1\' fill=\'#24b24b\' stroke-miterlimit=\'4\' stroke-linejoin=\'miter\' stroke-linecap=\'square\' stroke-opacity=\'1\' stroke=\'#828282\' stroke-width=\'1\' transform=\'matrix(1, 0, 0, 1, 0, 0)\'></path></svg>'}, {'name':'3', 'svgcode':'<svg id=\'SvgjsSvg1090\' width=\'32\' height=\'32\' xmlns=\'http://www.w3.org/2000/svg\' version=\'1.1\' xmlns:xlink=\'http://www.w3.org/1999/xlink\' xmlns:svgjs=\'http://svgjs.com/svgjs\' viewBox=\'0 0 32 32\'><defs id=\'SvgjsDefs1091\'></defs><path id=\'SvgjsPath1092\' d=\'M22 16L16 10L10 16L16 22Z \' fill-opacity=\'1\' fill=\'#ffc816\' stroke-miterlimit=\'4\' stroke-linejoin=\'miter\' stroke-linecap=\'square\' stroke-opacity=\'1\' stroke=\'#828282\' stroke-width=\'1\' transform=\'matrix(1, 0, 0, 1, 0, 0)\'></path></svg>'}, {'name':'4', 'svgcode':'<svg id=\'SvgjsSvg1093\' width=\'32\' height=\'32\' xmlns=\'http://www.w3.org/2000/svg\' version=\'1.1\' xmlns:xlink=\'http://www.w3.org/1999/xlink\' xmlns:svgjs=\'http://svgjs.com/svgjs\' viewBox=\'0 0 32 32\'><defs id=\'SvgjsDefs1094\'></defs><path id=\'SvgjsPath1095\' d=\'M23 16L16 9L9 16L16 23Z \' fill-opacity=\'1\' fill=\'#c86800\' stroke-miterlimit=\'4\' stroke-linejoin=\'miter\' stroke-linecap=\'square\' stroke-opacity=\'1\' stroke=\'#828282\' stroke-width=\'1\' transform=\'matrix(1, 0, 0, 1, 0, 0)\'></path></svg>'}, {'name':'5', 'svgcode':'<svg id=\'SvgjsSvg1096\' width=\'32\' height=\'32\' xmlns=\'http://www.w3.org/2000/svg\' version=\'1.1\' xmlns:xlink=\'http://www.w3.org/1999/xlink\' xmlns:svgjs=\'http://svgjs.com/svgjs\' viewBox=\'0 0 32 32\'><defs id=\'SvgjsDefs1097\'></defs><path id=\'SvgjsPath1098\' d=\'M25 16L16 7L7 16L16 25Z \' fill-opacity=\'1\' fill=\'#d4000b\' stroke-miterlimit=\'4\' stroke-linejoin=\'miter\' stroke-linecap=\'square\' stroke-opacity=\'1\' stroke=\'#828282\' stroke-width=\'1\' transform=\'matrix(1, 0, 0, 1, 0, 0)\'></path></svg>'}]; // jshint ignore:line
+        // symbologySample = [{'name':'0', 'svgcode':'<svg id=\'SvgjsSvg1081\' width=\'32\' height=\'32\' xmlns=\'http://www.w3.org/2000/svg\' version=\'1.1\' xmlns:xlink=\'http://www.w3.org/1999/xlink\' xmlns:svgjs=\'http://svgjs.com/svgjs\' viewBox=\'0 0 32 32\'><defs id=\'SvgjsDefs1082\'></defs><path id=\'SvgjsPath1083\' d=\'M19.5 16L16 12.5L12.5 16L16 19.5Z \' fill-opacity=\'1\' fill=\'#dcdcdc\' stroke-miterlimit=\'4\' stroke-linejoin=\'miter\' stroke-linecap=\'square\' stroke-opacity=\'1\' stroke=\'#828282\' stroke-width=\'1\' transform=\'matrix(1, 0, 0, 1, 0, 0)\'></path></svg>'}, {'name':'1', 'svgcode':'<svg id=\'SvgjsSvg1084\' width=\'32\' height=\'32\' xmlns=\'http://www.w3.org/2000/svg\' version=\'1.1\' xmlns:xlink=\'http://www.w3.org/1999/xlink\' xmlns:svgjs=\'http://svgjs.com/svgjs\' viewBox=\'0 0 32 32\'><defs id=\'SvgjsDefs1085\'></defs><path id=\'SvgjsPath1086\' d=\'M20 16L16 12L12 16L16 20Z \' fill-opacity=\'1\' fill=\'#00617f\' stroke-miterlimit=\'4\' stroke-linejoin=\'miter\' stroke-linecap=\'square\' stroke-opacity=\'1\' stroke=\'#828282\' stroke-width=\'1\' transform=\'matrix(1, 0, 0, 1, 0, 0)\'></path></svg>'}, {'name':'2', 'svgcode':'<svg id=\'SvgjsSvg1087\' width=\'32\' height=\'32\' xmlns=\'http://www.w3.org/2000/svg\' version=\'1.1\' xmlns:xlink=\'http://www.w3.org/1999/xlink\' xmlns:svgjs=\'http://svgjs.com/svgjs\' viewBox=\'0 0 32 32\'><defs id=\'SvgjsDefs1088\'></defs><path id=\'SvgjsPath1089\' d=\'M21 16L16 11L11 16L16 21Z \' fill-opacity=\'1\' fill=\'#24b24b\' stroke-miterlimit=\'4\' stroke-linejoin=\'miter\' stroke-linecap=\'square\' stroke-opacity=\'1\' stroke=\'#828282\' stroke-width=\'1\' transform=\'matrix(1, 0, 0, 1, 0, 0)\'></path></svg>'}, {'name':'3', 'svgcode':'<svg id=\'SvgjsSvg1090\' width=\'32\' height=\'32\' xmlns=\'http://www.w3.org/2000/svg\' version=\'1.1\' xmlns:xlink=\'http://www.w3.org/1999/xlink\' xmlns:svgjs=\'http://svgjs.com/svgjs\' viewBox=\'0 0 32 32\'><defs id=\'SvgjsDefs1091\'></defs><path id=\'SvgjsPath1092\' d=\'M22 16L16 10L10 16L16 22Z \' fill-opacity=\'1\' fill=\'#ffc816\' stroke-miterlimit=\'4\' stroke-linejoin=\'miter\' stroke-linecap=\'square\' stroke-opacity=\'1\' stroke=\'#828282\' stroke-width=\'1\' transform=\'matrix(1, 0, 0, 1, 0, 0)\'></path></svg>'}, {'name':'4', 'svgcode':'<svg id=\'SvgjsSvg1093\' width=\'32\' height=\'32\' xmlns=\'http://www.w3.org/2000/svg\' version=\'1.1\' xmlns:xlink=\'http://www.w3.org/1999/xlink\' xmlns:svgjs=\'http://svgjs.com/svgjs\' viewBox=\'0 0 32 32\'><defs id=\'SvgjsDefs1094\'></defs><path id=\'SvgjsPath1095\' d=\'M23 16L16 9L9 16L16 23Z \' fill-opacity=\'1\' fill=\'#c86800\' stroke-miterlimit=\'4\' stroke-linejoin=\'miter\' stroke-linecap=\'square\' stroke-opacity=\'1\' stroke=\'#828282\' stroke-width=\'1\' transform=\'matrix(1, 0, 0, 1, 0, 0)\'></path></svg>'}, {'name':'5', 'svgcode':'<svg id=\'SvgjsSvg1096\' width=\'32\' height=\'32\' xmlns=\'http://www.w3.org/2000/svg\' version=\'1.1\' xmlns:xlink=\'http://www.w3.org/1999/xlink\' xmlns:svgjs=\'http://svgjs.com/svgjs\' viewBox=\'0 0 32 32\'><defs id=\'SvgjsDefs1097\'></defs><path id=\'SvgjsPath1098\' d=\'M25 16L16 7L7 16L16 25Z \' fill-opacity=\'1\' fill=\'#d4000b\' stroke-miterlimit=\'4\' stroke-linejoin=\'miter\' stroke-linecap=\'square\' stroke-opacity=\'1\' stroke=\'#828282\' stroke-width=\'1\' transform=\'matrix(1, 0, 0, 1, 0, 0)\'></path></svg>'}]; // jshint ignore:line
         /* jshint ignore:end */
 
         // jscs:disable maximumLineLength
-        let config = [
+        /*let config = [
             [makeLegendNode, 'Layer Node - Bu Warker|esriFeature|esriGeometryPolygon|7252'],
             [makeLegendNode, 'Layer Node - Kru Lin Craw|esriDynamic|esriGeometryPoint|1'],
             [makeLegendSet, 'Visibiilty set',
@@ -241,15 +239,16 @@
                     [makeInfoSection, 'https://d13yacurqjgara.cloudfront.net/users/355650/screenshots/2181500/unicorn_drib_v2.gif|image'],
                     [makeLegendNode, 'Layer Node - Coppe Bash|esriDynamic|esriGeometryPoint|53']
                 ]]
-        ];
+        ];*/
 
+        /*
         class LayerRecordInterface {
             /**
              * @param {Object} layerRecord
              * @param {Array} availableControls [optional=[]] an array or controls names that are displayed inside the legendEntry
              * @param {Array} disabledControls [optional=[]] an array or controls names that are disabled and cannot be interacted wiht by a user
              */
-            constructor (layerRecord, availableControls = [], disabledControls = []) {
+            /*constructor (layerRecord, availableControls = [], disabledControls = []) {
                 this._layerRecord = layerRecord;
                 this._availableControls = availableControls;
                 this._disabledControls = disabledControls;
@@ -286,11 +285,11 @@
                     }, Math.random() * 16000);
                 }*/
 
-                return this._isRefreshing;
-            } // returns true/false
+                //return this._isRefreshing;
+            //} // returns true/false
 
             // can be group or node name
-            get name ()  {          return 'throw new Error(`Call not supported.`);'; }
+            /*get name ()  {          return 'throw new Error(`Call not supported.`);'; }
 
             // these are needed for the type flag
             get layerType () {      throw new Error(`Call not supported.`); }
@@ -326,7 +325,7 @@
             })
         }; */
 
-        function makeLegendNode(stringConfig) {
+        /*function makeLegendNode(stringConfig) {
             const parts = stringConfig.split('|');
             const co = new LayerRecordInterface({},
                 ['visibility', 'opacity', 'boundingBox', 'data', 'query', 'snapshot', 'metadata', 'boundaryZoom',
@@ -407,7 +406,7 @@
                     // this._state = 'error'
                 }, Math.random() * 10000 + 2000);*/
 
-            }, Math.random() * 20000 + 2000);
+            /*}, Math.random() * 20000 + 2000);
 
             return lg;
         }
@@ -504,7 +503,7 @@
 
         /* -------- */
 
-        const selectedLayerLog = {};
+        // const selectedLayerLog = {};
 
         let errorToast;
 
@@ -524,6 +523,7 @@
          * @function removeLayer
          * @param  {Object} entry layerItem object from the `legendService`
          */
+        // eslint-disable-next-line complexity
         function removeLayer(entry) {
             const isEntryVisible = entry.getVisibility();
             const entryParent = entry.parent;
@@ -755,17 +755,18 @@
          *         {state = true|undefined => pane visible,
          *          state = false => pane not visible}.
          */
-        function toggleMetadata(legendBlock, state) {
+        function toggleMetadata(/*legendBlock, state*/) {
 
-            const requester = {
+            /*const requester = {
                 id: legendBlock.id,
                 name: legendBlock.layerProxy.name
             };
 
             const panelToClose = {
                 filters: false
-            };
+            };*/
 
+            /*
             // if a sublayer of a group, select its root
             const layer = entry.master ? entry.master : entry;
 
@@ -804,7 +805,7 @@
                 stateManager
                     .setActive(panelToClose)
                     .then(() => stateManager.toggleDisplayPanel('sideMetadata', entry, requester));
-            }
+            }*/
         }
 
         /**
@@ -845,10 +846,11 @@
          * @param {Boolean} value defaults to true;
          */
         function setTocEntrySelectedState(id, value = true) {
-            console.log(configService);
+            console.log(configService, id, value);
 
             return;
 
+            /*
             const entry = geoService.legend.getItemById(id);
             if (entry) {
                 // toc entry is considered selected if its metadata, settings, or data panel is opened;
@@ -856,7 +858,7 @@
                 // to ensure a toc entry is not deselected untimely, keep count of open/close events
                 selectedLayerLog[id] = (selectedLayerLog[id] || 0) + (value ? 1 : -1);
                 entry.selected = selectedLayerLog[id] > 0 ? true : false;
-            }
+            }*/
         }
     }
 })();

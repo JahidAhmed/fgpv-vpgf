@@ -129,7 +129,7 @@
             }
 
             // TODO: remove; opens the main panel for easier dev work
-            stateManager.setActive({ side: false }, 'mainToc')
+            stateManager.setActive({ side: false }, 'mainToc');
         }
 
         /**

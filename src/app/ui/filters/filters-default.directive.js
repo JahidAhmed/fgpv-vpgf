@@ -203,7 +203,8 @@
                             column.width = '100px';
                         } else if (field.type === 'esriFieldTypeDate') {
                             // convert each date cell to a better format
-                            displayData.rows.forEach(r => r[field.name] = $filter('dateTimeZone')(r[field.name]));
+                            displayData.rows.forEach(r =>
+                                (r[field.name] = $filter('dateTimeZone')(r[field.name])));
                             const width = Math.max(getTextWidth(column.title), 175);
                             column.width =  `${width}px`;
                         } else {
@@ -482,6 +483,7 @@
                     otherPanels.addClass('rv-lt-lg-hide');
                     filterPanel.addClass('zoomto-transparent');
 
+                    // eslint-disable-next-line no-return-assign
                     filterPanel.on('click.zoomTO mousedown.zoomTO touchstart.zoomTO', () =>
                         ignoreClick ? ignoreClick = false : removeZoomtoTransparency()
                     );
@@ -729,11 +731,11 @@
                 };
                 const oLang = { oPaginate: {}, oAria: {} };
                 Object.keys(oLangSrc).forEach(key =>
-                    oLang[key] = $translate.instant(`filter.default.label.${oLangSrc[key]}`));
+                    (oLang[key] = $translate.instant(`filter.default.label.${oLangSrc[key]}`)));
                 Object.keys(oPaginateSrc).forEach(key =>
-                    oLang.oPaginate[key] = $translate.instant(`filter.default.label.${oPaginateSrc[key]}`));
+                    (oLang.oPaginate[key] = $translate.instant(`filter.default.label.${oPaginateSrc[key]}`)));
                 Object.keys(oAriaSrc).forEach(key =>
-                    oLang.oAria[key] = $translate.instant(`filter.default.aria.${oAriaSrc[key]}`));
+                    (oLang.oAria[key] = $translate.instant(`filter.default.aria.${oAriaSrc[key]}`)));
 
                 languageObjects[lang] = oLang;
 

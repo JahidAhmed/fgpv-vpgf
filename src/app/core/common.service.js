@@ -16,7 +16,7 @@
 
     // TODO: add helper function to common
     function common($timeout) {
-        var service = {
+        const service = {
             $timeout: $timeout,
 
             intersect

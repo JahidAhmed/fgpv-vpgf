@@ -12,6 +12,7 @@
         .module('app.core')
         .factory('ConfigObject', ConfigObjectFactory);
 
+    // eslint-disable-next-line max-statements
     function ConfigObjectFactory(Geo, gapiService, common) {
 
         const TYPES = {
@@ -129,7 +130,7 @@
                         'data',
                         'symbology'
                     ],
-                    disabledControls: [],
+                    disabledControls: []
                 },
                 [Geo.Layer.Types.ESRI_IMAGE]: {
                     state: {
@@ -184,13 +185,33 @@
             }
         };
 
+        class InitialLayerSettings {
+            /**
+             *
+             * @param {Object} source a well-formed layer state object
+             */
+            constructor (source) {
+                this._opacity = source.opacity;
+                this._visibility = source.visibility;
+                this._boundingBox = source.boundingBox;
+                this._query = source.query;
+                this._snapshot = source.snapshot;
+            }
+
+            get opacity () { return this._opacity; }
+            get visibility () { return this._visibility; }
+            get boundingBox () { return this._boundingBox; }
+            get query () { return this._query; }
+            get snapshot () { return this._snapshot; }
+        }
+
         // abstract
         class LayerNode {
             /**
              *
              * @param {Object} source a well-formed layer config object
              */
-            constructor(source) {
+            constructor (source) {
                 this._id = source.id;
                 this._layerType = source.layerType;
                 this._name = source.name;
@@ -217,34 +238,14 @@
             get state () { return this._state; }
         }
 
-        class InitialLayerSettings {
-            /**
-             *
-             * @param {Object} source a well-formed layer state object
-             */
-            constructor(source) {
-                this._opacity = source.opacity;
-                this._visibility = source.visibility;
-                this._boundingBox = source.boundingBox;
-                this._query = source.query;
-                this._snapshot = source.snapshot;
-            }
-
-            get opacity () { return this._opacity; }
-            get visibility () { return this._visibility; }
-            get boundingBox () { return this._boundingBox; }
-            get query () { return this._query; }
-            get snapshot () { return this._snapshot; }
-        }
-
         class BasicLayerNode extends LayerNode {
-            constructor(source) {
+            constructor (source) {
                 super(source);
             }
         }
 
         class FeatureLayerNode extends LayerNode {
-            constructor(source) {
+            constructor (source) {
                 super(source);
 
                 this._nameField = source.nameField;
@@ -257,7 +258,7 @@
 
         // abstract
         class LayerEntryNode {
-            constructor(source) {
+            constructor (source) {
                 this._controls = source.controls;
                 this._state = new InitialLayerSettings(source.state || {});
             }
@@ -267,7 +268,7 @@
         }
 
         class WMSLayerEntryNode extends LayerEntryNode {
-            constructor(source) {
+            constructor (source) {
                 super(source);
 
                 this._id = source.id;
@@ -279,7 +280,7 @@
         }
 
         class WMSLayerNode extends LayerNode {
-            constructor(source) {
+            constructor (source) {
                 super(source);
 
                 this._layerEntries = source.layerEntries.map(layerEntry =>
@@ -294,7 +295,7 @@
         }
 
         class DynamicLayerEntryNode extends LayerEntryNode {
-            constructor(source) {
+            constructor (source) {
                 super(source);
 
                 this._index = source.index;
@@ -310,7 +311,7 @@
         }
 
         class DynamicLayerNode extends LayerNode {
-            constructor(source) {
+            constructor (source) {
                 super(source);
 
                 this._layerEntries = source.layerEntries.map(layerEntry =>
@@ -329,7 +330,7 @@
          * @class LodSet
          */
         class LodSet {
-            constructor({ id, lods }) {
+            constructor ({ id, lods }) {
                 this._id = id;
                 this._lods = lods;
             }
@@ -343,13 +344,13 @@
          * @class ExtentSet
          */
         class ExtentSet {
-            constructor({ id, spatialReference, default: _default, full, maximum }) {
-                this._id = id;
-                this._spatialReference = spatialReference;
+            constructor (source) {
+                this._id = source.id;
+                this._spatialReference = source.spatialReference;
 
-                this._default = this._parseExtent(_default);
-                this._full = this._parseExtent(full) || this._default;
-                this._maximum = this._parseExtent(maximum) || this._default;
+                this._default = this._parseExtent(source.default);
+                this._full = this._parseExtent(source.full) || this._default;
+                this._maximum = this._parseExtent(source.maximum) || this._default;
             }
 
             get id () { return this._id; }
@@ -377,48 +378,14 @@
              * @param {Object} extent JSON representation of the extent in the form of { xmin: <Number>, xmax: <Number>, ymin: <Number>, ymax: <Number>, spatialReference: { wkid: <Number> }}
              * @return {Object} returns Esri extent object
              */
-            _parseExtent(extent) {
+            _parseExtent (extent) {
                 const completeExtent = angular.extend(
                     {},
                     extent, {
-                    spatialReference: this._spatialReference
-                });
+                        spatialReference: this._spatialReference
+                    });
 
                 return gapiService.gapi.mapManager.getExtentFromJson(completeExtent);
-            }
-        }
-
-        /**
-         * Typed representation of a TileSchema specified in the config.
-         * @class TileSchema
-         */
-        class TileSchema {
-            constructor({ id, lodSetId, name }, extentSet, lodSet) {
-                this._id = id;
-                this._name = name;
-                this._lodSetId = lodSetId;
-
-                this._extentSet = extentSet;
-                this._lodSet = lodSet;
-            }
-
-            get name () { return this._name; }
-            get id () { return this._id; }
-
-            get extentSet () { return this._extentSet; }
-            get lodSet () { return this._lodSet; }
-
-            // TODO: it's not yet decided how the blank basemap will be made; see arc room for notes
-            makeBlankBasemap() {
-                return new Basemap({
-                    name: $translate.instant('basemap.blank.title'),
-                    description: $translate.instant('basemap.blank.desc'),
-                    type: 'blank',
-                    id: `blank_basemap_${this._id}`,
-                    url: 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7/',
-                    attribution: '',
-                    tileSchema: this
-                });
             }
         }
 
@@ -427,7 +394,7 @@
          * @class Basemap
          */
         class Basemap {
-            constructor({ id, name, description, type, layers, attribution }, tileSchema) {
+            constructor ({ id, name, description, type, layers, attribution }, tileSchema) {
                 this._id = id;
                 this._name = name;
                 this._description = description;
@@ -436,11 +403,12 @@
                 this._url = layers[0].url;
                 this._attribution = attribution;
                 this._tileSchema = tileSchema;
+
             }
 
-            _isSelected = false;
+            _isSelected = false; // jshint ignore:line
 
-            get id () { return this._id ;}
+            get id () { return this._id; }
             get name () { return this._name; }
             get description () { return this._description; }
             get type () { return this._type; }
@@ -450,8 +418,14 @@
             get tileSchema () { return this._tileSchema; }
 
             get isSelected () { return this._isSelected; }
-            select() { this._isSelected = true; return this; }
-            deselect() { this._isSelected = false; return this; }
+            select () {
+                this._isSelected = true;
+                return this;
+            }
+            deselect () {
+                this._isSelected = false;
+                return this;
+            }
 
             /**
              * Returns an array containing levels of details for the current basemap
@@ -483,11 +457,45 @@
         }
 
         /**
+         * Typed representation of a TileSchema specified in the config.
+         * @class TileSchema
+         */
+        class TileSchema {
+            constructor ({ id, lodSetId, name }, extentSet, lodSet) {
+                this._id = id;
+                this._name = name;
+                this._lodSetId = lodSetId;
+
+                this._extentSet = extentSet;
+                this._lodSet = lodSet;
+            }
+
+            get name () { return this._name; }
+            get id () { return this._id; }
+
+            get extentSet () { return this._extentSet; }
+            get lodSet () { return this._lodSet; }
+
+            // TODO: it's not yet decided how the blank basemap will be made; see arc room for notes
+            /*makeBlankBasemap() {
+                return new Basemap({
+                    name: $translate.instant('basemap.blank.title'),
+                    description: $translate.instant('basemap.blank.desc'),
+                    type: 'blank',
+                    id: `blank_basemap_${this._id}`,
+                    url: 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7/',
+                    attribution: '',
+                    tileSchema: this
+                });
+            }*/
+        }
+
+        /**
          * Typed representation of a InfoSection specified in the config's structured legend.
          * @class InfoSection
          */
         class InfoSection {
-            constructor(entrySource) {
+            constructor (entrySource) {
                 this._infoType = entrySource.infoType;
                 this._content = entrySource.content;
             }
@@ -503,9 +511,9 @@
          * @class VisibilitySet
          */
         class VisibilitySet {
-            constructor(visibilitySetSource) {
+            constructor (visibilitySetSource) {
                 this._exclusiveVisibility = visibilitySetSource.exclusiveVisibility.map(childConfig =>
-                    Legend.makeChildObject(childConfig));
+                    _makeChildObject(childConfig));
             }
 
             get exclusiveVisibility () { return this._exclusiveVisibility; }
@@ -518,7 +526,7 @@
          * @class Entry
          */
         class Entry {
-            constructor(visibilitySetSource) {
+            constructor (visibilitySetSource) {
                 this._layerId = visibilitySetSource.layerId;
                 this._controlledIds = visibilitySetSource.controlledIds || [];
                 this._entryIndex = visibilitySetSource.entryIndex;
@@ -528,8 +536,8 @@
                 this._symbologyRenderStyle = visibilitySetSource.symbologyRenderStyle || Entry.ICONS;
             }
 
-            static ICONS = 'icons';
-            static IMAGES = 'images';
+            static ICONS = 'icons'; // jshint ignore:line
+            static IMAGES = 'images'; // jshint ignore:line
 
             get layerId () { return this._layerId; }
             get controlledIds () { return this._controlledIds; }
@@ -547,12 +555,16 @@
          * @class Entry
          */
         class EntryGroup {
-            constructor(entryGroupSource) {
+            constructor (entryGroupSource) {
                 this._name = entryGroupSource.name;
                 this._children = entryGroupSource.children.map(childConfig =>
-                    Legend.makeChildObject(childConfig));
-                this._controls = common.intersect(entryGroupSource.controls, DEFAULTS.legend[TYPES.legend.GROUP].controls);
+                    _makeChildObject(childConfig));
+
+                this._controls = common.intersect(
+                    entryGroupSource.controls,
+                    DEFAULTS.legend[TYPES.legend.GROUP].controls);
                 this._disabledControls = entryGroupSource.disabledControls || [];
+
                 this._expanded = entryGroupSource.expanded || false;
             }
 
@@ -570,7 +582,7 @@
          * @class Legend
          */
         class Legend {
-            constructor(legendSource, layersSource) {
+            constructor (legendSource, layersSource) {
                 this._type = legendSource.type;
 
                 let rootChildren;
@@ -581,18 +593,18 @@
 
                     // with autolegend, the layer list is pre-sorted according to the sort groups, and layer names
                     rootChildren = layersSource
-                        .sort((a,b) => {
-                                if (sortGroups[a.layerType] < sortGroups[b.layerType]) {
-                                    return -1;
-                                } else if ((sortGroups[a.layerType] > sortGroups[b.layerType])) {
-                                    return 1;
-                                } else if (a.name < b.name) {
-                                    return -1;
-                                } else if (a.name > b.name) {
-                                    return 1;
-                                }
+                        .sort((a, b) => {
+                            if (sortGroups[a.layerType] < sortGroups[b.layerType]) {
+                                return -1;
+                            } else if ((sortGroups[a.layerType] > sortGroups[b.layerType])) {
+                                return 1;
+                            } else if (a.name < b.name) {
+                                return -1;
+                            } else if (a.name > b.name) {
+                                return 1;
+                            }
 
-                                return 0;
+                            return 0;
                         })
                         .map(layerDefinition =>
                             ({ layerId: layerDefinition.id }));
@@ -607,17 +619,22 @@
                 });
             }
 
-            static TYPE_TO_CLASS = {
+            get type () { return this._type; }
+            get root () { return this._root; }
+        }
+
+        function _makeChildObject (childConfig) {
+            const LEGEND_TYPE_TO_CLASS = {
                 [TYPES.legend.INFO]: InfoSection,
                 [TYPES.legend.NODE]: Entry,
                 [TYPES.legend.GROUP]: EntryGroup,
                 [TYPES.legend.SET]: VisibilitySet
             };
+            const childType = _detectChildType(childConfig);
 
-            get type () { return this._type; }
-            get root () { return this._root; }
+            return new LEGEND_TYPE_TO_CLASS[childType](childConfig);
 
-            static detectChildType(child) {
+            function _detectChildType(child) {
                 if (typeof child.infoType !== 'undefined') {
                     return TYPES.legend.INFO;
                 } else if (typeof child.exclusiveVisibility !== 'undefined') {
@@ -628,15 +645,10 @@
 
                 return TYPES.legend.NODE;
             }
-
-            static makeChildObject(childConfig) {
-                const childType = Legend.detectChildType(childConfig);
-                return new Legend.TYPE_TO_CLASS[childType](childConfig);
-            }
         }
 
         class ComponentBase {
-            constructor(source = { enabled: true }) {
+            constructor (source = { enabled: true }) {
                 this._source = source;
 
                 this._enabled = source.enabled;
@@ -655,7 +667,7 @@
         }
 
         class GeoSearchComponent extends ComponentBase {
-            constructor(source) {
+            constructor (source) {
                 super(source);
 
                 this._showGraphic = source.showGraphic;
@@ -667,7 +679,7 @@
         }
 
         class MouseInfoComponent extends ComponentBase {
-            constructor(source) {
+            constructor (source) {
                 super(source);
 
                 this._spatialReference = source.spatialReference;
@@ -677,13 +689,13 @@
         }
 
         class NorthArrowComponent extends ComponentBase {
-            constructor(source) {
+            constructor (source) {
                 super(source);
             }
         }
 
         class OverviewMapComponent extends ComponentBase {
-            constructor(source) {
+            constructor (source) {
                 super(source);
 
                 this._maximizeButton = source.maximizeButton;
@@ -695,7 +707,7 @@
         }
 
         class ScaleBarComponent extends ComponentBase {
-            constructor(source) {
+            constructor (source) {
                 super(source);
             }
 
@@ -704,13 +716,13 @@
         }
 
         class BasemapComponent extends ComponentBase {
-            constructor(source) {
+            constructor (source) {
                 super(source);
             }
         }
 
         class Components {
-            constructor(componentsSource) {
+            constructor (componentsSource) {
                 this._source = componentsSource;
 
                 this._geoSearch = new GeoSearchComponent(componentsSource.geoSearch);
@@ -734,7 +746,7 @@
          * @class Map
          */
         class Map {
-            constructor(mapSource) {
+            constructor (mapSource) {
                 this._source = mapSource;
 
                 this._extentSets = mapSource.extentSets.map(extentSetSource =>
@@ -806,7 +818,7 @@
                 } else {
                     this._body = value;
                 }
-             }
+            }
             get body () { return this._body; }
 
             set manager (value) {
@@ -853,8 +865,9 @@
             get map () { return this._map; }
             get ui () { return this._ui; }
             get services () { return this._services; }
-
         }
+        // jscs:enable requireSpacesInAnonymousFunctionExpression
+
 
         return {
             ConfigObject,

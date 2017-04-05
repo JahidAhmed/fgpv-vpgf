@@ -34,10 +34,10 @@
                 super(...args);
             }
 
-            _controlName = 'visibility';
+            _controlName = 'visibility'; // jshint ignore:line
 
-            get value () { return this.block.visibility; }
             set value (value) { this.action(value); }
+            get value () { return this.block.visibility; }
 
             get icon () {    return `action:visibility`; }
             get label () {   return `toc.label.visibility.off`; }
@@ -90,10 +90,10 @@
             }
 
             // FIXME: remove hack!
-            _bbon = false;
+            _bbon = false; // jshint ignore:line
 
-            get value () { return this._bbon; } // || this._layerProxy.boundingBox; } // TODO: return bbox visibility value
             set value (value) { this.action(value); }
+            get value () { return this._bbon; } // || this._layerProxy.boundingBox; } // TODO: return bbox visibility value
 
             get icon () {    return 'community:cube-outline'; }
             get label () {   return 'settings.label.boundingBox'; }
@@ -258,7 +258,7 @@
             }
 
             // TODO: remove; geoapi will return unresolved while the layer type is retrieved and unknown if it cannot retrieve it from the service
-            static unresolvedType = 'unresolved';
+            static unresolvedType = 'unresolved'; // jshint ignore:line
 
             get _styles () {
                 return {

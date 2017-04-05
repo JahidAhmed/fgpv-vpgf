@@ -4,7 +4,7 @@
 
     const SETTINGS_CONTENT_PANEL = '.rv-settings-content-panel';
 
-    const SETTING_SECTIONS = {
+    /*const SETTING_SECTIONS = {
         display: [
             'boundingBox',
             'opacity'
@@ -13,7 +13,7 @@
             'snapshot',
             'query'
         ]
-    };
+    };*/
 
     /**
      * @module rvSettings
@@ -66,7 +66,7 @@
         }
     }
 
-    function Controller(stateManager, $scope, $timeout, geoService) {
+    function Controller(stateManager/*, $scope, $timeout, geoService*/) {
         'ngInject';
         const self = this;
 
@@ -78,17 +78,15 @@
             data: true
         };*/
 
-
         /*self.tocEntry = null;
         self.opacityValue = 0;
         self.toggleQuery = toggleQuery;
         self.loadSnapshot = loadSnapshot;*/
 
         // watch for changing display value and store reference to new tocEntry and its opacity value
-        $scope.$watch('self.display.data', newValue => {
+        /*$scope.$watch('self.display.data', newValue => {
             if (newValue) {
                 //console.info('settings one', newValue);
-
 
                 // self.block = newValue;
 
@@ -106,8 +104,8 @@
                             typeof self.tocEntry.options[element] !== 'undefined'
                         )
                     );*/
-            }
-        });
+        /*    }
+        });*/
 
         /*$scope.$watch('self.display.data.options.boundingBox.value', val => {
             if (typeof val === 'undefined') {
@@ -124,7 +122,7 @@
         * @param {Object} tocEntry entry in the table of content.
         * @param {Boolean} value enable query value.
         */
-        function toggleQuery(tocEntry, value) {
+        /*function toggleQuery(tocEntry, value) {
             // we need to set all group and item the value if we don't do it will be like This
             // Group1 : true
             //  Subgroup1 : false
@@ -139,19 +137,19 @@
                 tocEntry.options.query.value = value;
                 tocEntry.flags.query.visible = !value;
             }
-        }
+        }*/
 
-        function loadSnapshot(legendEntry) {
+        /*function loadSnapshot(legendEntry) {
             geoService.snapshotLayer(legendEntry);
             self.tocEntry.options.snapshot.enabled = false;
             self.tocEntry.options.snapshot.value = true;
-        }
+        }*/
 
-        activateOpacitySetting();
+        /*activateOpacitySetting();
 
         /***/
 
-        function activateOpacitySetting() {
+        /*function activateOpacitySetting() {
             // flag indicating the opacity timeout is active
             let opacityTimeoutActive = false;
             const opacityTimeoutDuration = 30; // in ms
@@ -170,7 +168,7 @@
             /**
              * Applies current opacity value from the settings panel to the tocEntry if it differs from its current opacity value.
              */
-            function setTocEntryOpacity() {
+            /*function setTocEntryOpacity() {
                 if (self.tocEntry.options.opacity.value !== self.opacityValue) {
                     RV.logger.log('settingsDirective', `update opacity to ${self.opacityValue}`);
                     self.tocEntry.setOpacity(self.opacityValue);
@@ -178,6 +176,6 @@
 
                 opacityTimeoutActive = false;
             }
-        }
+        }*/
     }
 })();

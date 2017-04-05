@@ -17,7 +17,8 @@
         .module('app.geo')
         .factory('LayerBlueprint', LayerBlueprintFactory);
 
-    function LayerBlueprintFactory($q, LayerBlueprintUserOptions, gapiService, Geo, layerDefaults, LayerRecordFactory, ConfigObject, common) {
+    function LayerBlueprintFactory($q, LayerBlueprintUserOptions, gapiService, Geo,
+        layerDefaults, LayerRecordFactory, ConfigObject, common) {
 
         let idCounter = 0; // layer counter for generating layer ids
 
@@ -164,7 +165,7 @@
                 [layerTypes.ESRI_IMAGE]: ConfigObject.layers.BasicLayerNode,
                 [layerTypes.ESRI_DYNAMIC]: ConfigObject.layers.DynamicLayerNode,
                 [layerTypes.OGC_WMS]: ConfigObject.layers.WMSLayerNode
-            }
+            };
 
             static get LAYER_TYPE_TO_LAYER_RECORD () {
                 const gapiLayer = gapiService.gapi.layer;
@@ -185,7 +186,7 @@
                 [serviceTypes.TileService]: layerTypes.ESRI_TILE,
                 [serviceTypes.ImageService]: layerTypes.ESRI_IMAGE,
                 [serviceTypes.WMS]: layerTypes.OGC_WMS
-            }
+            };
         }
         // jscs:enable requireSpacesInAnonymousFunctionExpression
 
@@ -212,19 +213,18 @@
         class LayerServiceBlueprint extends LayerBlueprint {
             /**
              * Creates a new LayerServiceBlueprint.
-             * @param  {initialConfig} initialConfig partical config, __must__ contain a service `url`.
-             * @param  {Function} epsgLookup a function which takes and EPSG code and returns a projection definition (see geoService for the exact signature)
+             * @param  {Object} source ??? partical config, __must__ contain a service `url`.
              */
             constructor(source) {
 
                 if (angular.isString(source)) {
+                    console.log('TODO: fix me');
                     // assuming service URL is supplied
                     // super({});
                 } else {
                     // assuming a wellformed layer defintion object is supplied
                     super(source);
                 }
-
 
                 return;
 
@@ -282,9 +282,9 @@
                             const prediction = gapiService.gapi.layer.predictLayerUrl(this.config.url, hint);
 
                             // if a raster layer is predicted we switch it to a dynamic service with the raster layer pre-selected
-                            return prediction.then(info => {
+                            return prediction.then(info =>
                                 // we may require another call to predictLayerUrl so return a promise
-                                return $q(resolve => {
+                                 $q(resolve => {
                                     if (info.serviceType === Geo.Service.Types.RasterLayer) {
                                         const layerID = this.config.url.split('/').pop(); // get layer ID
                                         // remove the layer id so we get a dynamic service instead
@@ -300,9 +300,7 @@
                                     } else {
                                         resolve(info);
                                     }
-                                });
-
-                            });
+                                }));
                         }
                     })
                     .then(fileInfo => {
@@ -498,7 +496,8 @@
                         if (typeof file !== 'undefined') {
                             // if there is file object, read it and store the data
                             return this._readFileData(file, progressCallback)
-                                .then(fileData => this._fileData = fileData);
+                                .then(fileData =>
+                                    (this._fileData = fileData));
 
                         } else if (typeof fileInfo.fileData !== 'undefined') {
                             this._fileData = fileInfo.fileData;
