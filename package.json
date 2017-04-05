@@ -65,7 +65,7 @@
     "json-schema-defaults": "^0.1.1",
     "json-schema-ref-parser": "^2.2.0",
     "karma": "0.13.19",
-    "karma-babel-preprocessor": "^5.2.2",
+    "karma-babel-preprocessor": "^6.0.1",
     "karma-chrome-launcher": "^0.1.12",
     "karma-coverage": "^0.4.2",
     "karma-firefox-launcher": "^0.1.6",
