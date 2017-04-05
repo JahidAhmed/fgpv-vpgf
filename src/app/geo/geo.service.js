@@ -61,9 +61,8 @@
             }
 
             return $http.get(`http://epsg.io/${lookup}.proj4`)
-                .then(response => {
-                    return response.data;
-                })
+                .then(response =>
+                    response.data)
                 .catch(err => {
                     console.warn(err);
 

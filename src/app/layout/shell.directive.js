@@ -70,7 +70,7 @@
                 }
             });
 
-            stateManager.setActive({ side: false }, 'mainToc')
+            stateManager.setActive({ side: false }, 'mainToc');
         }
 
         /**

@@ -131,23 +131,23 @@
             }
         }
 
-        function _setHoverTips(layerRecord) {
+        /*function _setHoverTips(layerRecord) {
             // TODO: layerRecord returns a promise on layerType to be consistent with dynamic children which don't know their type upfront
             // to not wait on promise, check the layerRecord config
             if (layerRecord.config.layerType !== Geo.Layer.Types.ESRI_FEATURE) {
                 return;
             }
 
-            /* if (!layerRecord.config.tooltipEnabled) {
+            if (!layerRecord.config.tooltipEnabled) {
                 return;
-            } */
+            }
 
             layerRecord.addHoverListener(_onHoverHandler);
 
             function _onHoverHandler(data) {
                 console.info(data);
             }
-        }
+        }*/
 
         return service;
     }
@@ -158,6 +158,7 @@
 
         return (geoState, config) => layerRegistry(geoState, geoState.mapService.mapObject, config);
 
+        // eslint-disable-next-line max-statements
         function layerRegistry(geoState, mapObject, config) {
 
             const layers = {};
@@ -414,6 +415,7 @@
              * @param {String} targetId the id of the layer the target layer will be moved on top of; can be -1, if its the end of the list
              * @return {Number}          index at which the source layer should be inserted in the map stack
              */
+            // eslint-disable-next-line complexity
             function getLayerInsertPosition(sourceId, targetId) {
                 const sourceEntry = service.layers[sourceId].legendEntry;
                 const targetEntry = typeof targetId !== 'undefined' ? service.layers[targetId].legendEntry : null;
@@ -812,7 +814,7 @@
              */
             function snapshotLayer(l) {
                 const configUpdate = cfg =>
-                    cfg.options.snapshot.value = true;
+                    (cfg.options.snapshot.value = true);
                 reloadLayer(l, configUpdate);
             }
 
@@ -843,9 +845,8 @@
 
                 // search for aliases
                 if (fields) {
-                    const attribField = fields.find(field => {
-                        return field.name === attribName;
-                    });
+                    const attribField = fields.find(field =>
+                        field.name === attribName);
                     if (attribField && attribField.alias && attribField.alias.length > 0) {
                         fName = attribField.alias;
                     }
@@ -863,9 +864,8 @@
              */
             function checkDateType(attribName, fields) {
                 if (fields) {
-                    const attribField = fields.find(field => {
-                        return field.name === attribName;
-                    });
+                    const attribField = fields.find(field =>
+                        field.name === attribName);
                     if (attribField && attribField.type) {
                         return attribField.type === 'esriFieldTypeDate';
                     }

@@ -181,8 +181,8 @@
 
             // fetch googleAPIKey - if it exists the short link switch option is shown
             configService.getCurrent().then(conf =>
-                self.googleAPIUrl = conf.googleAPIKey ?
-                    `https://www.googleapis.com/urlshortener/v1/url?key=${conf.googleAPIKey}` : null
+                (self.googleAPIUrl = conf.googleAPIKey ?
+                    `https://www.googleapis.com/urlshortener/v1/url?key=${conf.googleAPIKey}` : null)
             );
 
             /**
@@ -201,6 +201,7 @@
             */
             function getLongLink() {
                 if (typeof URLS.long === 'undefined') { // no cached url exists
+                    // eslint-disable-next-line no-return-assign
                     globalRegistry.getMap($rootElement.attr('id')).getBookmark().then(bookmark =>
                         URLS.long = self.url = window.location.href.split('?')[0] + '?rv=' + String(bookmark))
                         .then(() => (selectURL()));
@@ -222,7 +223,7 @@
                             URLS.short = self.url = r.data.id;
                             selectURL();
                         })
-                        .catch(() => URLS.short = undefined); // reset cache from failed API call);
+                        .catch(() => (URLS.short = undefined)); // reset cache from failed API call);
                 // cache exists, API call not needed
                 } else {
                     self.url = URLS.short;

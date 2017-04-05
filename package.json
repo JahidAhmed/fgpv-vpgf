@@ -30,6 +30,7 @@
     "gulp-cssnano": "^2.1.0",
     "gulp-debug": "^2.1.0",
     "gulp-delete-lines": "^0.0.7",
+    "gulp-eslint": "^3.0.1",
     "gulp-filter": "^3.0.1",
     "gulp-git": "^1.6.0",
     "gulp-gzip": "^1.2.0",

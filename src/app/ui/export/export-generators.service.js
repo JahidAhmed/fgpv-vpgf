@@ -337,7 +337,7 @@
             const arrowHeight = 70;
             const arrowWidth = arrowHeight * arrowSizeRatio;
 
-            const [ arrowX, arrowY ] = [containerWidth - 20 - arrowWidth, (containerHeight - arrowHeight) / 2];
+            const [arrowX, arrowY] = [containerWidth - 20 - arrowWidth, (containerHeight - arrowHeight) / 2];
 
             arrowSvg
                 .size(arrowWidth, arrowHeight)

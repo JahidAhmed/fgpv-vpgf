@@ -38,8 +38,8 @@
         .factory('configService', configService);
 
     function configService($q, $rootScope, $rootElement, $timeout, $http, $translate, $mdToast, events, schemaUpgrade) {
-        let initializePromise;
-        let isInitialized = false;
+        // let initializePromise;
+        // let isInitialized = false;
 
         const DEFAULT_LANGS = ['en-CA', 'fr-CA'];
 
@@ -51,6 +51,8 @@
         };
 
         let loadingState = States.NEW;
+
+        const configs = {};
 
         const service = {
             _sharedConfig_: null,
@@ -68,11 +70,10 @@
         };
 
         const originalConfigs = {};
-        const configs = {};
         let bookmarkConfig;
 
         const startupRcsLayers = {}; // partial config promises, one array per language entry
-        const configFile = {};
+        // const configFile = {};
         const initialPromises = {}; // only the initial configurations (i.e. whatever comes in config attribute)
         let remoteConfig = false;
         let languages;
@@ -85,11 +86,13 @@
             loadingState = States.LOADING;
             try {
                 const config = JSON.parse(configAttr);
-                config.forEach(lang => initialPromises[lang] = $q.resolve(config[lang]));
+                config.forEach(lang =>
+                    (initialPromises[lang] = $q.resolve(config[lang])));
             } catch (e) {
                 if (window.hasOwnProperty(configAttr)) {
                     const config = window[configAttr];
-                    langs.forEach(lang => initialPromises[lang] = $q.resolve(config[lang]));
+                    langs.forEach(lang =>
+                        (initialPromises[lang] = $q.resolve(config[lang])));
                 } else {
                     remoteConfig = true;
                     langs.forEach(lang => {
@@ -108,7 +111,7 @@
                     return cfg;
                 });
                 if (lang === langs[0]) {
-                    initialPromises[lang].then((cfg) => {
+                    initialPromises[lang].then((/*cfg*/) => {
                         loadingState = States.LOADED;
                         $rootScope.$broadcast(events.rvCfgInitialized);
                     });
@@ -165,7 +168,8 @@
                     // TODO: better way to handle when no languages are specified?
                 }
             }
-            languages.forEach(lang => startupRcsLayers[lang] = []);
+            languages.forEach(lang =>
+            (startupRcsLayers[lang] = []));
 
             const configAttr = $rootElement.attr('rv-config');
             $translate.use(languages[0]);
@@ -195,7 +199,7 @@
          * @return {Promise}     The config promise object as described above
          */
         function getCurrent() {
-            return $q((resolve) => {
+            return $q(resolve => {
                 if (loadingState < States.LOADED) {
                     $rootScope.$on(events.rvCfgInitialized, () => resolve(configs[currentLang()]));
                 } else {
@@ -328,9 +332,8 @@
 
                             if (lang === currLang) {
                                 // pull fully populated layer config nodes out the main config
-                                const newConfigs = fullConfig.layers.filter(layerConfig => {
-                                    return newIds.indexOf(layerConfig.id) > -1;
-                                });
+                                const newConfigs = fullConfig.layers.filter(layerConfig =>
+                                    newIds.indexOf(layerConfig.id) > -1);
 
                                 // return the new configs to the caller
                                 resolve(newConfigs);

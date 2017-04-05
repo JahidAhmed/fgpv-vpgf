@@ -107,12 +107,12 @@
          * @param   {Number}    wkID    the basemap wkID from which to derive a name
          * @return  {String}    the translated basemap projection name
          */
-        function wkidToName(wkID) {
+        /*function wkidToName(wkID) {
             const translationID = `wkids.${wkID}`;
             const translationStr = $translate.instant(translationID);
 
             return translationID !== translationStr ? translationStr : $translate.instant('wkids.other');
-        }
+        }*/
 
         /**
          * Sets a callback function that is called whenever basemaps changes.
@@ -194,6 +194,8 @@
          * @param {Array} basemapList   A list of basemap objects
          */
         function _addBaseMaps(mapConfig) {
+
+            console.log(mapConfig);
 
             // creates lists of extentSets, tileShemas and basemaps;
             // the basemap list is flat and will be grouped by tileSchema id and sorted by basemap name directly in the template

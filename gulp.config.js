@@ -54,7 +54,7 @@ module.exports = function () {
             'templates.js',
             'focus-manager.js',
             'app-seed.js',
-            'corePlugins.js',
+            'corePlugins.js'
         ],
         injectorOrder: [
             'polyfills.js',
@@ -75,7 +75,7 @@ module.exports = function () {
 
         scss: src + 'content/styles/main.scss',
         css: build + 'main.css',
-        csslib: [ ],
+        csslib: [],
         csserror: src + 'content/styles/_error.css',
 
         // all html template files
@@ -106,7 +106,13 @@ module.exports = function () {
         schema: src + 'schema.json',
 
         vetjs: [src + '**/*.js', '*.js', 'e2e-test/**/*.js', 'test/**/*.js', 'docs/app/js/app.js',
-            'docs/config/**/*.js', '!docs/config/templates/*.js', '!docs/config/tag-defs/*.js'],
+            'docs/config/**/*.js', '!docs/config/templates/*.js', '!docs/config/tag-defs/*.js',
+            '!gulp.config.js',
+            '!gulpfile.js',
+            '!karma.conf.js',
+            `!${src}**/*.spec.js`,
+            `!${src}test/*.js`,
+            `!${src}polyfill/*.js`],
 
         watchsass: `${src}content/styles/**/*.scss`,
         watchjs: `${src}**/*.js`,
