@@ -223,10 +223,15 @@ module.exports = function () {
                     { type: 'text-summary' } // , subdir: '.', file: 'text-summary.txt'}
                 ]
             },
-            preprocessors: {}
+            preprocessors: {
+                [app + '**/*.js']: ['coverage', 'babel']
+            },
+            babelPreprocessor: {
+                options: {
+                    presets: ['latest', 'stage-2']
+                }
+            }
         };
-
-        options.preprocessors[app + '**/*.js'] = ['coverage', 'babel'];
 
         return options;
     }
