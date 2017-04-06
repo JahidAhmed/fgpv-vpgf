@@ -377,6 +377,7 @@
         "id": "powerplant100mw-2",
         "name": "Power Plants, 2",
         "layerType": "esriFeature",
+        "metadataUrl": "http://maps-cartes.ec.gc.ca/LWBSF-FIBLW/LWBSF_en.xml?_=1490727645184",
         "state": {
           "visibility": false
         },
@@ -405,6 +406,7 @@
         "name": "Air Ozone Scale Dep",
         "url": "http://maps-cartes.ec.gc.ca/arcgis/rest/services/CESI/CESI_Air_Ozone/MapServer/2",
         "layerType": "esriFeature",
+        "metadataUrl": "http://maps-cartes.ec.gc.ca/LWBSF-FIBLW/LWBSF_en.xml?_=1490727645184",
         "disabledControls": [ "opacity" ]
       },
       {

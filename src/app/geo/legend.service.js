@@ -82,7 +82,7 @@
 
                     // dynamic layers render as LegendGroup blocks; all other layers are rendered as LegendNode blocks;
                     if (nodeBlueprints.main.config.layerType === Geo.Layer.Types.ESRI_DYNAMIC) {
-                        return _makeDynamicGroupBlock(blockConfig, nodeBlueprints.main, nodeProxies.adjunct);
+                        return _makeDynamicGroupBlock(blockConfig, nodeBlueprints.main, nodeProxies);
                     } else {
                         return _makeNodeBlock(blockConfig, nodeBlueprints.main, nodeProxies);
                     }
@@ -105,11 +105,11 @@
              * @param {LayerNode} blockConfig legend entry config object
              * @return {LegendBlock.GROUP} the resulting LegendBlock.GROUP object
              */
-            function _makeDynamicGroupBlock(blockConfig, mainBlueprint, adjunctProxies) {
+            function _makeDynamicGroupBlock(blockConfig, mainBlueprint, proxies) {
                 const layerConfig = mainBlueprint.config;
 
                 // TODO: handle adjunct proxies; they need to be converted to invisible Legendblocks and added to the group
-                console.log(adjunctProxies);
+                console.log(proxies.adjunct);
 
                 // to create a group for a dynamic layer, create a entryGroup config object by using properties
                 // from dynamic layer definition config object
@@ -128,8 +128,7 @@
 
                 layerRecord.addStateListener(_onLayerRecordLoad);
 
-
-                const childControls = common.intersect(
+                let childControls = common.intersect(
                     layerConfig.controls,
                     ConfigObject.DEFAULTS.layer[Geo.Layer.Types.ESRI_DYNAMIC].childControls);
 
@@ -142,9 +141,16 @@
                  * @function _onLayerRecordLoad
                  * @private
                  * @param {String} state the current state of the layerRecord
+                 * @return {undefined}
                  */
                 function _onLayerRecordLoad(state) {
                     if (state === 'rv-loaded') {
+
+                        // dynamic children might not support opacity
+                        // TODO: check/handle controlledIds proxies as well
+                        if (!layerRecord.isTrueDynamic) {
+                            common.removeFromArray(childControls, 'opacity');
+                        }
 
                         const tempGroupBlockConfig = new ConfigObject.legend.EntryGroup({
                             children: layerRecord.getChildTree()
