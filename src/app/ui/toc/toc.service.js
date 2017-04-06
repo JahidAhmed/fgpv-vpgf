@@ -26,7 +26,8 @@
                 toggleLayerFiltersPanel
             },
 
-            toggleSettings
+            toggleSettings,
+            toggleMetadata
         };
 
         // toc preset controls (options and flags displayed on the layer item)
@@ -123,10 +124,10 @@
                 type: {
                     icon: {
                         esriFeature: type => ({
-                                esriGeometryPoint: 'community:vector-point',
-                                esriGeometryPolygon: 'community:vector-polygon',
-                                esriGeometryPolyline: 'community:vector-polyline'
-                            }[type]),
+                            esriGeometryPoint: 'community:vector-point',
+                            esriGeometryPolygon: 'community:vector-polygon',
+                            esriGeometryPolyline: 'community:vector-polyline'
+                        }[type]),
                         esriDynamic: 'action:settings',
                         esriDynamicLayerEntry: 'image:photo',
                         ogcWms: 'image:photo',
@@ -755,57 +756,37 @@
          *         {state = true|undefined => pane visible,
          *          state = false => pane not visible}.
          */
-        function toggleMetadata(/*legendBlock, state*/) {
+        function toggleMetadata(legendBlock, value = true) {
 
-            /*const requester = {
+            const requester = {
                 id: legendBlock.id,
-                name: legendBlock.layerProxy.name
+                name: legendBlock.name
             };
 
             const panelToClose = {
                 filters: false
-            };*/
+            };
 
-            /*
-            // if a sublayer of a group, select its root
-            const layer = entry.master ? entry.master : entry;
+            const dataPromise = $q(resolve => {
+                metadataService.loadFromURL(legendBlock.metadataUrl).then(mdata => {
+                    const metadataPackage = {
+                        metadata: mdata,
+                        metadataUrl: legendBlock.metadataUrl,
+                        catalogueUrl: legendBlock.catalogueUrl
+                    };
 
-            if (typeof state === 'undefined' || state === false) {
-                // construct a temp promise which resolves when data is generated or retrieved;
-                const dataPromise = $q(fulfill => {
-                    // check if metadata is cached
-                    if (layer.cache.metadata) {
-                        fulfill(layer.cache.metadata);
-                    } else {
-                        metadataService.transformXml(layer.metadataUrl).then(mdata => {
-                            // result is wrapped in an array due to previous setup
-                            // TODO: chagee the following when changing associated directive service
-                            layer.cache.metadata = mdata;
+                    resolve(metadataPackage);
 
-                            if (layer.metadataUrl) {
-                                layer.cache.metadata.metadataUrl = layer.metadataUrl;
-                            }
-
-                            if (layer.catalogueUrl) {
-                                layer.cache.metadata.catalogueUrl = layer.catalogueUrl;
-                            }
-
-                            fulfill(layer.cache.metadata);
-
-                        }).catch(() => {
-                            errorService.display($translate.instant('toc.error.resource.loadfailed'),
-                                    layoutService.panes.metadata);
-                        });
-                    }
+                }).catch(() => {
+                    errorService.display($translate.instant('toc.error.resource.loadfailed'),
+                        layoutService.panes.metadata);
                 });
-                stateManager
-                    .setActive(panelToClose)
-                    .then(() => stateManager.toggleDisplayPanel('sideMetadata', dataPromise, requester));
-            } else {
-                stateManager
-                    .setActive(panelToClose)
-                    .then(() => stateManager.toggleDisplayPanel('sideMetadata', entry, requester));
-            }*/
+            });
+
+            stateManager
+                .setActive(panelToClose)
+                .then(() => stateManager.toggleDisplayPanel('sideMetadata', dataPromise, requester));
+
         }
 
         /**
