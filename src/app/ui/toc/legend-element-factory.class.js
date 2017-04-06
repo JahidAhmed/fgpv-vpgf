@@ -240,8 +240,8 @@
             get icon () {    return 'maps:layers'; }
             get label () {   return 'toc.layer.label.symbology'; }
             action () {
-                this._symbologyStack.expand(!this._symbologyStack.isExpanded);
-                this._symbologyStack.fanOut(!this._symbologyStack.isExpanded);
+                this._symbologyStack.expanded = !this._symbologyStack.expanded;
+                this._symbologyStack.fannedOut = !this._symbologyStack.expanded;
             }
         }
 
