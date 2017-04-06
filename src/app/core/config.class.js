@@ -611,12 +611,26 @@
 
                 } else {
                     rootChildren = legendSource.root.children;
+
+                    // removing the `remove` control :) from the structured legend
+                    const controlName = 'remove';
+
+                    _removeControlOption(DEFAULTS.legend[TYPES.legend.GROUP].controls, controlName);
+
+                    Object.values(Geo.Layer.Types).forEach(layerType => {
+                        _removeControlOption(DEFAULTS.layer[layerType].controls, controlName);
+                        _removeControlOption(DEFAULTS.layer[layerType].childControls, controlName);
+                    });
                 }
 
                 this._root = new EntryGroup({
                     name: 'I\'m root',
                     children: rootChildren
                 });
+
+                function _removeControlOption(controlsArray = [], controlName = '') {
+                    common.removeFromArray(controlsArray, controlName);
+                }
             }
 
             get type () { return this._type; }
