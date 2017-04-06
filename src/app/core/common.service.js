@@ -19,7 +19,8 @@
         const service = {
             $timeout: $timeout,
 
-            intersect
+            intersect,
+            removeFromArray
         };
 
         return service;
@@ -40,6 +41,13 @@
         function intersect(array1 = [], array2 = []) {
             return array1.filter(item =>
                     array2.indexOf(item) !== -1);
+        }
+
+        function removeFromArray(array, name) {
+            let index = array.indexOf(name);
+            if (index !== -1) {
+                array.splice(index, 1);
+            }
         }
     }
 })();

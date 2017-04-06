@@ -13,7 +13,7 @@
         .module('app.geo')
         .factory('LegendBlock', LegendBlockFactory);
 
-    function LegendBlockFactory() {
+    function LegendBlockFactory($q, common) {
 
         let legendBlockCounter = 0;
 
@@ -145,27 +145,20 @@
         }
 
 
-
         class LegendNode extends LegendEntry {
 
             constructor(proxies, blockConfig, layerConfig) {
-                 super({}, blockConfig);
+                super({}, blockConfig);
 
-                 this._mainProxy = proxies.main;
-                 this._controlledProcies = proxies.adjunct;
+                this._mainProxy = proxies.main;
+                this._controlledProcies = proxies.adjunct;
 
-                 this._layerConfig = layerConfig;
+                this._layerConfig = layerConfig;
 
-                 // dynamic children might not support opacity
-                 // TODO: check controlled proxies as well
-                 if (!this._mainProxy.supportsOpacity) {
-                    removeFromArray(this.availableControls, 'opacity');
-                 }
-
-                 this._aggregateStates = ref.aggregateStates;
-                 this._symbologyStack =
+                this._aggregateStates = ref.aggregateStates;
+                this._symbologyStack =
                     new SymbologyStack(this._mainProxy, blockConfig, true);
-             }
+            }
 
             //_blockType = LegendBlock.NODE;
             get blockType () { return LegendBlock.NODE; }
@@ -225,29 +218,25 @@
             }
 
             get symbologyStack () {     return this._symbologyStack; }
-        }
 
-        function removeFromArray(array, name) {
-            let index = array.indexOf(name);
-            if (index !== -1) {
-                array.splice(index, 1);
-            }
+            get metadataUrl () {        return this._layerConfig.metadataUrl; }
+            get catalogueUrl () {       return this._layerConfig.catalogueUrl; }
         }
 
         // who is responsible for populating legend groups with entries? legend service or the legend group itself
         class LegendGroup extends LegendEntry {
 
-             constructor(blockConfig) {
-                 super();
+            constructor(blockConfig) {
+                super();
 
-                 this._name = blockConfig.name;
-                 this._expanded = blockConfig.expanded;
-                 this._availableControls = blockConfig.controls;
-                 this._disabledControls = blockConfig.disabledControls;
+                this._name = blockConfig.name;
+                this._expanded = blockConfig.expanded;
+                this._availableControls = blockConfig.controls;
+                this._disabledControls = blockConfig.disabledControls;
 
-                 this._aggregateStates = ref.aggregateStates;
-                 this._walk = ref.walkFunction.bind(this);
-             }
+                this._aggregateStates = ref.aggregateStates;
+                this._walk = ref.walkFunction.bind(this);
+            }
 
             //_blockType = LegendBlock.GROUP;
             get blockType () { return LegendBlock.GROUP; }
@@ -295,14 +284,26 @@
                 return this;
             }
 
-            get opacity () {                return false; }
-            set opacity (value) {
-                /*this._allProxies.forEach(proxy => {
-                    // TODO: try/catch
-                    proxy.setOpacity(value);
-                });
+            get opacity () {
+                const defaultValue = 0.5;
+                let isAllSame = false;
 
-                return this;*/
+                const entries = this._activeEntries;
+                const value = entries[0].opacity;
+
+                if (entries.length > 0) {
+                    isAllSame = entries.every(entry =>
+                        entry.opacity === value);
+                }
+
+                return isAllSame ? value : defaultValue;
+            }
+
+            set opacity (value) {
+                this._activeEntries.forEach(entry =>
+                    (entry.opacity = value));
+
+                return this;
             }
 
             get expanded () {               return this._expanded; }
@@ -499,7 +500,7 @@
          *
          * @function getPropertyDescriptor
          * @private
-         * @param {Object} obj
+         * @param {Object} obj object to get a descript from; usually a prototype
          * @param {String} property property name
          */
         function getPropertyDescriptor(obj, property) {

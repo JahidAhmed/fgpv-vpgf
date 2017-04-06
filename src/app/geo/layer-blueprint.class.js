@@ -77,20 +77,23 @@
                 sourceCopy.state = angular.extend({}, defaults.state, sourceCopy.state);
 
                 if (typeof sourceCopy.controls === 'undefined') {
-                    sourceCopy.controls = defaults.controls;
+                    sourceCopy.controls = angular.copy(defaults.controls);
                 } else {
                     sourceCopy.controls = common.intersect(sourceCopy.controls, defaults.controls);
                 }
 
                 if (typeof sourceCopy.disabledControls === 'undefined') {
-                    sourceCopy.disabledControls = defaults.disabledControls;
+                    sourceCopy.disabledControls = angular.copy(defaults.disabledControls);
                 } else {
                     sourceCopy.disabledControls = common.intersect(sourceCopy.disabledControls, defaults.controls);
                 }
 
+                // remove metadata control if no metadata url is specified after applying defaults
+                if (!sourceCopy.metadataUrl) {
+                    common.removeFromArray(sourceCopy.controls, 'metadata');
+                }
+
                 return sourceCopy;
-
-
             }
 
             /**
