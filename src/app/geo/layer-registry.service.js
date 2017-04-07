@@ -21,11 +21,14 @@
         .module('app.geo')
         .factory('layerRegistry', layerRegistryFactory);
 
-    function layerRegistryFactory($timeout, Geo, LayerBlueprint, configService) {
+    function layerRegistryFactory($timeout, gapiService, Geo, LayerBlueprint, configService) {
         const service = {
             getLayerRecord,
             makeLayerRecord,
-            loadLayerRecord
+            loadLayerRecord,
+
+            getBoundingBoxRecord,
+            makeBoundingBoxRecord
         };
 
         const ref = {
@@ -129,6 +132,29 @@
                 ref.loadingCount = Math.max(--ref.loadingCount, 0);
                 _loadNextLayerRecord();
             }
+        }
+
+        function getBoundingBoxRecord(id) {
+            const boundingBoxRecords = configService._sharedConfig_.map.boundingBoxRecords;
+
+            return boundingBoxRecords.find(boundingBoxRecord =>
+                boundingBoxRecord.layerId === id);
+        }
+
+        function makeBoundingBoxRecord(id, bbExtent) {
+            const boundingBoxRecords = configService._sharedConfig_.map.boundingBoxRecords;
+            const mapBody = configService._sharedConfig_.map.body;
+
+            let boundingBoxRecord = getBoundingBoxRecord(id);
+            if (!boundingBoxRecord) {
+                boundingBoxRecord = gapiService.gapi.layer.bbox.makeBoundingBox(
+                        id, bbExtent, mapBody.extent.spatialReference);
+
+                boundingBoxRecords.push(boundingBoxRecord);
+                mapBody.addLayer(boundingBoxRecord);
+            }
+
+            return boundingBoxRecord;
         }
 
         /*function _setHoverTips(layerRecord) {

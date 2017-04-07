@@ -93,18 +93,15 @@
                 this._controlName = 'boundingBox';
             }
 
-            // FIXME: remove hack!
-            _bbon = false; // jshint ignore:line
-
             set value (value) { this.action(value); }
-            get value () { return this._bbon; } // || this._layerProxy.boundingBox; } // TODO: return bbox visibility value
+            get value () { return this.block.boundingBox; }
 
             get icon () {    return 'community:cube-outline'; }
             get label () {   return 'settings.label.boundingBox'; }
             action (value = !this.value) {
                 console.info('bb changed');
-                this._bbon = value;
-                //this._layerProxy.toggleBoundingBox(value);
+
+                this.block.boundingBox = value;
             }
         }
 
