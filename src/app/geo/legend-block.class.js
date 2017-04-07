@@ -142,6 +142,18 @@
 
             get isSelected () {         return this._isSelected; }
             set isSelected (value) {      this._isSelected = value; return this; }
+
+            isControlVisible(controlName) {
+                return this.availableControls.indexOf(controlName) !== -1;
+            }
+
+            isControlDisabled(controlname) {
+                return this.disabledControls.indexOf(controlname) !== -1;
+            }
+
+            isControlUserDisabled(controlName) {
+                return this.userDisabledControls.indexOf(controlName) !== -1;
+            }
         }
 
 
@@ -163,10 +175,11 @@
             //_blockType = LegendBlock.NODE;
             get blockType () { return LegendBlock.NODE; }
 
-            get _allProxies () {        return [this._mainProxy].concat(this._controlledProcies); }
+            get _allProxies () {            return [this._mainProxy].concat(this._controlledProcies); }
 
-            get availableControls () {  return this._layerConfig.controls; }
-            get disabledControls () {   return this._layerConfig.disabledControls; }
+            get availableControls () {      return this._layerConfig.controls; }
+            get disabledControls () {       return this._layerConfig.disabledControls; }
+            get userDisabledControls () {   return this._layerConfig.userDisabledControls; }
 
             get state () {
                 const allStates = this._allProxies.map(proxy => proxy.state);
@@ -233,6 +246,7 @@
                 this._expanded = blockConfig.expanded;
                 this._availableControls = blockConfig.controls;
                 this._disabledControls = blockConfig.disabledControls;
+                this._userDisabledControls = blockConfig.userDisabledControls;
 
                 this._aggregateStates = ref.aggregateStates;
                 this._walk = ref.walkFunction.bind(this);
@@ -245,8 +259,9 @@
 
             // get _allProxies () {        return this.entries.map(entry => entry.layerProxy; }
 
-            get availableControls () {  return this._availableControls; }
-            get disabledControls () {   return this._disabledControls; }
+            get availableControls () {      return this._availableControls; }
+            get disabledControls () {       return this._disabledControls; }
+            get userDisabledControls () {   return this._userDisabledControls; }
 
             get state () {
                 if (this.entries.length === 0) {

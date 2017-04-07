@@ -127,9 +127,13 @@
 
                 layerRecord.addStateListener(_onLayerRecordLoad);
 
-                let childControls = common.intersect(
-                    layerConfig.controls,
-                    ConfigObject.DEFAULTS.layer[Geo.Layer.Types.ESRI_DYNAMIC].childControls);
+                const derivedChildLayerConfig = {
+                    controls: common.intersect(
+                        layerConfig.controls,
+                        ConfigObject.DEFAULTS.layer[Geo.Layer.Types.ESRI_DYNAMIC].child.controls),
+                    disabledControls: layerConfig.disabledControls,
+                    userDisabledControls: []
+                };
 
                 return group;
 
@@ -147,8 +151,9 @@
 
                         // dynamic children might not support opacity
                         // TODO: check/handle controlledIds proxies as well
+                        // TODO: allow for an optional description why the control is disabled
                         if (!layerRecord.isTrueDynamic) {
-                            common.removeFromArray(childControls, 'opacity');
+                            derivedChildLayerConfig.userDisabledControls.push('opacity');
                         }
 
                         const tempGroupBlockConfig = new ConfigObject.legend.EntryGroup({
@@ -178,12 +183,7 @@
                             adjunct: []
                         };
 
-                        const derivedLayerConfig = {
-                            controls: childControls,
-                            disabledControls: layerConfig.disabledControls
-                        };
-
-                        childBlock = new LegendBlock.Node(proxies, childBlockConfig, derivedLayerConfig);
+                        childBlock = new LegendBlock.Node(proxies, childBlockConfig, derivedChildLayerConfig);
                     }
 
                     parent.addEntry(childBlock);

@@ -977,7 +977,7 @@
                     return transformedXMLData;
                 });
 
-            return loadXmlFile(xmlUrl)
+            /*return loadXmlFile(xmlUrl)
                 .then(xmlData => applyXSLT(xmlData, xsltString, params))
                 .then(transformedXMLData => {
                     cache.xmlUrl = transformedXMLData;
@@ -986,7 +986,7 @@
                 .catch(err => {
                     console.error('Error: ' + err);
                     throw err;
-                });
+                });*/
         }
 
         /**

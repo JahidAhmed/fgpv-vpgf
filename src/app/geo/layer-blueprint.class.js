@@ -62,7 +62,7 @@
             get source () { return this._source; }
 
             /**
-             * Fills in the missing values in controls, disabledControls, and state with defaults.
+             * Fills in the missing values in controls, disabledControls, userDisabledControls, and state with defaults.
              * @function _applyLayerDefaults
              * @private
              * @param {Object} source JSON object of the layer defintion from the config
@@ -87,6 +87,9 @@
                 } else {
                     sourceCopy.disabledControls = common.intersect(sourceCopy.disabledControls, defaults.controls);
                 }
+
+                // userDisabledControls cannot be specified in schema, using straight defaults
+                sourceCopy.userDisabledControls = angular.copy(defaults.userDisabledControls);
 
                 // remove metadata control if no metadata url is specified after applying defaults
                 if (!sourceCopy.metadataUrl) {

@@ -5,7 +5,10 @@
     </div>
 
     <div class="rv-slider-body">
-        <md-slider class="md-primary" max="1" min="0" step="0.01" ng-model="self.uiControl.value"></md-slider>
+        <md-slider
+            ng-disabled="self.uiControl.isDisabled"
+            class="md-primary"
+            max="1" min="0" step="0.01" ng-model="self.uiControl.value"></md-slider>
         <span class="rv-slider-indicator">{{ self.Math.round(self.uiControl.value * 100) }}%</span>
     </div>
 </div>
