@@ -128,11 +128,16 @@
 
                 layerRecord.addStateListener(_onLayerRecordLoad);
 
+                // TODO: turn this into a full-blown types layer config
+                // TODO: needs state defaults like boundg box, etc.
                 const derivedChildLayerConfig = {
+                    state: {
+                        boundingBox: true
+                    },
                     controls: common.intersect(
                         layerConfig.controls,
                         ConfigObject.DEFAULTS.layer[Geo.Layer.Types.ESRI_DYNAMIC].child.controls),
-                    disabledControls: layerConfig.disabledControls,
+                    disabledControls: layerConfig.disabledControls, // TODO: need to default disabled controls as well?
                     userDisabledControls: []
                 };
 

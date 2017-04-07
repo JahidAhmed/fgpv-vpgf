@@ -190,9 +190,15 @@
                 this._aggregateStates = ref.aggregateStates;
                 this._symbologyStack =
                     new SymbologyStack(this._mainProxy, blockConfig, true);
+
+                // this is the first chance to properly create bounding box for this legend node
+                // since it's created on demand and cannot be created by geoapi when creating layerRecord
+                // need to read the layer config state here and initialize the bounding box manually
+                if (this._layerConfig.state.boundingBox) {
+                    this.boundingBox = true;
+                }
             }
 
-            //_blockType = TYPES.NODE;
             get blockType () { return TYPES.NODE; }
 
             get _allProxies () {            return [this._mainProxy].concat(this._controlledProcies); }
@@ -241,6 +247,11 @@
                     proxy.setVisibility(value);
                 });
 
+                // hide bounding box when the layer goes invisible
+                if (!value) {
+                    this.boundingBox = false;
+                }
+
                 return this;
             }
 
@@ -258,18 +269,44 @@
                 return this;
             }
 
-            get _bbox () {
-                if (!this._bboxProxy) {
-                    this._bboxProxy = layerRegistry.makeBBox(this._mainProxy.fullExtent);
-                }
+            /**
+             * Creates and stores (if missing) a boundign box based on the full extent exposed by the proxy object.
+             *
+             * @function _makeBbox
+             * @private             *
+             */
+            _makeBbox () {
+                // TODO: use actual extent when geoapi supports it
+                const sampleExtent =  {
+                    "xmin": -1.331644376E7,
+                    "ymin": 6388804.558300003,
+                    "xmax": -1.0471824465E7,
+                    "ymax": 9225974.5022,
+                    "spatialReference": {
+                        "wkid": 102100,
+                        "latestWkid": 3857
+                    }
+                };
 
-                return this._bboxProxy;
+                if (!this._bboxProxy) {
+                    this._bboxProxy = layerRegistry.makeBoundingBoxRecord(`${this.id}_bbox`, this._mainProxy.fullExtent || sampleExtent);
+                }
             }
             get boundingBox () {
-                return this._bbox.visibility;
+                return this._bboxProxy ? this._bboxProxy.visible : this._layerConfig.state.boundingBox;
+
+                // return this._bbox.visibility;
             }
             set boundingBox (value) {
-                this._bbox.visibility = value;
+                if (!this._bboxProxy) {
+                    if (value) {
+                        this._makeBbox();
+                    }
+
+                    return;
+                }
+
+                this._bboxProxy.setVisibility(value);
             }
 
             get symbologyStack () {     return this._symbologyStack; }

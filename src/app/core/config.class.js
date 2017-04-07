@@ -125,7 +125,7 @@
                         controls: [
                             'opacity',
                             'visibility',
-                            // 'boundingBox',
+                            'boundingBox',
                             'query',
                             // 'snapshot',
                             'metadata',
@@ -862,9 +862,11 @@
             // --- //
 
             _layerRecords = [];
+            _boundingBoxRecords = [];
             _legendBlocks = {};
 
             get layerRecords () { return this._layerRecords; }
+            get boundingBoxRecords () { return this._boundingBoxRecords; }
             get legendBlocks () { return this._legendBlocks; }
 
             set body (value) {
