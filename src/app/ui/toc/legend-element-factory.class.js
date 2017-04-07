@@ -18,14 +18,18 @@
             get label () {   return ''; }
             get tooltip () { return this.label; }
 
-            get isVisible () { return this.block.availableControls.indexOf(this._controlName) !== -1; }
+            get isVisible () { return this.block.isControlVisible(this._controlName); }
         }
 
         class BaseControl extends BaseElement {
             action () { }
 
             get isDisabled () {
-                return this.block.disabledControls.indexOf(this._controlName) !== -1;
+                const value =
+                    this.block.isControlDisabled(this._controlName) ||
+                    this.block.isControlUserDisabled(this._controlName);
+
+                return value;
             }
         }
 

@@ -65,7 +65,8 @@
                         'data',
                         'symbology'
                     ],
-                    disabledControls: []
+                    disabledControls: [],
+                    userDisabledControls: []
                 },
                 [Geo.Layer.Types.OGC_WMS]: {
                     state: {
@@ -90,7 +91,8 @@
                         // 'data',
                         'symbology'
                     ],
-                    disabledControls: []
+                    disabledControls: [],
+                    userDisabledControls: []
                 },
                 [Geo.Layer.Types.ESRI_DYNAMIC]: {
                     state: {
@@ -115,22 +117,29 @@
                         'data',
                         'symbology'
                     ],
-                    childControls: [
-                        'opacity',
-                        'visibility',
-                        // 'boundingBox',
-                        'query',
-                        // 'snapshot',
-                        'metadata',
-                        'boundaryZoom',
-                        'refresh',
-                        // 'reload',
-                        'remove',
-                        'settings',
-                        'data',
-                        'symbology'
-                    ],
-                    disabledControls: []
+                    disabledControls: [],
+                    userDisabledControls: [],
+                    // this is special case reserved from children of a dynamic layer
+                    // these defaults cannot be applied to the layer config ahead of time since we don't know the child tree structure until the layer loads
+                    child: {
+                        controls: [
+                            'opacity',
+                            'visibility',
+                            // 'boundingBox',
+                            'query',
+                            // 'snapshot',
+                            'metadata',
+                            'boundaryZoom',
+                            'refresh',
+                            // 'reload',
+                            'remove',
+                            'settings',
+                            'data',
+                            'symbology'
+                        ],
+                        disabledControls: [],
+                        userDisabledControls: []
+                    }
                 },
                 [Geo.Layer.Types.ESRI_IMAGE]: {
                     state: {
@@ -155,7 +164,8 @@
                         'data',
                         'symbology'
                     ],
-                    disabledControls: []
+                    disabledControls: [],
+                    userDisabledControls: []
                 },
                 [Geo.Layer.Types.ESRI_TILE]: {
                     state: {
@@ -180,7 +190,8 @@
                         'data',
                         'symbology'
                     ],
-                    disabledControls: []
+                    disabledControls: [],
+                    userDisabledControls: []
                 }
             }
         };
@@ -223,6 +234,7 @@
                     null;
                 this._controls = source.controls; // controls are defaulted in blueprint constructor
                 this._disabledControls = source.disabledControls; // controls are defaulted in blueprint constructor
+                this._userDisabledControls = source.userDisabledControls;
                 this._state = new InitialLayerSettings(source.state); // state is defaulted in blueprint constructor
             }
 
@@ -233,8 +245,26 @@
             get metadataUrl () { return this._metadataUrl; }
             get catalogueUrl () { return this._catalogueUrl; }
             get extent () { return this._extent; }
+
+            /**
+             * @return {Array} an array of control names which are visible in UI;
+             * if a control name is not specified here, its value is blocked from modification
+             */
             get controls () { return this._controls; }
+            /**
+             * @return {Array} an array of control names whose values are immutable;
+             * this can be used to block a control which is already visible (in the `controls` array), so it becomes a static indicator of the current state value;
+             * specifying a control which is not visibile (not in the `controls` array) will not have any effect
+             */
             get disabledControls () { return this._disabledControls; }
+            /**
+             * @return {Array} an array of control names whose values are blocked from modification by the user;
+             * they can be changed by the system in some circumstances;
+             * this is internal property and should not be avaialbe in the schema;
+             * one use example is opacity on dynamic children whose parent layer is not a true dynamic - the child opacity
+             * control is blocked to the user, but is still availabe to the system as child opacity will just reflect the opacity of the layer itself;
+             */
+            get userDisabledControls () { return this._userDisabledControls; }
             get state () { return this._state; }
         }
 
@@ -564,6 +594,7 @@
                     entryGroupSource.controls,
                     DEFAULTS.legend[TYPES.legend.GROUP].controls);
                 this._disabledControls = entryGroupSource.disabledControls || [];
+                this._userDisabledControls = [];
 
                 this._expanded = entryGroupSource.expanded || false;
             }
@@ -572,6 +603,7 @@
             get children () { return this._children; }
             get controls () { return this._controls; }
             get disabledControls () { return this._disabledControls; }
+            get userDisabledControls () { return this._userDisabledControls; }
             get expanded () { return this._expanded; }
 
             get entryType () { return TYPES.legend.GROUP; }
@@ -579,6 +611,7 @@
 
         /**
          * Typed representation of a Legend specified in the config. If the legend's type is set as `autopopulate`, the structured legend (exclusively consisting of Entry objects) is generated based on the layer definition list.
+         * Defaulting of the legend entries happens here as opposed to defaulting of layer definition which occurs in the layer blueprint.
          * @class Legend
          */
         class Legend {
@@ -618,8 +651,14 @@
                     _removeControlOption(DEFAULTS.legend[TYPES.legend.GROUP].controls, controlName);
 
                     Object.values(Geo.Layer.Types).forEach(layerType => {
-                        _removeControlOption(DEFAULTS.layer[layerType].controls, controlName);
-                        _removeControlOption(DEFAULTS.layer[layerType].childControls, controlName);
+                        const layerDefaults = DEFAULTS.layer[layerType];
+
+                        _removeControlOption(layerDefaults.controls, controlName);
+
+                        // for layers which can have children - Dynamic layer and potentilally WMS
+                        if (layerDefaults.child) {
+                            _removeControlOption(layerDefaults.child.controls, controlName);
+                        }
                     });
                 }
 
