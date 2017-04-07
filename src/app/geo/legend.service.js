@@ -96,8 +96,8 @@
 
             /**
              * Creates a LegendBlock.GROUP for a dynamic layer since it's represented in the UI as a group.
-             * This group is provided a proxy object from a LegendEntryRecord because a dynamic layer is specified as a single entry (not a group)
-             * in the config and can control multiple other layers through its `controlledIds` property.
+             * This group is not provided a proxy object from a LegendEntryRecord because a dynamic layer is specified as a single entry (not a group)
+             * in the config and can control multiple other layers through its `controlledIds` property though.
              *
              * @function _makeDynamicGroupBlock
              * @private
@@ -149,7 +149,7 @@
                 function _onLayerRecordLoad(state) {
                     if (state === 'rv-loaded') {
 
-                        // dynamic children might not support opacity
+                        // dynamic children might not support opacity if the layer is not a true dynamic layer
                         // TODO: check/handle controlledIds proxies as well
                         // TODO: allow for an optional description why the control is disabled
                         if (!layerRecord.isTrueDynamic) {
@@ -224,7 +224,7 @@
 
             /**
              * Create a LegendBlock.GROUP object for a structured group specified in the legend.
-             * This group is provided with a proxy object from a LegendGroupRecord as there can be several layer controled by the group.
+             * This group is not provided with a proxy object.
              * This parses the config object provided and populates both legendGroupRecord and LegendBlock.GROUP object with appropriate childProxies and LegenBlocks.
              *
              * @function _makeGroupBlock

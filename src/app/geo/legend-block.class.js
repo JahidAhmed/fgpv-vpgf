@@ -13,7 +13,7 @@
         .module('app.geo')
         .factory('LegendBlock', LegendBlockFactory);
 
-    function LegendBlockFactory($q, common) {
+    function LegendBlockFactory($q, common, layerRegistry) {
 
         let legendBlockCounter = 0;
 
@@ -256,6 +256,20 @@
                 });
 
                 return this;
+            }
+
+            get _bbox () {
+                if (!this._bboxProxy) {
+                    this._bboxProxy = layerRegistry.makeBBox(this._mainProxy.fullExtent);
+                }
+
+                return this._bboxProxy;
+            }
+            get boundingBox () {
+                return this._bbox.visibility;
+            }
+            set boundingBox (value) {
+                this._bbox.visibility = value;
             }
 
             get symbologyStack () {     return this._symbologyStack; }

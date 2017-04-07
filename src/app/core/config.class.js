@@ -620,7 +620,7 @@
 
                 let rootChildren;
 
-                if (this._type === TYPES.legend.AUTOPOPULATE) {
+                if (this.isReorderable) {
                     // since auto legend is a subset of structured legend, its children are automatically populated
                     const sortGroups = Geo.Layer.SORT_GROUPS_;
 
@@ -671,6 +671,8 @@
                     common.removeFromArray(controlsArray, controlName);
                 }
             }
+
+            get isReorderable () { return this._type === TYPES.legend.AUTOPOPULATE; }
 
             get type () { return this._type; }
             get root () { return this._root; }

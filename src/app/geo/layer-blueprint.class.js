@@ -218,7 +218,7 @@
         class LayerServiceBlueprint extends LayerBlueprint {
             /**
              * Creates a new LayerServiceBlueprint.
-             * @param  {Object} source ??? partical config, __must__ contain a service `url`.
+             * @param  {Object|String} source fully-formed layer config object or url string
              */
             constructor(source) {
 
