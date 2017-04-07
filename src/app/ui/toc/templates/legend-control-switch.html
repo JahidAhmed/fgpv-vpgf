@@ -1,6 +1,7 @@
 <md-switch
     translate-attr-aria-label="{{ self.uiControl.label }}"
-    class="md-primary rv-switch"
+    class="rv-switch"
+    ng-class="{ 'md-primary': !self.uiControl.isDisabled }"
     ng-disabled="self.uiControl.isDisabled"
     ng-model="self.uiControl.value">
 

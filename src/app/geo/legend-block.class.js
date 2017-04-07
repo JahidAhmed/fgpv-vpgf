@@ -23,6 +23,13 @@
             getPropertyDescriptor
         };
 
+        const TYPES = {
+            INFO: 'info',
+            NODE: 'node',
+            GROUP: 'group',
+            SET: 'set'
+        };
+
         // jscs doesn't like enhanced object notation
         // jscs:disable requireSpacesInAnonymousFunctionExpression
         class SymbologyStack {
@@ -73,6 +80,8 @@
             // _id;
             // _layerProxy;
 
+            get isInteractive () { return false; }
+
             get id () {
                 if (!this._id) {
                     this._id = `${this.blockType}_${++legendBlockCounter}`;
@@ -98,7 +107,7 @@
                 super({}, blockConfig);
             }
 
-            get blockType () { return LegendBlock.INFO; }
+            get blockType () { return TYPES.INFO; }
 
             get infoType () {   return this.blockConfig.infoType; }
             get content () {    return this.blockConfig.content; }
@@ -114,7 +123,6 @@
             // get availableControls () { return this.config.controls; }
             // get disabledControls () { return this.config.controls; }
 
-            _isSelected = false; // jshint ignore:line
 
             // TODO: turn state names and template names to consts
             /*get template () {
@@ -140,6 +148,10 @@
                 return -1;
             }*/
 
+            get isInteractive () { return true; }
+
+            _isSelected = false; // jshint ignore:line
+
             get isSelected () {         return this._isSelected; }
             set isSelected (value) {      this._isSelected = value; return this; }
 
@@ -149,6 +161,14 @@
 
             isControlDisabled(controlname) {
                 return this.disabledControls.indexOf(controlname) !== -1;
+            }
+
+            isControlSystemDisabled(controlName) {
+                const value =
+                    this.isControlDisabled(controlName) ||
+                    !this.isControlVisible(controlName);
+
+                return value;
             }
 
             isControlUserDisabled(controlName) {
@@ -172,8 +192,8 @@
                     new SymbologyStack(this._mainProxy, blockConfig, true);
             }
 
-            //_blockType = LegendBlock.NODE;
-            get blockType () { return LegendBlock.NODE; }
+            //_blockType = TYPES.NODE;
+            get blockType () { return TYPES.NODE; }
 
             get _allProxies () {            return [this._mainProxy].concat(this._controlledProcies); }
 
@@ -212,6 +232,10 @@
 
             get visibility () {         return this._mainProxy.visibility; }
             set visibility (value) {
+                if (this.isControlSystemDisabled('visibility')) {
+                    return;
+                }
+
                 this._allProxies.forEach(proxy => {
                     // TODO: try/catch
                     proxy.setVisibility(value);
@@ -222,6 +246,10 @@
 
             get opacity () {            return this._mainProxy.opacity; }
             set opacity (value) {
+                if (this.isControlSystemDisabled('opacity')) {
+                    return;
+                }
+
                 this._allProxies.forEach(proxy => {
                     // TODO: try/catch
                     proxy.setOpacity(value);
@@ -252,8 +280,8 @@
                 this._walk = ref.walkFunction.bind(this);
             }
 
-            //_blockType = LegendBlock.GROUP;
-            get blockType () { return LegendBlock.GROUP; }
+            //_blockType = TYPES.GROUP;
+            get blockType () { return TYPES.GROUP; }
 
             _entries = [];
 
@@ -293,12 +321,21 @@
                     entry.visibility);
             }
             set visibility (value) {
+                if (this.isControlSystemDisabled('visibility')) {
+                    return;
+                }
+
                 this._activeEntries.forEach(entry =>
                     (entry.visibility = value));
 
                 return this;
             }
 
+            /**
+             * @return {Number} returns opacity of the group;
+             * it's equal to the child opacity values if they are the same or 0.5 if not;
+             * TODO: might want to add a description what 0.5 value means in such cases;
+             */
             get opacity () {
                 const defaultValue = 0.5;
                 let isAllSame = false;
@@ -315,6 +352,10 @@
             }
 
             set opacity (value) {
+                if (this.isControlSystemDisabled('opacity')) {
+                    return;
+                }
+
                 this._activeEntries.forEach(entry =>
                     (entry.opacity = value));
 
@@ -329,9 +370,9 @@
             get entries () {                return this._entries; }
             get _activeEntries () {
                 return this.entries.filter(entry =>
-                    entry.blockType === LegendBlock.SET ||
-                    entry.blockType === LegendBlock.GROUP ||
-                    entry.blockType === LegendBlock.NODE);
+                    entry.blockType === TYPES.SET ||
+                    entry.blockType === TYPES.GROUP ||
+                    entry.blockType === TYPES.NODE);
             }
 
             addEntry (entry, position = this._entries.length) {
@@ -350,8 +391,8 @@
                 return this;
             }
 
-            walk (callback) {
-                return this._walk(callback);
+            walk (...args) {
+                return this._walk(...args);
             }
         }
 
@@ -363,12 +404,19 @@
                 this._entries = [];
                 this._entryWatchers = [];
                 this._selectedEntry = null;
-                this._blockType = LegendBlock.SET;
 
                 this._walk = ref.walkFunction.bind(this);
             }
 
+            get blockType () { return TYPES.SET; }
+
             _highlightSet = false;
+
+            // sets are special snowflakes; they only support visibility controls
+            // and it's not exposed in UI anyway since Sets don't have templates
+            get availableControls () {      return ['visibility']; }
+            get disabledControls () {       return []; }
+            get userDisabledControls () {   return []; }
 
             _decorateDescriptor(prototype, propertyName, decorator) {
                 const descriptor = getPropertyDescriptor(prototype, propertyName);
@@ -390,19 +438,20 @@
                 }
             }
 
-            get blockType () { return LegendBlock.SET; }
+            get blockType () { return TYPES.SET; }
 
             get visibility () {
                 return this._activeEntries.some(entry =>
                     entry.visibility);
             }
             set visibility (value) {
-                if (value && !this.visibility) {
-                    // `this.visibility` will be `false` if there is no entries, so calling [0] should be safe
-                    this._activeEntries[0].visibility = true;
-                } else {
+                if (!value) {
                     this._activeEntries.forEach(entry =>
                         (entry.visibility = value));
+                } else if (!this.visibility) {
+                    // setting the set's visibility to true when one of the entries is alreayd visible has no effect
+                    // `this.visibility` will be `false` if there is no entries, so calling [0] should be safe
+                    this._activeEntries[0].visibility = true;
                 }
 
                 return this;
@@ -410,8 +459,8 @@
 
             get _activeEntries () {
                 return this.entries.filter(entry =>
-                    entry.blockType === LegendBlock.GROUP ||
-                    entry.blockType === LegendBlock.NODE);
+                    entry.blockType === TYPES.GROUP ||
+                    entry.blockType === TYPES.NODE);
             }
             get entries () { return this._entries; }
             addEntry (entry, position = this._entries.length) {
@@ -427,10 +476,10 @@
                     set: value => {
                         if (value) {
                             this.visibility = false;
-                        }
-                    }};
+                        }}
+                };
 
-                const visibilityPrototype = entry.blockType === LegendBlock.NODE ?
+                const visibilityPrototype = entry.blockType === TYPES.NODE ?
                     LegendNode.prototype : LegendGroup.prototype;
 
                 const visibilityDescriptor =
@@ -466,12 +515,8 @@
                 return this;
             }
 
-            setVisibility (...args) {
-                console.log(args);
-            }
-
-            walk (callback) {
-                return this._walk(callback);
+            walk (...args) {
+                return this._walk(...args);
             }
         }
         // jscs doesn't like enhanced object notation
@@ -482,7 +527,9 @@
             Node: LegendNode,
             Group: LegendGroup,
             Set: LegendSet,
-            Info: LegendInfo
+            Info: LegendInfo,
+
+            TYPES
         };
 
         return service;
@@ -496,16 +543,34 @@
             return stateNames[stateValues.indexOf(true)];
         }
 
-        function walkFunction(callback) {
+        /**
+         * Walks the legend block hierarchy executing `action` with each block and returning a flattened array of results.
+         * For legend block containing children, a `decision` function is called to decide whether to proceed walking down its children.
+         *
+         * @function walkFunction
+         * @private
+         * @param {Function} action this will be called with every legend block and its children and the function returns flattened into an array and returned
+         * @param {Function} decision [optiona = null] if a legendBlock has children (group or set), this function is called to decide whether to walk block's children or not;
+         * if this returns true, the children of the group/set are passed to the `action` function
+         * @return {Array} a flattened array of results from the `action` function when executed with all the legend blocks
+         */
+        function walkFunction(action, decision = null) {
             // roll in the results into a flat array
             return [].concat.apply([], this.entries.map((entry, index) => {
-                if (entry.blockType === 'group') {
-                    return [].concat(
-                        callback(entry, index, this),
-                        entry.walk(callback)
-                    );
+                if (entry.blockType === TYPES.GROUP ||
+                    entry.blockType === TYPES.SET) {
+
+                    const actionResult = action(entry, index, this);
+                    const walkResult = [];
+                    const proceed = decision ? decision(entry, index, this) : true;
+
+                    if (proceed) {
+                        walkResult.concat(entry.walk(action, decision));
+                    }
+
+                    return [].concat(actionResult, walkResult);
                 } else {
-                    return callback(entry, index, this);
+                    return action(entry, index, this);
                 }
             }));
         }

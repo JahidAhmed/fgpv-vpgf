@@ -317,6 +317,9 @@
               "visibility",
               "settings"
             ],
+            "disabledControls": [
+              "visibility"
+            ],
             "children": [
               {
                 "layerId": "esri_tile"
