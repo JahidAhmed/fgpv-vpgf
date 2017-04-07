@@ -389,7 +389,7 @@
                 "layerType": { "type": "string", "enum": [ "esriImage", "esriTile" ] },
                 "extent": { "$ref": "#/definitions/extentWithReferenceNode" },
                 "controls": { "$ref": "#/definitions/legendEntryControls" },
-                "disabledControls": { "$ref": "#/definitions/legendEntryControls", "description": "A list of controls which are visible, but disabled for user modification" },
+                "disabledControls": { "$ref": "#/definitions/legendEntryControls", "description": "A list of controls which are blocked from modification either by the user or programmatically. These controls can be visible or not as defined in the `controls` array." },
                 "state": { "$ref": "#/definitions/initialLayerSettings" }
             },
             "required": [ "id", "layerType", "url" ],

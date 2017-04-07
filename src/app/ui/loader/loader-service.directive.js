@@ -52,7 +52,10 @@
                 isCompleted: false,
                 onContinue: connectOnContinue,
                 onCancel: () => onCancel(self.connect.step),
-                onKeypress: (event) => { if (event.keyCode === keyNames.ENTER) { connectOnContinue(); } }, // check if enter key have been pressed and call the next step if so
+                onKeypress: event => {
+                    if (event.keyCode === keyNames.ENTER) {
+                        connectOnContinue();
+                    }}, // check if enter key have been pressed and call the next step if so
                 reset: connectReset,
                 focus: 'serviceUrl'
             },
@@ -68,7 +71,8 @@
                 isActive: false,
                 isCompleted: false,
                 onContinue: selectOnContinue,
-                onCancel: () => onCancel(self.select.step),
+                onCancel: () =>
+                    onCancel(self.select.step),
                 reset: selectReset,
                 focus: 'serviceType'
             },
@@ -84,7 +88,8 @@
                 isActive: false,
                 isCompleted: false,
                 onContinue: configureOnContinue,
-                onCancel: () => onCancel(self.configure.step),
+                onCancel: () =>
+                    onCancel(self.configure.step),
                 reset: configureReset,
                 focus: 'layerServiceName'
             },
@@ -100,6 +105,7 @@
             .addSteps(self.select.step)
             .addSteps(self.configure.step)
             .start(); // activate stepper on the first step
+
         /***/
 
         /**
@@ -142,6 +148,9 @@
          */
         function connectOnContinue() {
             const connect = self.connect;
+
+            /// ????
+
 
             // creating new service blueprint with the provided url
             // since there is no layer type provided, blueprint will try to get service data
