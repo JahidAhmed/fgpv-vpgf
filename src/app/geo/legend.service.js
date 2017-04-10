@@ -132,7 +132,7 @@
                 // TODO: needs state defaults like boundg box, etc.
                 const derivedChildLayerConfig = {
                     state: {
-                        boundingBox: true
+                        boundingBox: false
                     },
                     controls: common.intersect(
                         layerConfig.controls,
@@ -263,7 +263,21 @@
                 const layerConfig = mainBlueprint.config;
                 const node = new LegendBlock.Node(proxies, blockConfig, layerConfig);
 
+                const layerRecord = layerRegistry.getLayerRecord(blockConfig.layerId);
+                layerRecord.addStateListener(_onLayerRecordLoad);
+
                 return node;
+
+                function _onLayerRecordLoad(state) {
+                    if (state === 'rv-loaded') {
+                        // this is the first chance to properly create bounding box for this legend node
+                        // since it's created on demand and cannot be created by geoapi when creating layerRecord
+                        // need to read the layer config state here and initialize the bounding box manually when the layer loads
+                        node.boundingBox = layerConfig.state.boundingBox;
+
+                        layerRecord.removeStateListener(_onLayerRecordLoad);
+                    }
+                }
             }
 
             /**

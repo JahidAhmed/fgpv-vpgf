@@ -34,7 +34,7 @@
     }
   },
   "map": {
-    "initialBasemapId": "baseSimple",
+    "initialBasemapId": "baseNrCan",
     "components": {
       "geoSearch": {
         "enabled": true,
@@ -382,7 +382,8 @@
         "layerType": "esriFeature",
         "metadataUrl": "http://maps-cartes.ec.gc.ca/LWBSF-FIBLW/LWBSF_en.xml?_=1490727645184",
         "state": {
-          "visibility": false
+          "visibility": false,
+          "boundingBox": true
         },
         "url": "http://geoappext.nrcan.gc.ca/arcgis/rest/services/NACEI/energy_infrastructure_of_north_america_en/MapServer/2"
       },
@@ -400,7 +401,8 @@
         "name": "Power Plants, 1",
         "layerType": "esriFeature",
         "state": {
-          "visibility": false
+          "visibility": false,
+          "boundingBox": true
         },
         "url": "http://geoappext.nrcan.gc.ca/arcgis/rest/services/NACEI/energy_infrastructure_of_north_america_en/MapServer/1"
       },

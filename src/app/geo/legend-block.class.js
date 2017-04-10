@@ -190,13 +190,6 @@
                 this._aggregateStates = ref.aggregateStates;
                 this._symbologyStack =
                     new SymbologyStack(this._mainProxy, blockConfig, true);
-
-                // this is the first chance to properly create bounding box for this legend node
-                // since it's created on demand and cannot be created by geoapi when creating layerRecord
-                // need to read the layer config state here and initialize the bounding box manually
-                if (this._layerConfig.state.boundingBox) {
-                    this.boundingBox = true;
-                }
             }
 
             get blockType () { return TYPES.NODE; }
@@ -273,37 +266,32 @@
              * Creates and stores (if missing) a boundign box based on the full extent exposed by the proxy object.
              *
              * @function _makeBbox
-             * @private             *
+             * @private
              */
             _makeBbox () {
-                // TODO: use actual extent when geoapi supports it
-                const sampleExtent =  {
-                    "xmin": -1.331644376E7,
-                    "ymin": 6388804.558300003,
-                    "xmax": -1.0471824465E7,
-                    "ymax": 9225974.5022,
-                    "spatialReference": {
-                        "wkid": 102100,
-                        "latestWkid": 3857
-                    }
-                };
-
                 if (!this._bboxProxy) {
-                    this._bboxProxy = layerRegistry.makeBoundingBoxRecord(`${this.id}_bbox`, this._mainProxy.fullExtent || sampleExtent);
+                    this._bboxProxy = layerRegistry.makeBoundingBoxRecord(`${this.id}_bbox`, this._mainProxy.extent);
                 }
             }
             get boundingBox () {
-                return this._bboxProxy ? this._bboxProxy.visible : this._layerConfig.state.boundingBox;
+                // TODO: is extent always defined?
+                if (!this._mainProxy.extent) {
+                    return false;
+                }
 
-                // return this._bbox.visibility;
+                if (!this._bboxProxy) {
+                    return false;
+                }
+
+                return this._bboxProxy.visible;
             }
             set boundingBox (value) {
                 if (!this._bboxProxy) {
                     if (value) {
                         this._makeBbox();
+                    } else {
+                        return;
                     }
-
-                    return;
                 }
 
                 this._bboxProxy.setVisibility(value);
