@@ -49,11 +49,7 @@
 
             self.uiControl = LegendElementFactory.makeFlag(self.block, self.name);
 
-            // if the control is undefined, selfdestruct
-            if (!self.uiControl.isVisible) {
-                el.remove();
-                scope.$destroy();
-            }
+
         }
     }
 })();

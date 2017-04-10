@@ -251,6 +251,19 @@
             get style () { return ''; }
         }
 
+        class BoundingBoxFlag extends BaseFlag {
+            constructor (...args) {
+                super(...args);
+
+                this._controlName = 'boundingBox';
+            }
+
+            get icon () {    return 'community:cube-outline'; }
+            get label () {   return 'settings.label.boundingBox'; }
+
+            get isVisible () { return this.block.boundingBox; }
+        }
+
         class TypeFlag extends BaseFlag {
             constructor (...args) {
                 super(...args);
@@ -405,6 +418,7 @@
 
         const typeToClass = {
             flag: {
+                boundingBox: BoundingBoxFlag,
                 type: TypeFlag,
                 scale: ScaleFlag,
                 data: DataFlag,
@@ -417,7 +431,7 @@
                 visibilitynode: VisibilityNodeControl,
                 visibilityset: VisibilitySetControl,
                 opacity: OpacityControl,
-                boundingbox: BoundingBoxControl,
+                boundingBox: BoundingBoxControl,
                 query: QueryControl,
                 snapshot: SnapshotControl,
                 metadata: MetadataControl,
