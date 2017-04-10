@@ -190,6 +190,7 @@
                     "symbology",
                     "query",
                     "reload",
+                    "remove",
                     "settings"
                 ]
             },
@@ -246,6 +247,7 @@
                 "index": { "type": "number", "description": "The index of the layer in the map service." },
                 "name": { "type": "string", "description": "A descriptive name for the layer, can override the name coming from the service." },
                 "outfields": { "type": "string", "default": "*", "description": "A comma separated list of attribute names that should be requested on query." },
+                "extent": { "$ref": "#/definitions/extentWithReferenceNode", "description": "Allows for overriding the bounding box supplied by the service." },
                 "controls": { "$ref": "#/definitions/legendEntryControls" },
                 "state": { "$ref": "#/definitions/initialLayerSettings" },
                 "stateOnly": { "type": "boolean", "default": false, "description": "A flag indicating this entry is only for state tracking (i.e. it should not be displayed on the UI and all of the controls will be ignored, but the layer itself will be displayed on the map with the given state settings)." }
@@ -297,7 +299,7 @@
                 "layerId": {"type": "string", "description": "Link to a layer defined in the layers section"},
                 "controlledIds": {
                     "type": "array",
-                    "items": { "type": "integer", "description": "Additional layer ids which are controlled by this layer" },
+                    "items": { "type": "string", "description": "Additional layer ids which are controlled by this layer" },
                     "default": []
                 },
                 "entryIndex": {"type": "integer", "description": "Index of the 'sublayer' in the case of an ESRI dynamic layer.  This cannot point to an entry with stateOnly:true ."},
