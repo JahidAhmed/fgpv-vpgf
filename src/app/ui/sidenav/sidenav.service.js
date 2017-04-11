@@ -269,8 +269,16 @@
             self.close = $mdDialog.hide;
 
             // get about map description from markdown or config file
-            configService.getCurrent().then(conf => self.about = conf.about)
-                .then(about => about.type === 'config' ? self.about = about.value : useMarkdown(about.value));
+            configService.getCurrent()
+                .then(conf =>
+                    (self.about = conf.about))
+                .then(about => {
+                    if (about.type === 'config') {
+                        self.about = about.value;
+                    } else {
+                        useMarkdown(about.value)
+                    }
+                });
 
             function useMarkdown() {
                 const renderer = new marked.Renderer();

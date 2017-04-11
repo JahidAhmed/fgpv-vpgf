@@ -371,6 +371,7 @@
      *
      * @function    enhanceLogger
      * @param       {Array}  enabledMethods    an array of console function string names like log, debug, warn that should be displayed
+     * @return {Object} the logger object
      */
     function enhanceLogger(enabledMethods = []) {
         const methods = ['debug', 'log', 'info', 'warn', 'error'];
@@ -401,6 +402,7 @@
         if (!logger) {
             logger = new Logdown({ prefix, alignOutput: true });
         }
+
         return logger;
     }
 
