@@ -161,7 +161,7 @@
                         'reload',
                         'remove',
                         'settings',
-                        'data',
+                        // 'data',
                         'symbology'
                     ],
                     disabledControls: [],
@@ -187,7 +187,7 @@
                         'reload',
                         'remove',
                         'settings',
-                        'data',
+                        // 'data',
                         'symbology'
                     ],
                     disabledControls: [],
@@ -231,7 +231,7 @@
                 this._catalogueUrl = source.catalogueUrl;
                 this._extent = source.extent ?
                     gapiService.gapi.mapManager.getExtentFromJson(source.extent) :
-                    null;
+                    undefined;
                 this._controls = source.controls; // controls are defaulted in blueprint constructor
                 this._disabledControls = source.disabledControls; // controls are defaulted in blueprint constructor
                 this._userDisabledControls = source.userDisabledControls;
@@ -925,6 +925,19 @@
         }
         // jscs:enable requireSpacesInAnonymousFunctionExpression
 
+        const { Layer: { Types: layerTypes }, Service: { Types: serviceTypes } } = Geo;
+
+        const LAYER_TYPE_TO_LAYER_NODE = {
+            [layerTypes.ESRI_TILE]: BasicLayerNode,
+            [layerTypes.ESRI_FEATURE]: FeatureLayerNode,
+            [layerTypes.ESRI_IMAGE]: BasicLayerNode,
+            [layerTypes.ESRI_DYNAMIC]: DynamicLayerNode,
+            [layerTypes.OGC_WMS]: WMSLayerNode
+        };
+
+        function makeLayerConfig(layerType, source) {
+            return LAYER_TYPE_TO_LAYER_NODE[layerType](source)
+        }
 
         return {
             ConfigObject,
@@ -943,6 +956,8 @@
                 DynamicLayerNode,
                 WMSLayerNode
             },
+
+            makeLayerConfig,
 
             TYPES,
             DEFAULTS

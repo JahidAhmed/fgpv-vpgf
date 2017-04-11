@@ -267,6 +267,7 @@
              *
              * @function _makeBbox
              * @private
+             * @return
              */
             _makeBbox () {
                 if (!this._bboxProxy) {
@@ -295,6 +296,14 @@
                 }
 
                 this._bboxProxy.setVisibility(value);
+            }
+
+            get formattedData () {
+                return this._mainProxy.formattedAttributes;
+            }
+
+            zoomToBoundary () {
+                this._mainProxy.zoomToBoundary();
             }
 
             get symbologyStack () {     return this._symbologyStack; }

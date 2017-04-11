@@ -131,8 +131,11 @@
                 containerNode.append(tableNode);
 
                 // disabled zoom row button if projection is not valid
-                const isZoomEnabled = geoService.validateProj(
-                    geoService.layers[requester.layerId]._layer.spatialReference);
+
+                // TODO: fix
+                // const isZoomEnabled = geoService.validateProj(
+                //    geoService.layers[requester.layerId]._layer.spatialReference);
+                const isZoomEnabled = true;
                 ROW_BUTTONS.zoom.self.enabled = isZoomEnabled;
 
                 // assign callbacks to row buttons
@@ -154,7 +157,9 @@
 
                     if (button.name === 'rv-zoom-marker') {
                         // disabled zoom button if layer is not visible
-                        buttonScope.self.visibility = requester.legendEntry.options.visibility;
+                        // TODO: fix
+                        // buttonScope.self.visibility = requester.legendEntry.options.visibility;
+                        buttonScope.self.visibility = true;
                     }
 
                     button.scope = buttonScope;

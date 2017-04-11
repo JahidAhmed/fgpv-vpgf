@@ -183,12 +183,12 @@
             constructor (...args) {
                 super(...args);
 
-                this._controlName = 'boundary';
+                this._controlName = 'boundaryZoom';
             }
 
             get icon () {    return 'action:zoom_in'; }
             get label () {   return 'toc.label.boundaryZoom'; }
-            action () {      geoService.zoomToBoundary(this._layerProxy); }
+            action () {      this.block.zoomToBoundary(); }
         }
 
         class DataControl extends BaseControl {
@@ -200,7 +200,7 @@
 
             get icon () {    return 'community:table-large'; }
             get label () {   return 'toc.label.dataTable'; }
-            action () {      tocService.toggleLayerFiltersPanel(this._layerProxy); }
+            action () {      tocService.toggleLayerFiltersPanel(this.block); }
         }
 
         class RemoveControl extends BaseControl {

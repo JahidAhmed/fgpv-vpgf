@@ -26,7 +26,8 @@
             },
 
             toggleSettings,
-            toggleMetadata
+            toggleMetadata,
+            toggleLayerFiltersPanel
         };
 
         // toc preset controls (options and flags displayed on the layer item)
@@ -738,12 +739,82 @@
                 });
         }
 
+
+        function toggleLayerFiltersPanel(legendBlock) {
+            const requester = {
+                id: legendBlock.id,
+                name: legendBlock.name,
+                layerId: legendBlock.id, //(entry.master ? entry.master : entry).id,
+                legendEntry: legendBlock
+            };
+
+            // const layerRecord = geoService.layers[requester.layerId];
+            const dataPromise = legendBlock.formattedData
+                .then(attributes => {
+                    const rvSymbolColumnName = 'rvSymbol';
+
+                    // TODO: formatLayerAttributes function should figure out icon and store it in the attribute bundle
+                    // ideally, this should go into the `formatAttributes` function in layer-record.class, but we are trying to keep as loosely bound as possible to be moved later to geoApi and this uses geoService.retrieveSymbol
+                    // add symbol as the first column
+                    // check if the symbol column already exists
+                    if (!attributes.columns.find(({ data }) => data === rvSymbolColumnName)) {
+
+                        attributes.rows.forEach(row => {
+                            row.rvSymbol = geoService.retrieveSymbol(row, attributes.renderer);
+                            row.rvInteractive = '';
+                        });
+
+                        // add a column for interactive actions (detail and zoom)
+                        // do not add it inside an existing field because filters will not work properly and because of https://github.com/fgpv-vpgf/fgpv-vpgf/issues/1631
+                        attributes.columns.unshift({
+                            data: 'rvInteractive',
+                            title: '',
+                            orderable: false,
+                            render: '',
+                            width: '20px' // for datatables
+                        });
+
+                        // add a column for symbols
+                        attributes.columns.unshift({
+                            data: rvSymbolColumnName,
+                            title: '',
+                            orderable: false,
+                            render: data => `<div class="rv-wrapper rv-symbol">${data}</div>`,
+                            width: '20px' // for datatables
+                        });
+                    }
+
+                    return {
+                        data: attributes,
+                        isLoaded: false
+                    };
+                });
+
+            stateManager.setActive({
+                other: false
+            });
+            stateManager
+                .setActive({
+                    side: false
+                })
+                .then(() => {
+                    if (errorToast) {
+                        errorService.remove();
+                    }
+                    return stateManager.toggleDisplayPanel('filtersFulldata', dataPromise, requester, 0);
+                })
+                .catch(() => {
+                    errorToast = errorService.display($translate.instant('toc.error.resource.loadfailed'),
+                        layoutService.panes.filter);
+                });
+        }
+
         /**
          * Opens filters panel with data from the provided layer object.
          * @function toggleLayerFiltersPanel
          * @param  {Object} entry layer object whose data should be displayed.
          */
-        function toggleLayerFiltersPanel(entry) {
+        function toggleLayerFiltersPanel2(entry) {
             debToggleFilter(entry);
         }
 

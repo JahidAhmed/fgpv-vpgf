@@ -121,9 +121,9 @@
                     layerRecord.removeStateListener(_onLayerRecordLoad);
 
                     $timeout.cancel(throttleTimeoutHandle);
+                    _setHoverTips(layerRecord);
                     _advanceLoadingQueue();
                     // FIX: hover events are broken in geoApi at the moment
-                    //_setHoverTips(layerRecord);
                 }
             }
 
@@ -157,23 +157,25 @@
             return boundingBoxRecord;
         }
 
-        /*function _setHoverTips(layerRecord) {
+        function _setHoverTips(layerRecord) {
             // TODO: layerRecord returns a promise on layerType to be consistent with dynamic children which don't know their type upfront
             // to not wait on promise, check the layerRecord config
             if (layerRecord.config.layerType !== Geo.Layer.Types.ESRI_FEATURE) {
                 return;
             }
 
+            // TODO: reenable when this option is added to the config
+            /*
             if (!layerRecord.config.tooltipEnabled) {
                 return;
-            }
+            }*/
 
-            layerRecord.addHoverListener(_onHoverHandler);
+            // layerRecord.addHoverListener(_onHoverHandler);
 
             function _onHoverHandler(data) {
                 console.info(data);
             }
-        }*/
+        }
 
         return service;
     }
