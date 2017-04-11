@@ -430,10 +430,7 @@
         "layerType": "esriDynamic",
         "layerEntries": [
           {
-            "index": 8,
-            "data": {
-              "enabled": false
-            }
+            "index": 8
           },
           {
             "index": 7

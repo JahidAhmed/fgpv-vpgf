@@ -67,7 +67,9 @@
             <md-input-container class="md-block" ng-switch-when="dynamicservice">
                 <label translate>import.service.configure.layers</label>
                 <md-select name="layer" ng-model="self.layerBlueprint.config.layerEntries" required multiple>
-                    <md-option ng-repeat="layer in self.layerBlueprint.serviceInfo.layers" ng-value="{ index: layer.id }" ng-selected="{{ self.layerBlueprint.serviceInfo.groupIdx === layer.id }}">
+                    <md-option ng-repeat="layer in self.layerBlueprint.serviceInfo.layers"
+                        ng-value="{ index: layer.id }"
+                        ng-selected="{{ self.layerBlueprint.serviceInfo.groupIdx === layer.id }}">
                         {{ layer.indent + ' ' + layer.name }}
                     </md-option>
                 </md-select>
@@ -81,7 +83,8 @@
             <md-input-container class="md-block" ng-switch-when="wms">
                 <label translate>import.service.configure.layers</label>
                 <md-select name="layers" ng-model="self.layerBlueprint.config.layerEntries" required multiple>
-                    <md-option ng-repeat="layer in self.layerBlueprint.serviceInfo.layers" ng-value="{ id: layer.name, name: layer.desc }">
+                    <md-option ng-repeat="layer in self.layerBlueprint.serviceInfo.layers"
+                        ng-value="{ id: layer.name, name: layer.desc }">
                         {{ layer.indent + ' ' + layer.desc }}
                     </md-option>
                 </md-select>

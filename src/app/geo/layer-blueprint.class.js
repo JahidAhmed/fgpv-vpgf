@@ -25,8 +25,6 @@
         // destructure Geo into `layerTypes` and `serviceTypes`
         const { Layer: { Types: layerTypes }, Service: { Types: serviceTypes } } = Geo;
 
-
-
         // jscs doesn't like enhanced object notation
         // jscs:disable requireSpacesInAnonymousFunctionExpression
         class LayerBlueprint {
@@ -35,11 +33,11 @@
              * @param  {Object} initialConfig partial config, can be an empty object.
              * @param  {Function} epsgLookup a function which takes and EPSG code and returns a projection definition (see geoService for the exact signature)
              */
-            constructor(source) {
-                this.initialConfig = this._applyLayerDefaults(source);
+            constructor(source, layerType) {
+                // this.initialConfig = this._applyLayerDefaults(source);
 
-                this._source = this._applyLayerDefaults(source);
-                this._config = new LayerBlueprint.LAYER_TYPE_TO_LAYER_NODE[this._source.layerType](this._source);
+                // this._source = this._applyLayerDefaults(source);
+                // this._config = new LayerBlueprint.LAYER_TYPE_TO_LAYER_NODE[this._source.layerType](this._source);
 
 
                 // this._epsgLookup = epsgLookup;
@@ -57,10 +55,23 @@
             // get id () { return this.isReady ? this.config.id : '?'; }
 
             get config () { return this._config; }
+
             /**
              * @returns {Object} layer node source config object with applied defaults
              */
             get source () { return this._source; }
+            setSource (value) {
+                if (this._source) {
+                    console.warn('source is already set');
+                    return;
+                }
+
+                this._source = this._applyLayerDefaults(value);
+                this._config = new LayerBlueprint.LAYER_TYPE_TO_LAYER_NODE[this._source.layerType](this._source);
+
+                // resolving construction promise to signal
+                // this._constructorPromiseResolve();
+            }
 
             /**
              * Fills in the missing values in controls, disabledControls, userDisabledControls, and state with defaults.
@@ -141,7 +152,7 @@
              * Returns a constructor promise which resolves when file or service data is loaded and read in.
              * @return {Promise} constructor promise
              */
-            get ready() { return this._constructorPromise; }
+            get ready() { return    $q.resolve(); }
 
             /**
              * Returns user layer options class instance or a plain object if type is not yet set.
@@ -223,13 +234,11 @@
              */
             constructor(source) {
 
-                if (angular.isString(source)) {
-                    console.log('TODO: fix me');
-                    // assuming service URL is supplied
-                    // super({});
-                } else {
+                super();
+
+                if (!angular.isString(source)) {
                     // assuming a wellformed layer defintion object is supplied
-                    super(source);
+                    this.setSource(source);
                 }
 
                 return;
@@ -458,7 +467,10 @@
              */
             generateLayer () {
 
-                return LayerBlueprint.LAYER_TYPE_TO_LAYER_RECORD[this.initialConfig.layerType](this.initialConfig);
+                // return LayerBlueprint.LAYER_TYPE_TO_LAYER_RECORD[this.config.layerType](this.config);
+                return LayerBlueprint.LAYER_TYPE_TO_LAYER_RECORD[this.source.layerType](this.source);
+
+
                 //return $q.resolve(LayerRecordFactory.makeServiceRecord(this.config, this._epsgLookup));
             }
         }

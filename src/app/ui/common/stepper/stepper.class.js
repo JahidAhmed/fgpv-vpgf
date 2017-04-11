@@ -76,7 +76,7 @@
 
             /**
              * Moves to the next step.
-             * @param  {Promise} [optional] continuePromise the move will happen only after this promise resolves
+             * @param  {Promise} continuePromise [optional = $q.resolve()] continuePromise the move will happen only after this promise resolves
              * @return {Object}            itself for chaining
              */
             nextStep(continuePromise = $q.resolve()) {
@@ -108,7 +108,7 @@
             /**
              * Set a specified step as active, completing or resetting all intermediate steps depending on directive of the move.
              * @param  {Number} stepNumber                step id to jump to
-             * @param  {Promise} [optional] continuePromise the move will happen only after this promise resolves
+             * @param  {Promise} continuePromise [optional = $q.resolve()] the move will happen only after this promise resolves
              * @return {Object}            itself for chaining
              */
             moveToStep(stepNumber, continuePromise = $q.resolve()) {
