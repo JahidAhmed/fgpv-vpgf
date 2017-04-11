@@ -13,7 +13,7 @@
         .module('app.geo')
         .factory('LegendBlock', LegendBlockFactory);
 
-    function LegendBlockFactory($q, common, layerRegistry) {
+    function LegendBlockFactory($q, common, layerRegistry, configService) {
 
         let legendBlockCounter = 0;
 
@@ -303,7 +303,7 @@
             }
 
             zoomToBoundary () {
-                this._mainProxy.zoomToBoundary();
+                this._mainProxy.zoomToBoundary(configService._sharedConfig_.map.body);
             }
 
             get symbologyStack () {     return this._symbologyStack; }
