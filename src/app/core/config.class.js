@@ -796,6 +796,58 @@
             get basemap () { return this._basemap; }
         }
 
+        class SearchService {
+            constructor (source) {
+                this._disabledSearches = source.disabledSearches;
+                this._serviceUrls = source._serviceUrls;
+            }
+
+            get disabledSearches () { return this._disabledSearches; }
+            get serviceUrls () { return this._serviceUrls; }
+        }
+
+        class ExportService {
+            constructor (source) {
+                this._title = source.title;
+                this._map = source.map;
+                this._mapElements = source.mapElements;
+                this._legend = source.legend;
+                this._footnote = source.footnote;
+                this._timestamp = source.timestamp;
+            }
+
+            get title () { return this._title; }
+            get map () { return this._map; }
+            get mapElements () { return this._mapElements; }
+            get legend () { return this._legend; }
+            get footnote () { return this._footnote; }
+            get timestamp () { return this._timestamp; }
+        }
+
+        class Services {
+            constructor (source) {
+                this._proxyUrl = source.proxyUrl;
+                this._exportMapUrl = source.exportMapUrl;
+                this._geometryUrl = source.geometryUrl;
+                this._googleAPIKey = source.googleAPIKey;
+                this._geolocation = source.geolocation;
+                this._coordInfo = source.coordInfo;
+                this._print = source.print;
+                this._search = source.search;
+                this._export = source.export;
+            }
+
+            get proxyUrl () { return this._proxyUrl; }
+            get exportMapUrl () { return this._exportMapUrl; }
+            get geometryUrl () { return this._geometryUrl; }
+            get googleAPIKey () { return this._googleAPIKey; }
+            get geolocation () { return this._geolocation; }
+            get coordInfo () { return this._coordInfo; }
+            get print () { return this._print; }
+            get search () { return this._search; }
+            get export () { return this._export; }
+        }
+
         /**
          * Typed representation of a Map specified in the config.
          * @class Map
@@ -869,27 +921,19 @@
             get boundingBoxRecords () { return this._boundingBoxRecords; }
             get legendBlocks () { return this._legendBlocks; }
 
-            set body (value) {
-                if (this._body) {
-                    console.warn('Map body is already set.');
-                } else {
-                    this._body = value;
-                }
-            }
-            get body () { return this._body; }
+            get body () {       return this._body; }
+            get node () {       return this._node; }
+            get manager () {    return this._manager; }
 
-            set manager (value) {
-                if (this._manager) {
-                    console.warn('Map manager is already set.');
-                } else {
-                    // store references to esri objects
-                    this._manager = value;
-                    this.components.basemap.body = this._manager.BasemapControl;
-                    this.components.overviewMap.body = this._manager.OverviewMapControl;
-                    this.components.scaleBar.body = this._manager.ScalebarControl;
-                }
+            storeMapReference(node, body, manager) {
+                this._node = node;
+                this._body = body;
+                this._manager = manager;
+
+                this.components.basemap.body = this._manager.BasemapControl;
+                this.components.overviewMap.body = this._manager.OverviewMapControl;
+                this.components.scaleBar.body = this._manager.ScalebarControl;
             }
-            get manager () { return this._manager; }
 
             _isLoading = true;
             get isLoading () { return this._isLoading; }
@@ -908,9 +952,12 @@
             constructor (configSource) {
                 this._source = configSource;
 
-                this._map = new Map(configSource.map);
+                this._version = configSource.version;
+                this._language = configSource.language;
 
-                // TODO: parse ui and services sections
+                this._map = new Map(configSource.map);
+                this._services = new Services(configSource.services);
+                // TODO: parse ui sections
             }
 
             /**
@@ -919,11 +966,13 @@
              */
             get source () { return this._source; }
 
-            get map () { return this._map; }
+            get version () { return this._version; }
+            get language () { return this._language; }
+
             get ui () { return this._ui; }
             get services () { return this._services; }
+            get map () { return this._map; }
         }
-        // jscs:enable requireSpacesInAnonymousFunctionExpression
 
         const { Layer: { Types: layerTypes }, Service: { Types: serviceTypes } } = Geo;
 

@@ -105,6 +105,9 @@
                     // it's like this will have to be moved to the mapService or something
                     state.configObject = service.configObject = configService._sharedConfig_;
 
+                    mapService.makeMap(mapNode);
+
+                    return true;
 
                     // state._map = service._map = basemapService.constructBasemaps(config);
 

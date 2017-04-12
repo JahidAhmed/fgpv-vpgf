@@ -25,13 +25,14 @@
         return directive;
     }
 
-    function Controller(geoService, basemapService) {
+    function Controller(geoService, mapService, basemapService) {
         'ngInject';
         const self = this;
 
         // TODO: update when config is typed
         // TODO: wait on config ready event
         self.geoService = geoService;
+        self.mapService = mapService;
 
         // self.basemaps = geoService._map.basemaps;
         // self.tileSchemas = geoService._map.tileSchemas;

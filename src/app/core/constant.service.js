@@ -39,8 +39,10 @@
              * @param {String} eventName event name to listen once
              * @param {Function} listener a callback function to execute
              */
-            $on: (eventName, listener) =>
-                $rootScope.$on(eventName, listener),
+            $on: (...args) =>
+                $rootScope.$on(...args),
+            $broadcast: (...args) =>
+                $rootScope.$broadcast(...args),
 
             rvReady: 'rvReady', // Fired when map should be created the first time; should not be broadcasted more then once
             rvApiHalt: 'rvApiHalt', // Fired when API should be put back into 'queue' mode
