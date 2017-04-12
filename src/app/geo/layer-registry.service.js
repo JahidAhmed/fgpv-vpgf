@@ -22,7 +22,7 @@
         .module('app.geo')
         .factory('layerRegistry', layerRegistryFactory);
 
-    function layerRegistryFactory($timeout, gapiService, Geo, LayerBlueprint, configService) {
+    function layerRegistryFactory($timeout, gapiService, Geo, LayerBlueprint, configService, tooltipService) {
         const service = {
             getLayerRecord,
             makeLayerRecord,
@@ -171,10 +171,59 @@
                 return;
             }*/
 
-            // layerRecord.addHoverListener(_onHoverHandler);
+            // TODO: where to put the template? it shouldn't be in layer registry
+            const tooltipTemplate = `
+                <div class="rv-tooltip-content" ng-if="self.name">
+                    <rv-svg once="false" class="rv-tooltip-graphic" src="self.svgcode"></rv-svg>
+                    <span class="rv-tooltip-text">{{ self.name }}</span>
+                </div>
+
+                <div class="rv-tooltip-content" ng-if="!self.name">
+                    <span class="rv-tooltip-text">{{ 'maptip.hover.label.loading' | translate }}</span>
+                </div>
+            `;
+
+            let tipContent;
+
+            layerRecord.addHoverListener(_onHoverHandler);
 
             function _onHoverHandler(data) {
-                console.info(data);
+                // we use the mouse event target to track which
+                // graphic the active tooltip is pointing to.
+                // this lets us weed any delayed events that are meant
+                // for tooltips that are no longer active.
+                const typeMap = {
+                    mouseOver: e => {
+
+                        // make the content and display the hovertip
+                        tipContent = {
+                            name: '',
+                            svgcode: '<svg></svg>',
+                            graphic: e.target
+                        };
+
+                        const tipRef = tooltipService.addHoverTooltip(e.point, tooltipTemplate, tipContent);
+                    },
+                    tipLoaded: e => {
+                        // update the content of the tip with real data.
+                        if (tipContent && tipContent.graphic === e.target) {
+                            tipContent.name = e.name;
+                            tipContent.svgcode = e.svgcode;
+                        }
+                        tooltipService.refreshHoverTooltip();
+                    },
+                    mouseOut: e =>
+                        tooltipService.removeHoverTooltip()
+                    ,
+                    // TODO: reattach this
+                    forceClose: () => {
+                        // if there is a hovertip, get rid of it
+                        //destroyHovertip();
+                    }
+                };
+
+                // execute function for the given type
+                typeMap[data.type](data);
             }
         }
 
