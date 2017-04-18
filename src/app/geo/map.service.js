@@ -66,7 +66,7 @@
             return;
 
             // TODO: move to _setMapListeners
-            mapConfig.components.basemap.body.basemapGallery.on('selection-change', event => {
+            /*mapConfig.components.basemap.body.basemapGallery.on('selection-change', event => {
                 $rootElement.find('div.ovwContainer').append('<rv-overview-toggle></rv-overview-toggle>');
                 $compile($rootElement.find('rv-overview-toggle')[0])($rootScope);
 
@@ -95,7 +95,7 @@
                 // will be use by the scalebar animation. Animation needs to be recreated on projection change.
                 $rootScope.$broadcast('rvBasemapChange');
                 }*/
-            });
+            //});
 
             // TODO: remove all the code related to "blank" basemaps as they will be handled differently
             /*if (config.map.initialBasemapId && config.map.initialBasemapId.startsWith(blankBaseMapIdPattern)) {

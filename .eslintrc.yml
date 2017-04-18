@@ -3,6 +3,7 @@ parser: "babel-eslint"
 globals:
   angular: true
   RV: true
+  RColor: true
 
 ecmaFeatures:
   modules: true

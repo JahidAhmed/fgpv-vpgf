@@ -112,7 +112,7 @@
                     // state._map = service._map = basemapService.constructBasemaps(config);
 
                     // assemble geo state object
-                    return mapService(state, config);
+                    // return mapService(state, config);
                 })
                 .then(ms => {
                     // expose mapService on geoService

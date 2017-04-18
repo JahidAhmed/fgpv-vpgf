@@ -150,8 +150,8 @@
             angular.extend(service.config, MAPNAV_CONFIG_DEFAULT);
 
             return;
-            configService.getCurrent().then(data =>
-                    angular.extend(service.config, MAPNAV_CONFIG_DEFAULT, data.navBar));
+            /*configService.getCurrent().then(data =>
+                    angular.extend(service.config, MAPNAV_CONFIG_DEFAULT, data.navBar));*/
         }
     }
 })();
