@@ -31,8 +31,8 @@
     function legendServiceFactory(Geo, ConfigObject, LegendBlock, LayerBlueprint, configService, layerRegistry, common) {
 
         const service = {
-            legend: null, // : new LegendGroup()
-            contructLegend
+            contructLegend,
+            getLegendBlock
         };
 
         return service;
@@ -75,7 +75,8 @@
                     // real blueprints are only available on Legend.NODEs
                     const nodeBlueprints = {
                         main: _getLayerBlueprint(blockConfig.layerId),
-                        adjunct: blockConfig.controlledIds.map(id => _getLayerBlueprint(id))
+                        adjunct: blockConfig.controlledIds.map(id =>
+                            _getLayerBlueprint(id))
                     };
 
                     const nodeProxies = _getLegendBlockProxies(blockConfig, nodeBlueprints);
@@ -103,6 +104,7 @@
              * @function _makeDynamicGroupBlock
              * @private
              * @param {LayerNode} blockConfig legend entry config object
+             * @param {LayerBlueprint} mainBlueprint layerBlueprint of the
              * @return {LegendBlock.GROUP} the resulting LegendBlock.GROUP object
              */
             function _makeDynamicGroupBlock(blockConfig, mainBlueprint, proxies) {
@@ -129,7 +131,7 @@
                 layerRecord.addStateListener(_onLayerRecordLoad);
 
                 // TODO: turn this into a full-blown types layer config
-                // TODO: needs state defaults like boundg box, etc.
+                // TODO: needs state defaults like boundg box, visibility, etc.
                 const derivedChildLayerConfig = {
                     state: {
                         boundingBox: false
@@ -297,6 +299,8 @@
             /**
              * @function _makeSetBlock
              * @private
+             * @param {Object} blockConfig legend block config from the config file
+             * @return {LegendBlock.Set} create LegendBlock.Set instance
              */
             function _makeSetBlock(blockConfig) {
                 const set = new LegendBlock.Set(blockConfig);
@@ -366,6 +370,12 @@
                 // TODO: this should return something meaningful for info sections and maybe sets?
                 return blueprint;
             }
+
+        }
+
+        // ???
+        function getLegendBlock(id) {
+
         }
     }
 

@@ -37,8 +37,13 @@
             loadingCount: 0
         };
 
-        /***/
-
+        /**
+         * Finds and returns the layer record using the id specified.
+         *
+         * @function getLayerRecord
+         * @param {Number} id the id of the layer record to be returned
+         * @return {LayerRecord} layer record with the id specified; undefined if not found
+         */
         function getLayerRecord(id) {
             const layerRecords = configService._sharedConfig_.map.layerRecords;
 
@@ -46,7 +51,13 @@
                 layerRecord.layerId === id);
         }
 
-        // layerDefinition must have id property
+        /**
+         * Creates the layer record from the provided layerBlueprint, stores it in the shared config and returns the results.
+         *
+         * @function makeLayerRecord
+         * @param {LayerBlueprint} layerBlueprint layerBlueprint used for creating the layer record
+         * @return {LayerRecord} created layerRecord
+         */
         function makeLayerRecord(layerBlueprint) {
             const layerRecords = configService._sharedConfig_.map.layerRecords;
 
@@ -109,6 +120,7 @@
              * // TODO: check if there is a better way to wait for layer to load than to wait for 'refresh' -> 'load' event chain
              * // TODO: file-based layers don't fire these events; need a hack to handle those as well
              * @function _onLayerRecordLoad
+             * @private
              * @param {String} state name of the new LayerRecord state
              * @private
              */
@@ -124,10 +136,14 @@
                     $timeout.cancel(throttleTimeoutHandle);
                     _setHoverTips(layerRecord);
                     _advanceLoadingQueue();
-                    // FIX: hover events are broken in geoApi at the moment
                 }
             }
 
+            /**
+             * Advances the loading queue and starts loading the next layer record if any is available.
+             * @function _advanceLoadingQueue
+             * @private
+             */
             function _advanceLoadingQueue() {
                 console.info('avancidng que');
                 ref.loadingCount = Math.max(--ref.loadingCount, 0);
@@ -135,6 +151,15 @@
             }
         }
 
+        /**
+         * // TODO: make a wrapper for the bounding box layer
+         *
+         * Finds and returns a bounding box layer record using the id provided.
+         *
+         * @function getBoundingBoxRecord
+         * @param {Number} id id of the bounding box record to be found
+         * @return {Featurelayer} the bounding box record; `undefined` if not found
+         */
         function getBoundingBoxRecord(id) {
             const boundingBoxRecords = configService._sharedConfig_.map.boundingBoxRecords;
 
@@ -142,6 +167,14 @@
                 boundingBoxRecord.layerId === id);
         }
 
+        /**
+         * Creates and returns a feature layer to represent a boundign box with the id and extent specified.
+         *
+         * @function makeBoundingBoxRecord
+         * @param {Number} id id of the bounding box record to be assigned to the created bounding box layer record
+         * @param {Extent} bbExtent ESRI extent object with the bounding box extent
+         * @return {Featurelayer} the bounding box record
+         */
         function makeBoundingBoxRecord(id, bbExtent) {
             const boundingBoxRecords = configService._sharedConfig_.map.boundingBoxRecords;
             const mapBody = configService._sharedConfig_.map.body;
