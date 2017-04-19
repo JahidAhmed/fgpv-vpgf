@@ -40,13 +40,16 @@
                 CSV: 'csv',
                 GeoJSON: 'geojson',
                 Shapefile: 'shapefile',
+
                 FeatureLayer: 'featurelayer',
                 RasterLayer: 'rasterlayer',
                 GroupLayer: 'grouplayer',
+
                 TileService: 'tileservice',
                 FeatureService: 'featureservice',
                 DynamicService: 'dynamicservice',
                 ImageService: 'imageservice',
+
                 WMS: 'wms',
                 Unknown: 'unknown',
                 Error: 'error'

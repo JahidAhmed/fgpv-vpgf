@@ -1,4 +1,3 @@
-/* global RV */
 (() => {
     'use strict';
 
@@ -66,7 +65,8 @@
                     return;
                 }
 
-                this._source = this._applyLayerDefaults(value);
+                // this._source = this._applyLayerDefaults(value);
+                this._source = value;
                 this._config = new LayerBlueprint.LAYER_TYPE_TO_LAYER_NODE[this._source.layerType](this._source);
 
                 // resolving construction promise to signal
@@ -86,6 +86,8 @@
                 const sourceCopy = angular.copy(source);
 
                 // taking the default state and overriding any options that are specified in the config
+                // this is moved to the layer class
+                // TODO: remove after geoapi can accept config instead of layer source
                 sourceCopy.state = angular.extend({}, defaults.state, sourceCopy.state);
 
                 if (typeof sourceCopy.controls === 'undefined') {
@@ -225,8 +227,6 @@
             [layerTypes.OGC_WMS]: 'createWmsRecordBuilder'
         };*/
 
-        // jscs doesn't like enhanced object notation
-        // jscs:disable requireSpacesInAnonymousFunctionExpression
         class LayerServiceBlueprint extends LayerBlueprint {
             /**
              * Creates a new LayerServiceBlueprint.
@@ -467,8 +467,8 @@
              */
             generateLayer () {
 
-                // return LayerBlueprint.LAYER_TYPE_TO_LAYER_RECORD[this.config.layerType](this.config);
-                return LayerBlueprint.LAYER_TYPE_TO_LAYER_RECORD[this.source.layerType](this.source);
+                return LayerBlueprint.LAYER_TYPE_TO_LAYER_RECORD[this.config.layerType](this.config);
+                // return LayerBlueprint.LAYER_TYPE_TO_LAYER_RECORD[this.source.layerType](this.source);
 
 
                 //return $q.resolve(LayerRecordFactory.makeServiceRecord(this.config, this._epsgLookup));

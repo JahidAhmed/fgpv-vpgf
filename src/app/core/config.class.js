@@ -15,6 +15,8 @@
     // eslint-disable-next-line max-statements
     function ConfigObjectFactory(Geo, gapiService, common) {
 
+        const { Layer: { Types: layerTypes }, Service: { Types: serviceTypes } } = Geo;
+
         const TYPES = {
             legend: {
                 INFO: 'legendInfo',
@@ -92,7 +94,13 @@
                         'symbology'
                     ],
                     disabledControls: [],
-                    userDisabledControls: []
+                    userDisabledControls: [],
+                    child: {
+                        state: {},
+                        controls: [],
+                        disabledControls: [],
+                        userDisabledControls: []
+                    }
                 },
                 [Geo.Layer.Types.ESRI_DYNAMIC]: {
                     state: {
@@ -122,6 +130,13 @@
                     // this is special case reserved from children of a dynamic layer
                     // these defaults cannot be applied to the layer config ahead of time since we don't know the child tree structure until the layer loads
                     child: {
+                        state: {
+                            opacity: 1,
+                            visibility: true,
+                            boundingBox: false,
+                            query: true,
+                            snapshot: false
+                        },
                         controls: [
                             'opacity',
                             'visibility',
@@ -216,6 +231,102 @@
             get snapshot () { return this._snapshot; }
         }
 
+        /**
+         * Applies supplied layer node and layer entry node defaults to the node/entry node source config object (not typed config).
+         *
+         * @function applyLayerNodeDefaults
+         * @param {Object} ownSource original config object from the config file
+         * @param {Object} ownDefaults default value for this layer node or layer entry node
+         * @param {Object} parentSource [optional={}] already defaulted config of an immediate parent; needed only for dynamic layres (possibly wms as well)
+         * @return {Object} a copy of the original `ownSource` config with state, controls, disabledControls and userDisabledControls applied
+         */
+        function applyLayerNodeDefaults(ownSource, ownDefaults, parentSource = {}) {
+            const ownSourceCopy = angular.copy(ownSource);
+
+            ownSourceCopy.state = _defaultState(ownSourceCopy.state, ownDefaults.state, parentSource.state);
+
+            ownSourceCopy.controls = _defaultControls(ownSourceCopy.controls,
+                ownDefaults.controls, parentSource.controls);
+            ownSourceCopy.disabledControls = _defaultControls(ownSourceCopy.disabledControls,
+                ownDefaults.disabledControls, parentSource.disabledControls);
+            ownSourceCopy.userDisabledControls = _defaultControls(ownSourceCopy.userDisabledControls,
+                ownDefaults.userDisabledControls, parentSource.userDisabledControls);
+
+            return ownSourceCopy;
+
+            /**
+             * Applies state defaults to the supplied layer node/entry state.
+             * State is defaulted in the following order:
+             * - state own property takes precedence
+             * - parentState property is applied if the own state property is missing
+             * - stateDefault property is applied if the parent state property is missing
+             *
+             * @function _defaultState
+             * @private
+             * @param {Object} state original state
+             * @param {Object} stateDefaults state defaults
+             * @param {Object} parentState [optional={}] parent defaulted values if child of a dynamic wms layer
+             * @return {Object} defaulted state object
+             */
+            function _defaultState(state = {}, stateDefaults, parentState = {}) {
+                const properies = [
+                    'opacity', 'visibility', 'boundingBox', 'query', 'snapshot'
+                ];
+
+                properies.forEach(propName => {
+                    if (typeof state[propName] === 'undefined') {
+                        state[propName] = typeof parentState[propName] !== 'undefined' ?
+                            parentState[propName] :
+                            stateDefaults[propName];
+                    }
+                });
+
+                return state;
+            }
+
+            /**
+             * Applies controls defaults to the supplied layer node/entry controls (can be controls, disabledControls or userDisabledControls).
+             * Controls are defaulted in the following order:
+             * - own controls specified
+             *   - parent controls specified
+             *     - return intersect between own, parent and default controls
+             *   - parent controls are not specified
+             *     - return intersect between own and default controls
+             * - own controls are not specified
+             *   - parent controls specified
+             *     - return intersect between parent and default controls
+             *   - parent controls are not specified
+             *     - return default controls
+             *
+             * @function _defaultControls
+             * @private
+             * @param {Array} controls original controls
+             * @param {Array} controlsDefault controls defaults
+             * @param {Array} parentControls [optional={}] parent defaulted values if child of a dynamic wms layer
+             * @return {Array} defaulted state object
+             */
+            function _defaultControls(controls, controlsDefault, parentControls) {
+                let result = controls;
+
+                if (typeof controls === 'undefined') {
+                    if (typeof parentControls !== 'undefined') {
+                        result = common.intersect(parentControls, controlsDefault);
+                    }
+
+                    result = angular.copy(controlsDefault);
+
+                } else {
+                    if (typeof parentControls !== 'undefined') {
+                        result = common.intersect(controls, parentControls);
+                    } else {
+                        result = common.intersect(result, controlsDefault);
+                    }
+                }
+
+                return result;
+            }
+        }
+
         // abstract
         class LayerNode {
             /**
@@ -223,6 +334,8 @@
              * @param {Object} source a well-formed layer config object
              */
             constructor (source) {
+
+                this._source = source;
                 this._id = source.id;
                 this._layerType = source.layerType;
                 this._name = source.name;
@@ -232,15 +345,60 @@
                 this._extent = source.extent ?
                     gapiService.gapi.mapManager.getExtentFromJson(source.extent) :
                     undefined;
-                this._controls = source.controls; // controls are defaulted in blueprint constructor
-                this._disabledControls = source.disabledControls; // controls are defaulted in blueprint constructor
-                this._userDisabledControls = source.userDisabledControls;
-                this._state = new InitialLayerSettings(source.state); // state is defaulted in blueprint constructor
+
+                const defaults = DEFAULTS.layer[this.layerType];
+
+                const defaultedSource = applyLayerNodeDefaults(source, defaults);
+
+                this._state = new InitialLayerSettings(defaultedSource.state);
+                this._controls = defaultedSource.controls;
+                this._disabledControls = defaultedSource.disabledControls;
+                this._userDisabledControls = defaultedSource.userDisabledControls;
+
+                /*this._state = new InitialLayerSettings(applyLayerNodeDefaults(source.state, defaults.state));
+
+                this._controls = applyLayerNodeDefaults(source.controls, defaults.controls);
+                this._disabledControls = applyLayerNodeDefaults(source.disabledControls, defaults.disabledControls);
+                this._userDisabledControls =
+                    applyLayerNodeDefaults(source.userDisabledControls, defaults.userDisabledControls);*/
+
+                /*
+                // defaulting initial layer state
+                this._state = new InitialLayerSettings(
+                    angular.extend({}, defaults.state, source.state));
+
+                // defaulting layer controls
+                if (typeof source.controls === 'undefined') {
+                    this._controls = angular.copy(defaults.controls);
+                } else {
+                    this._controls = common.intersect(source.controls, defaults.controls);
+                }
+
+                // defaulting layer disabled controls
+                if (typeof source.disabledControls === 'undefined') {
+                    this._disabledControls = angular.copy(defaults.disabledControls);
+                } else {
+                    this._disabledControls = common.intersect(source.disabledControls, defaults.controls);
+                }
+
+                // userDisabledControls cannot be specified in schema, using straight defaults
+                this._userDisabledControls = angular.copy(defaults.userDisabledControls);
+                */
+
+                // remove metadata control if no metadata url is specified after applying defaults
+                if (!source.metadataUrl) {
+                    common.removeFromArray(this._controls, 'metadata');
+                }
             }
+
+            get source () { return this._source; }
 
             get id () { return this._id; }
             get layerType () { return this._layerType; }
+
             get name () { return this._name; }
+            set name (value) { this._name = value; }
+
             get url () { return this._url; }
             get metadataUrl () { return this._metadataUrl; }
             get catalogueUrl () { return this._catalogueUrl; }
@@ -283,30 +441,50 @@
             }
 
             get nameField () { return this._nameField; }
+            set nameField (value) { this._nameField = value; }
+
             get tolerance () { return this._tolerance; }
         }
 
         // abstract
         class LayerEntryNode {
-            constructor (source) {
-                this._controls = source.controls;
+            constructor (source, parentSource = {}) {
+                this._source = source;
+
+                this._name = source.name;
+
+                // state and controls defaults cannot be applied here;
+                // need to wait until dynamic/wms layer is loaded before parent/child defaulting can be applied; this is done in the legend service;
                 this._state = new InitialLayerSettings(source.state || {});
+                this._controls = source.controls;
+                this._disabledControls = source.disabledControls;
+                this._userDisabledControls = source.userDisabledControls;
             }
 
+            get source () { return this._source; }
+
+            get name () { return this._name; }
             get controls () { return this._controls; }
+            get disabledControls () { return this._disabledControls; }
+            get userDisabledControls () { return this._userDisabledControls; }
             get state () { return this._state; }
         }
 
         class WMSLayerEntryNode extends LayerEntryNode {
-            constructor (source) {
-                super(source);
+            constructor (source, parentSource) {
+                super(source, parentSource);
 
+                this._level = source.level;
+                this._desc = source.desc;
                 this._id = source.id;
-                this._name = source.name;
             }
 
+            get level () { return this._level; }
+            get desc () { return this._desc; }
             get id () { return this._id; }
-            get name () { return this._id; }
+
+            get layerType () { return layerTypes.OGC_WMS; }
+
         }
 
         class WMSLayerNode extends LayerNode {
@@ -314,30 +492,38 @@
                 super(source);
 
                 this._layerEntries = source.layerEntries.map(layerEntry =>
-                    (new WMSLayerEntryNode(layerEntry)));
+                    (new WMSLayerEntryNode(layerEntry, source)));
                 this._featureInfoMimeType = source.featureInfoMimeType;
-                this._legendMimeType = source.legendMimeType;
+                this._legendMimeType = source.legendMimeType || "image/png";
             }
 
             get layerEntries () { return this._layerEntries; }
+            /**
+             * @param {Array} value an array of WMSLayerEntryNode layer entries
+             */
+            set layerEntries (value = []) {
+                this._layerEntries = value;
+            }
             get featureInfoMimeType () { return this._featureInfoMimeType; }
             get legendMimeType () { return this._legendMimeType; }
         }
 
         class DynamicLayerEntryNode extends LayerEntryNode {
-            constructor (source) {
-                super(source);
+            constructor (source, parentSource) {
+                super(source, parentSource);
 
                 this._index = source.index;
-                this._outfields = source.outfields;
+                this._outfields = source.outfields || '*';
                 this._stateOnly = source.stateOnly;
 
                 this.isLayerEntry = true;
             }
 
-            get index () { return this._id; }
+            get index () { return this._index; }
             get outfields () { return this._outfields; }
             get stateOnly () { return this._stateOnly; }
+
+            get layerType () { return layerTypes.ESRI_DYNAMIC; }
         }
 
         class DynamicLayerNode extends LayerNode {
@@ -345,12 +531,18 @@
                 super(source);
 
                 this._layerEntries = source.layerEntries.map(layerEntry =>
-                    (new DynamicLayerEntryNode(layerEntry)));
+                    (new DynamicLayerEntryNode(layerEntry, source)));
                 this._childOptions = source.childOptions;
                 this._tolerance = source.tolerance;
             }
 
             get layerEntries () { return this._layerEntries; }
+            /**
+             * @param {Array} value an array of DynamicLayerEntryNode layer entries
+             */
+            set layerEntries (value = []) {
+                this._layerEntries = value;
+            }
             get childOptions () { return this._childOptions; }
             get tolerance () { return this._tolerance; }
         }
@@ -974,8 +1166,6 @@
             get map () { return this._map; }
         }
 
-        const { Layer: { Types: layerTypes }, Service: { Types: serviceTypes } } = Geo;
-
         const LAYER_TYPE_TO_LAYER_NODE = {
             [layerTypes.ESRI_TILE]: BasicLayerNode,
             [layerTypes.ESRI_FEATURE]: FeatureLayerNode,
@@ -1003,10 +1193,14 @@
                 BasicLayerNode,
                 FeatureLayerNode,
                 DynamicLayerNode,
-                WMSLayerNode
+                WMSLayerNode,
+
+                DynamicLayerEntryNode,
+                WMSLayerEntryNode
             },
 
             makeLayerConfig,
+            applyLayerNodeDefaults,
 
             TYPES,
             DEFAULTS

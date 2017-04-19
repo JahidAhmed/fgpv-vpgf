@@ -123,27 +123,17 @@
                 };
                 const entryGroup = new ConfigObject.legend.EntryGroup(derivedEntryGroupConfig);
 
-                const group = new LegendBlock.Group(entryGroup);
+                const legendBlockGroup = new LegendBlock.Group(entryGroup);
 
                 // wait for the dynamic layer record to load to get its children
                 const layerRecord = layerRegistry.getLayerRecord(blockConfig.layerId);
 
                 layerRecord.addStateListener(_onLayerRecordLoad);
 
-                // TODO: turn this into a full-blown types layer config
-                // TODO: needs state defaults like boundg box, visibility, etc.
-                const derivedChildLayerConfig = {
-                    state: {
-                        boundingBox: false
-                    },
-                    controls: common.intersect(
-                        layerConfig.controls,
-                        ConfigObject.DEFAULTS.layer[Geo.Layer.Types.ESRI_DYNAMIC].child.controls),
-                    disabledControls: layerConfig.disabledControls, // TODO: need to default disabled controls as well?
-                    userDisabledControls: []
-                };
+                const userDisabledControls = [];
+                const dynamicLayerChildDefaults = ConfigObject.DEFAULTS.layer[Geo.Layer.Types.ESRI_DYNAMIC].child;
 
-                return group;
+                return legendBlockGroup;
 
                 /**
                  * A helper function to handle layerRecord state change. On loaded, it create child LegendBlocks for the dynamic layer and
@@ -156,78 +146,67 @@
                  */
                 function _onLayerRecordLoad(state) {
                     if (state === 'rv-loaded') {
+                        console.info('layer state:', state);
 
                         // dynamic children might not support opacity if the layer is not a true dynamic layer
                         // TODO: check/handle controlledIds proxies as well
                         // TODO: allow for an optional description why the control is disabled
                         if (!layerRecord.isTrueDynamic) {
-                            derivedChildLayerConfig.userDisabledControls.push('opacity');
+                            userDisabledControls.push('opacity');
                         }
 
-                        const tempGroupBlockConfig = new ConfigObject.legend.EntryGroup({
+                        const tempEntryGroup = new ConfigObject.legend.EntryGroup({
                             children: layerRecord.getChildTree()
                         });
 
                         //common.$timeout(() => {
-                        tempGroupBlockConfig.children.forEach(configBlock =>
-                            _addChildBlock(configBlock, group));
+                        tempEntryGroup.children.forEach((tempEntryGroupChild, index) =>
+                            _addChildBlock(tempEntryGroupChild, legendBlockGroup, layerConfig));
                         //}, 5000);
 
                         layerRecord.removeStateListener(_onLayerRecordLoad);
                     }
                 }
 
-                function _addChildBlock(childBlockConfig, parent) {
-                    let childBlock;
+                /**
+                 * Traverses dynamic layerEntries and converts them to a hierarchy of LegendBlocks.
+                 *
+                 * @function _addChildBlock
+                 * @private
+                 * @param {Entry|GroupEntry} entryObject typed config objects
+                 * @param {LegendBlock.GROUP} parent parent LegendBlock
+                 * @param {LayerNode} parentLayerConfig typed layer config object
+                 */
+                function _addChildBlock(entryObject, parent, parentLayerConfig) {
+                    let chilLegenddBlock;
 
-                    if (childBlockConfig.children) {
-                        childBlock = new LegendBlock.Group(childBlockConfig);
+                    // get the initial layerEntry config from the layer record config
+                    const layerEntryConfig = layerConfig.layerEntries.find(entry =>
+                        entry.index === entryObject.entryIndex);
 
-                        childBlockConfig.children.forEach(subChildBlockConfig =>
-                            _addChildBlock(subChildBlockConfig, childBlock));
+                    // `layerEntryConfig` might have some controls and states specified;
+                    // apply immediate parent state (which can be root) and child default values
+                    const derivedChildBlockLayerConfig = ConfigObject.applyLayerNodeDefaults(
+                        layerEntryConfig.source, dynamicLayerChildDefaults, parentLayerConfig);
+
+                    if (entryObject.children) {
+                        // TODO: this line might not be needed as entryObject should be typed already
+                        chilLegenddBlock = new LegendBlock.Group(entryObject);
+
+                        entryObject.children.forEach(subEntryObject =>
+                            _addChildBlock(subEntryObject, chilLegenddBlock, derivedChildBlockLayerConfig));
                     } else {
                         const proxies = {
-                            main: layerRecord.getChildProxy(childBlockConfig.entryIndex),
+                            main: layerRecord.getChildProxy(entryObject.entryIndex),
                             adjunct: []
                         };
 
-                        childBlock = new LegendBlock.Node(proxies, childBlockConfig, derivedChildLayerConfig);
+                        chilLegenddBlock = new LegendBlock.Node(proxies, entryObject, derivedChildBlockLayerConfig);
+                        _applyState(chilLegenddBlock, derivedChildBlockLayerConfig.state);
                     }
 
-                    parent.addEntry(childBlock);
+                    parent.addEntry(chilLegenddBlock);
                 }
-
-                /**
-                 * A helper function to create LegendBlock objected for children of a dynamic layer. Children itself may have more children creating a nesting structured.
-                 *
-                 * @function _makeChildBlock
-                 * @private
-                 * @param {Object} child dynamic layer child object config object in the form of { children: [<Child>], id: <Number> }
-                 * @param {LegendBlock.GROUP} parent LegendBlock.GROUP object; immediate parent of the child provided
-                 * @return {LegendBlock} resulting LegendBlock object
-                 */
-                /*function _makeChildBlock(child, parent) {
-                    let childBlock;
-                    const proxy = layerRecord.getChildProxy(child.id);
-
-                    if (child.children) {
-                        // TODO: for complex dynamic layers, subgroups need names
-                        childBlock = new LegendBlock.Group(child.id + 'blha');
-                        child.children.forEach(subChild =>
-                            _makeChildBlock(subChild, childBlock));
-                    } else {
-                        childBlock = new LegendBlock.Node({ main: proxy, adjunct: [] }, {
-                            symbologyRenderStyle: 'icons'
-                        }, {
-                                controls: [],
-                                disabledControls: []
-                            });
-                    }
-
-                    parent.addEntry(childBlock);
-
-                    return childBlock;
-                }*/
             }
 
             /**
@@ -275,11 +254,32 @@
                         // this is the first chance to properly create bounding box for this legend node
                         // since it's created on demand and cannot be created by geoapi when creating layerRecord
                         // need to read the layer config state here and initialize the bounding box manually when the layer loads
-                        node.boundingBox = layerConfig.state.boundingBox;
+                        // node.boundingBox = layerConfig.state.boundingBox;
+
+                        _applyState(node, layerConfig.state);
 
                         layerRecord.removeStateListener(_onLayerRecordLoad);
                     }
                 }
+            }
+
+            /**
+             * Applies the layerConfig state to the corresponding LegendBlock.
+             * Not all state is applied to the layer record inside geoApi;
+             * as a result, legend service reapplies all the state to all legend blocks after layer record is loaded
+             *
+             * @function _applyState
+             * @private
+             * @param {LegendBlock} legendNode legend block to apply the supplied state to
+             * @param {InitialLayerSettings} state the state to be applied to the legend block
+             */
+            function _applyState(legendNode, state) {
+                legendNode.opacity = state.opacity;
+                legendNode.visibility = state.visibility;
+                // TODO: uncomment when child proxy has extent available
+                // legendNode.boundingBox = state.boundingBox;
+                // legendNode.query = state.query;
+                // legendNode.snapshot = state.snapshot;
             }
 
             /**
@@ -338,6 +338,10 @@
                 } else {
                     mainProxy = mainLayerRecord.getProxy();
                 }
+
+                // TODO: for controlledIds (here and in the dynamic block), if the controlledId is a dynamic layer
+                // instead of grabbing the top proxy, expand the list to include all the child proxies;
+                // this is needed to properly propage changes to the controlled dynamic layer
 
                 const adjunctLayerRecords = adjunctBlueprints.map(blueprint => {
                     const layerRecord = layerRegistry.makeLayerRecord(blueprint);
