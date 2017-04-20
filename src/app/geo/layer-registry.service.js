@@ -108,6 +108,12 @@
             mapBody.addLayer(layerRecord._layer);
             ref.loadingCount ++;
 
+            // HACK: for a file-based layer, call onLoad manually since such layers don't emmit events
+            if (layerRecord._layer.loaded) {
+                isRefreshed = true;
+                _onLayerRecordLoad('rv-loaded');
+            }
+
             // when a layer takes too long to load, it could be a slow service or a failed service
             // in any case, the queue will advance after THROTTLE_TIMEOUT
             // failed layers will be marked as failed when the finally resolve

@@ -29,7 +29,7 @@
     }
 
     function Controller($timeout, stateManager, geoService, Geo, Stepper, LayerBlueprint, $rootElement, keyNames,
-        ConfigObject) {
+        ConfigObject, layerSource) {
         'ngInject';
         const self = this;
 
@@ -150,8 +150,17 @@
         function connectOnContinue() {
             const connect = self.connect;
 
-            /// ????
+            const layerSourcePromise = layerSource.fetchServiceInfo(connect.serviceUrl)
+                .then(layerSourceOptions => {
+                    self.layerSourceOptions = layerSourceOptions;
+                    self.layerSource = layerSourceOptions[0];
+                })
+                .catch(() =>
+                    toggleErrorMessage(connect.form, 'serviceUrl', 'broken', false));
 
+            stepper.nextStep(layerSourcePromise);
+
+            /*
 
             // creating new service blueprint with the provided url
             // since there is no layer type provided, blueprint will try to get service data
@@ -165,6 +174,8 @@
             self.layerBlueprint.ready.catch(() => toggleErrorMessage(connect.form, 'serviceUrl', 'broken', false));
 
             stepper.nextStep(self.layerBlueprint.ready);
+
+            */
         }
 
         /**
@@ -197,6 +208,11 @@
          * @function selectOnContinue
          */
         function selectOnContinue() {
+
+            // TODO: do validation
+            stepper.nextStep(Promise.resolve());
+
+            /*
             const validationPromise = self.layerBlueprint.validate();
 
             // TODO: move reseting options to defaults into blueprint; this can be done upon successful validation
@@ -206,7 +222,7 @@
             validationPromise.catch(error => {
                 RV.logger.error('loaderServiceDirective', 'service type is wrong', error);
                 toggleErrorMessage(self.select.form, 'serviceType', 'wrong', false);
-            });
+            });*/
         }
 
         // FIXME add docs
@@ -247,8 +263,8 @@
             configure.form.$setUntouched();
 
             // if reset called before the first step is complete, layerBlueprint will not exist yet
-            if (self.layerBlueprint) {
-                self.layerBlueprint.config = self.configure.defaultOptions;
+            if (self.layerSource) {
+                self.layerSource.reset();
             }
         }
 

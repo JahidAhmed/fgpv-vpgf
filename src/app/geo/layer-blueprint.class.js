@@ -24,8 +24,6 @@
         // destructure Geo into `layerTypes` and `serviceTypes`
         const { Layer: { Types: layerTypes }, Service: { Types: serviceTypes } } = Geo;
 
-        // jscs doesn't like enhanced object notation
-        // jscs:disable requireSpacesInAnonymousFunctionExpression
         class LayerBlueprint {
             /**
              * Creates a new LayerBlueprint.
@@ -207,7 +205,6 @@
                 [serviceTypes.WMS]: layerTypes.OGC_WMS
             };
         }
-        // jscs:enable requireSpacesInAnonymousFunctionExpression
 
         const serviceTypeToLayerType = {
             [Geo.Service.Types.FeatureLayer]: Geo.Layer.Types.ESRI_FEATURE,
@@ -474,10 +471,7 @@
                 //return $q.resolve(LayerRecordFactory.makeServiceRecord(this.config, this._epsgLookup));
             }
         }
-        // jscs:enable requireSpacesInAnonymousFunctionExpression
 
-        // jscs doesn't like enhanced object notation
-        // jscs:disable requireSpacesInAnonymousFunctionExpression
         /**
          * Create a LayerFileBlueprint.
          * Retrieves data from the file. The file can be either online or local.
@@ -489,8 +483,15 @@
          * @return {String}           service type: 'csv', 'shapefile', 'geojson'
          */
         class LayerFileBlueprint extends LayerBlueprint {
-            constructor(epsgLookup, targetWkid, path, file, progressCallback = angular.noop) { // , extension) {
-                super(undefined, epsgLookup);
+            constructor (layerSource) {
+                super();
+                this._layerSource = layerSource;
+            }
+
+            get config () { return this._layerSource.config; }
+
+            /*constructora(epsgLookup, targetWkid, path, file, progressCallback = angular.noop) { // , extension) {
+                // super(undefined, epsgLookup);
 
                 // when passing file object, path is its name
                 this._fileName = typeof file !== 'undefined' ? file.name : path;
@@ -525,30 +526,30 @@
                             throw new Error('Cannot retrieve file data');
                         }
                     });
-            }
+            }*/
 
             /**
              * Returns the file type. If type is `Unknown`, returns null for template bindings
              * @return {String|null} file type
              */
-            get fileType() {
+            /*get fileType() {
                 if (Geo.Service.Types.Unknown === this._fileType) {
                     return null;
                 }
                 return this._fileType;
-            }
+            }*/
 
             /**
              * Sets file type. Setting file type does not triggers file validation.
              * @param  {String} value file type
              */
-            set fileType(value) { this._fileType = value; }
+            //set fileType(value) { this._fileType = value; }
 
             /**
              * Validates file blueprint against selected file type.
              * @return {Promise} promise resolving if validation successful
              */
-            validate() {
+            /*validate() {
                 return this._constructorPromise
                     .then(() => gapiService.gapi.layer.validateFile(this.fileType, this._fileData))
                     .then(result => {
@@ -560,18 +561,39 @@
                         this._userOptions = options;
                         this._formatedFileData = result;
                     });
-            }
+            }*/
 
             /**
              * Returns fields found in the file data. This is used in template bindings.
              * @return {Array|null} array of fields in the form of [{ name: "Long", type: "esriFieldTypeString"}]
              */
-            get fields() {
+            /*get fields() {
                 if (this._formatedFileData !== null) {
                     return this._formatedFileData.fields;
                 } else {
                     return null;
                 }
+            }*/
+
+            validateFileLayerSource () {
+                // clone data because the makeSomethingLayer functions mangle the config data
+                const formattedDataCopy = angular.copy(this._layerSource.formattedData);
+
+                const layerFileGenerators = {
+                    [Geo.Service.Types.CSV]: () =>
+                        gapiService.gapi.layer.makeCsvLayer(formattedDataCopy, this._layerSource),
+                    [Geo.Service.Types.GeoJSON]:  () =>
+                        gapiService.gapi.layer.makeGeoJsonLayer(formattedDataCopy, this._layerSource),
+                    [Geo.Service.Types.Shapefile]:  () =>
+                        gapiService.gapi.layer.makeShapeLayer(formattedDataCopy, this._layerSource)
+                };
+
+                const layerPromise = layerFileGenerators[this._layerSource.type]();
+
+                layerPromise.then(layer =>
+                    (this.__layer__ = layer));
+
+                return layerPromise;
             }
 
             /**
@@ -579,10 +601,17 @@
              * @return {Promise} promise resolving with the esri layer object
              */
             generateLayer() {
-                // TODO: throw error if layer type is not defined
-                // clone data because the makeSomethingLayer functions mangle the config data
-                const _clonedFormatedFileData = angular.merge({}, this._formatedFileData);
+                // const _clonedFormatedFileData = angular.merge({}, this._formatedFileData);
 
+                // TODO: provide epsgLookup to builder function
+                return LayerBlueprint.LAYER_TYPE_TO_LAYER_RECORD[this.config.layerType](this.config, this.__layer__);
+
+                /*return layerPromise.then(layer =>
+                    LayerBlueprint.LAYER_TYPE_TO_LAYER_RECORD[this.config.layerType](this.config, esriLayer));*/
+
+                // do angular merge here too so as to not mangle config data
+
+                /*
                 // generator functions for different file types
                 const layerFileGenerators = {
                     [Geo.Service.Types.CSV]: () =>
@@ -608,9 +637,10 @@
                 // do angular merge here too so as to not mangle config data
                 return layerPromise.then(layer => LayerRecordFactory.makeFileRecord(angular.merge({},
                     this.config), layer));
+                */
             }
 
-            _applyDefaults() {
+            /*_applyDefaults() {
                 super._applyDefaults();
 
                 // disable reloading for file-based layers
@@ -618,31 +648,33 @@
                 if (this.config.options) {
                     this.config.options.reload.enabled = false;
                 }
-            }
+            }*/
 
             /**
              * Reads HTML5 File object data.
              * @private
-             * @param  {File} file [description]
+             * @param {File} file a file object to read
+             * @param {Function} progressCallback a function which is called during the process of reading file indicating how much of the total data has been read
              * @return {Promise}      promise resolving with file's data
              */
-            _readFileData(file, progressCallback) {
+            /*_readFileData(file, progressCallback) {
                 const dataPromise = $q((resolve, reject) => {
                     const reader = new FileReader();
                     reader.onerror = () => {
                         RV.logger.error('layerBlueprint', 'failed to read a file');
                         reject('Failed to read a file');
                     };
-                    reader.onload = () => resolve(reader.result);
-                    reader.onprogress = event => progressCallback(event);
+                    reader.onload = () =>
+                        resolve(reader.result);
+                    reader.onprogress = event =>
+                        progressCallback(event);
 
                     reader.readAsArrayBuffer(file);
                 });
 
                 return dataPromise;
-            }
+            }*/
         }
-        // jscs:enable requireSpacesInAnonymousFunctionExpression
 
         const service = {
             service: LayerServiceBlueprint,

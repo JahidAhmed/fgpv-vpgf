@@ -32,7 +32,9 @@
 
         const service = {
             contructLegend,
-            getLegendBlock
+            getLegendBlock,
+
+            importLayer
         };
 
         return service;
@@ -51,11 +53,14 @@
             configService._sharedConfig_.map._legendBlocks = rootGroup;
         }
 
-        /*function addUserLayerItem(layerBlueprint) {
-            const blockConfig = { layerId: layerBlueprint.config.id };
+        function importLayer(layerBlueprint) {
+            const blockConfig = new ConfigObject.legend.Entry({ layerId: layerBlueprint.config.id });
 
-            _makeLegendBlock(blockConfig, [layerBlueprint]);
-        }*/
+            const legendBlock = _makeLegendBlock(blockConfig, [layerBlueprint]);
+
+            // TODO: this a hacky way to get it working for now; needs rethinking
+            configService._sharedConfig_.map._legendBlocks.addEntry(legendBlock);
+        }
 
         /**
          * Recursively turns legend entry and group config objects into UI LegendBlock components.
@@ -341,7 +346,7 @@
 
                 // TODO: for controlledIds (here and in the dynamic block), if the controlledId is a dynamic layer
                 // instead of grabbing the top proxy, expand the list to include all the child proxies;
-                // this is needed to properly propage changes to the controlled dynamic layer
+                // this is needed to properly propagate changes to the controlled dynamic layer
 
                 const adjunctLayerRecords = adjunctBlueprints.map(blueprint => {
                     const layerRecord = layerRegistry.makeLayerRecord(blueprint);

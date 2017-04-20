@@ -29,7 +29,7 @@
     }
 
     function Controller($scope, $q, $timeout, stateManager, Stepper, geoService, LayerBlueprint, Geo, $rootElement,
-        keyNames) {
+        keyNames, layerSource, legendService) {
         'ngInject';
         const self = this;
 
@@ -192,6 +192,23 @@
          * @return {Promise} layerBlueprint ready promise
          */
         function onLayerBlueprintReady(name, file) {
+
+            const layerSourcePromise = layerSource.fetchFileInfo(name, file, updateProgress)
+                .then(({ options: layerSourceOptions, preselectedIndex }) => {
+                    self.layerSourceOptions = layerSourceOptions;
+                    self.layerSource = layerSourceOptions[preselectedIndex];
+                });
+
+            // add some delay before going to the next step
+            // explicitly move to step 1 (select); if the current step is not 0 (upload), drag-dropping a file may advance farther than needed when using just `stepper.nextStep()`
+            stepper.moveToStep(1, $timeout(() =>
+                layerSourcePromise, 300));
+
+            return layerSourcePromise;
+
+            //return stepper.nextStep(layerSourcePromise);
+
+            /*
             self.layerBlueprint = new LayerBlueprint.file(
                 geoService.epsgLookup, geoService.mapObject.spatialReference.wkid,
                 name, file, updateProgress
@@ -200,11 +217,10 @@
             // TODO: refactor this
             self.layerBlueprint.initialConfig = { flags: { user: { visible: true } } };
 
-            // add some delay before going to the next step
-            // explicitly move to step 1 (select); if the current step is not 0 (upload), drag-dropping a file may advance farther than needed when using just `stepper.nextStep()`
             stepper.moveToStep(1, $timeout(() => self.layerBlueprint.ready, 300));
 
             return self.layerBlueprint.ready;
+            */
 
             /**
              * Updates file load progress status.
@@ -287,6 +303,17 @@
          * @function selectOnContinue
          */
         function selectOnContinue() {
+            const validationPromise = self.layerSource.validate()
+
+            validationPromise.catch(error => {
+                RV.logger.error('loaderFileDirective', 'file type is wrong', error);
+                toggleErrorMessage(self.select.form, 'dataType', 'wrong', false);
+                // TODO: display a meaningful error message why the file doesn't validate (malformed csv, zip with pictures of cats, etc.)
+            });
+
+            stepper.nextStep(validationPromise);
+
+            /*
             const validationPromise = self.layerBlueprint.validate();
 
             stepper.nextStep(validationPromise);
@@ -296,6 +323,7 @@
                 toggleErrorMessage(self.select.form, 'dataType', 'wrong', false);
                 // TODO: display a meaningful error message why the file doesn't validate (malformed csv, zip with pictures of cats, etc.)
             });
+            */
         }
 
         /**
@@ -331,6 +359,9 @@
             configure.form.$setPristine();
             configure.form.$setUntouched();
 
+            // this
+            self.layerSource.reset();
+
             // TODO: generalize resetting custom form validation
             configure.configureResetValidation();
         }
@@ -350,7 +381,17 @@
          * @function configureOnContinue
          */
         function configureOnContinue() {
-            self.layerBlueprint.generateLayer()
+            const layerBlueprint = new LayerBlueprint.file(self.layerSource);
+
+            layerBlueprint.validateFileLayerSource().then(esriLayer => {
+                legendService.importLayer(layerBlueprint)
+            });
+
+
+
+            return;
+
+            /*layerBlueprint.generateLayer()
                 .then(() => {
                     geoService.constructLayers([self.layerBlueprint]);
                     closeLoaderFile();
@@ -358,7 +399,7 @@
                 .catch(error => {
                     RV.logger.warn('loaderFileDirective', 'file is invalid ', error);
                     self.configure.form.$setValidity('invalid', false);
-                });
+                });*/
         }
 
         /**
