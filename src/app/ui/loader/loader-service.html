@@ -17,8 +17,8 @@
                     ng-keypress="self.connect.step.onKeypress($event)"
                     required>
                 <div ng-messages="self.connect.form.serviceUrl.$error">
-                    <div ng-message="url" translate>import.service.connect.invalidurl</div>
-                    <div ng-message="broken" translate>import.service.connect.broken</div>
+                    <div ng-message="url">{{ 'import.service.connect.invalidurl' | translate }}</div>
+                    <div ng-message="broken">{{ 'import.service.connect.broken' | translate }}</div>
                 </div>
             </md-input-container>
         </rv-stepper-item>
@@ -41,7 +41,7 @@
                     </md-option>
                 </md-select>
                 <div ng-messages="self.select.form.serviceType.$error">
-                    <div ng-message="wrong" translate>import.service.select.wrong</div>
+                    <div ng-message="wrong">{{ 'import.service.select.wrong' | translate }}</div>
                 </div>
             </md-input-container>
         </rv-stepper-item>
@@ -65,7 +65,10 @@
 
             <md-input-container class="md-block" ng-switch-when="featurelayer">
                 <label translate>import.service.configure.primaryfield</label>
-                <md-select name="primaryField" ng-model="self.layerSource.config.nameField" required>
+                <md-select
+                    name="primaryField"
+                    ng-model="self.layerSource.config.nameField"
+                    required>
                     <md-option ng-repeat="field in self.layerSource.fields" value="{{ field.name }}">
                         {{ field.alias || field.name }}
                     </md-option>
@@ -76,13 +79,16 @@
                     </div-->
             </md-input-container>
 
-            <!-- turn off this for now as all dynamic sublayers are added at the moment -->
             <md-input-container class="md-block" ng-switch-when="dynamicservice">
                 <label translate>import.service.configure.layers</label>
-                <md-select name="layer" ng-model="self.layerSource.config.layerEntries" required multiple>
+                <md-select
+                    name="layer"
+                    ng-model="self.layerSource.config.layerEntries"
+                    ng-model-options="{ trackBy: '$value.index' }"
+                    required multiple>
                     <md-option ng-repeat="layer in self.layerSource.layers"
                         ng-value="layer">
-                        {{ layer.indent + ' ' + layer.name }}
+                        {{ layer.indent + ' ' + layer.name + ' ' + layer.index }}
                     </md-option>
                 </md-select>
                 <div class="rv-hint" translate>import.service.configure.multipleselection</div>
@@ -94,10 +100,14 @@
 
             <md-input-container class="md-block" ng-switch-when="wms">
                 <label translate>import.service.configure.layers</label>
-                <md-select name="layers" ng-model="self.layerSource.config.layerEntries" required multiple>
+                <md-select
+                    name="layers"
+                    ng-model="self.layerSource.config.layerEntries"
+                    ng-model-options="{ trackBy: '$value.index' }"
+                    required multiple>
                     <md-option ng-repeat="layer in self.layerSource.layers"
                         ng-value="layer">
-                        {{ layer.indent + ' ' + layer.desc }}
+                        {{ layer.indent + ' ' + layer.desc + ' ' + layer.index + '!' }}
                     </md-option>
                 </md-select>
                 <div class="rv-hint" translate>import.service.configure.multipleselection</div>

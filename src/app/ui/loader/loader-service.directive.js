@@ -28,8 +28,8 @@
         return directive;
     }
 
-    function Controller($timeout, stateManager, geoService, Geo, Stepper, LayerBlueprint, $rootElement, keyNames,
-        ConfigObject, layerSource) {
+    function Controller($q, $timeout, stateManager, geoService, Geo, Stepper, LayerBlueprint, $rootElement, keyNames,
+        ConfigObject, layerSource, legendService) {
         'ngInject';
         const self = this;
 
@@ -151,12 +151,15 @@
             const connect = self.connect;
 
             const layerSourcePromise = layerSource.fetchServiceInfo(connect.serviceUrl)
-                .then(layerSourceOptions => {
+                .then(({ options: layerSourceOptions, preselectedIndex }) => {
                     self.layerSourceOptions = layerSourceOptions;
-                    self.layerSource = layerSourceOptions[0];
+                    self.layerSource = layerSourceOptions[preselectedIndex];
                 })
-                .catch(() =>
-                    toggleErrorMessage(connect.form, 'serviceUrl', 'broken', false));
+                .catch(error => {
+                    toggleErrorMessage(connect.form, 'serviceUrl', 'broken', false);
+                    return $q.reject(error);
+                });
+
 
             stepper.nextStep(layerSourcePromise);
 
@@ -209,8 +212,9 @@
          */
         function selectOnContinue() {
 
-            // TODO: do validation
-            stepper.nextStep(Promise.resolve());
+            // we don't validate service layer info source;
+            // it seem not to be possible to tell if the layer will work on not until the layer is build and added to the map
+            stepper.nextStep($q.resolve());
 
             /*
             const validationPromise = self.layerBlueprint.validate();
@@ -246,10 +250,16 @@
          * @function configureOnContinue
          */
         function configureOnContinue() {
+            const layerBlueprint = new LayerBlueprint.service('1');
+            layerBlueprint.setConfig(self.layerSource.config);
+
+            // TODO: close the loader wizard
+            legendService.importLayer(layerBlueprint);
+
             // TODO: display error message if something breaks
             // TODO: close import wizard if build is successful
-            geoService.constructLayers([self.layerBlueprint]);
-            closeLoaderService();
+            /*geoService.constructLayers([self.layerBlueprint]);
+            closeLoaderService();*/
         }
 
         /**

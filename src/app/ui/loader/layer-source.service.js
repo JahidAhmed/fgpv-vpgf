@@ -2,16 +2,16 @@
     'use strict';
 
     /**
-     * @module LayerBlueprintUserOptions
-     * @memberof app.geo
+     * @module layerSource
+     * @memberof app.ui
      * @requires dependencies
      * @description
      *
-     * The `LayerBlueprintUserOptions` service returns a collection of file option classes. These specify user selectable options when importing layer.
+     * The `layerSource` service returns a collection of file option classes. These specify user selectable options when importing layer.
      *
      */
     angular
-        .module('app.geo')
+        .module('app.ui')
         .factory('layerSource', layerSource);
 
     function layerSource($q, gapiService, Geo, LayerSourceInfo, ConfigObject, configService) {
@@ -25,7 +25,7 @@
             fetchFileInfo
         };
 
-        const serviceType = Geo.Service.Types;
+        const geoServiceTypes = Geo.Service.Types;
 
         return service;
 
@@ -34,22 +34,74 @@
          * TODO: there is a lot of workarounds since wms layers need special handling, and it's not possible to immediately detect if the layer is not a service endpoint .
          */
         function fetchServiceInfo(serviceUrl) {
+            const matrix = {
+                [geoServiceTypes.FeatureService]: () =>
+                    [_parseAsFeature],
+
+                [geoServiceTypes.ImageService]: () =>
+                    [_parseAsImage],
+
+                [geoServiceTypes.DynamicService](serviceInfo) {
+                    const defaultSet = [
+                        _parseAsDynamic
+                    ];
+
+                    const subMatrix = {
+                        get [geoServiceTypes.FeatureLayer]() {
+                            return defaultSet.concat(_parseAsFeature)
+                        },
+                        [geoServiceTypes.RasterLayer]: defaultSet,
+                        [geoServiceTypes.GroupLayer]: defaultSet
+                    };
+
+                    if (serviceInfo.tileSupport) {
+                        defaultSet.push(_parseAsTile);
+                    }
+
+                    if (serviceInfo.index !== -1) {
+                        return subMatrix[serviceInfo.indexType];
+                    } else {
+                        return defaultSet;
+                    }
+
+                }
+            };
 
             const fetchPromise = gapiService.gapi.layer.ogc.parseCapabilities(serviceUrl)
                 .then(data => {
                     if (data.layers.length > 0) { // if there are layers, it's a wms layer
-                        return _parseCapabilitiesAsWMS(data);
+                        return _parseAsWMS(serviceUrl, data);
                     } else {
                         return gapiService.gapi.layer.predictLayerUrl(serviceUrl).then(serviceInfo =>
                             _parseAsSomethingElse(serviceInfo));
                     }
                 })
+                .then(options => ({
+                    options,
+                    preselectedIndex: 0
+                }))
                 .catch(error =>
                     $q.reject(error));
 
             return fetchPromise;
 
             function _parseAsSomethingElse(serviceInfo) {
+                if (serviceInfo.serviceType === geoServiceTypes.Error) {
+                    // this is not a service URL;
+                    // in some cases, if URL is not a service URL, dojo script used to interogate the address
+                    // will throw a page-level error which cannot be caught; in such cases, it's not clear to the user what has happened;
+                    // timeout error will eventually be raised and this block will trigger
+                    // TODO: as a workaround, block continue button until interogation is complete so users can't click multiple times, causing multiple checks
+                    return $q.reject(serviceInfo); // reject promise if the provided url cannot be accessed
+                }
+
+                const parsingPromise = matrix[serviceInfo.serviceType](serviceInfo).map(layerInfoBuilder =>
+                    layerInfoBuilder(serviceUrl, serviceInfo));
+
+                return parsingPromise;
+            }
+
+            function _parseAsSomethingElse2(serviceInfo) {
                 if (serviceInfo.serviceType === Geo.Service.Types.Error) {
                     // this is not a service URL;
                     // in some cases, if URL is not a service URL, dojo script used to interogate the address
@@ -93,7 +145,7 @@
                             layer.index === layerId)];
 
                         // create another layer info
-                        const rasterLayerList = flattenDynamicLayerList(data.layers)
+                        const rasterLayerList = _flattenDynamicLayerList(data.layers)
                             .filter(layer =>
                                 layer.index === layerId)
                             .map(layerEntry =>
@@ -103,7 +155,7 @@
                             id: `${Geo.Layer.Types.ESRI_RASTER}#${++ref.idCounter}`,
                             url: serviceUrl,
                             layerType: Geo.Layer.Types.ESRI_DYNAMIC,
-                            name: data.name,
+                            name: data.serviceName,
                             layerEntries: rasterLayerList
                         });
 
@@ -115,8 +167,8 @@
                 return doublePrediction;
             }
 
-            function _parseCapabilitiesAsWMS(data) {
-                RV.logger.log('layerBlueprint', `the url ${serviceUrl} is a WMS`);
+            function _parseAsWMS(url, data) {
+                RV.logger.log('layerBlueprint', `the url ${url} is a WMS`);
 
                 // it is mandatory to set featureInfoMimeType attribute to get fct identifyOgcWmsLayer to work.
                 // get the first supported format available in the GetFeatureInfo section of the Capabilities XML.
@@ -132,9 +184,9 @@
 
                 const layerConfig = new ConfigObject.layers.WMSLayerNode({
                     id: `${Geo.Layer.Types.OGC_WMS}#${++ref.idCounter}`,
-                    url: serviceUrl,
+                    url: url,
                     layerType: Geo.Layer.Types.OGC_WMS,
-                    name: serviceUrl,
+                    name: data.serviceName || url,
                     layerEntries: [],
                     featureInfoMimeType: formatType
                 });
@@ -144,12 +196,76 @@
                 return [layerInfo];
             }
 
-            function _parseAsFeature(data) {
+            function _parseAsFeature(url, data) {
                 const layerConfig = new ConfigObject.layers.FeatureLayerNode({
                     id: `${Geo.Layer.Types.ESRI_FEATURE}#${++ref.idCounter}`,
-                    url: serviceUrl,
+                    url: url,
                     layerType: Geo.Layer.Types.ESRI_FEATURE,
-                    name: data.name
+                    name: data.serviceName
+                });
+
+                const layerInfo = new LayerSourceInfo.FeatureServiceInfo(layerConfig, data.fields);
+
+                return layerInfo;
+            }
+
+            function _parseAsDynamic(url, data) {
+                const dynamicLayerList = _flattenDynamicLayerList(data.layers)
+                    .map(layerEntry =>
+                        (new ConfigObject.layers.DynamicLayerEntryNode(layerEntry)));
+
+                const layerConfig = new ConfigObject.layers.DynamicLayerNode({
+                    id: `${Geo.Layer.Types.ESRI_DYNAMIC}#${++ref.idCounter}`,
+                    url: data.index !== -1 ? data.rootUrl : url,
+                    layerType: Geo.Layer.Types.ESRI_DYNAMIC,
+                    name: data.serviceName,
+                    layerEntries: []
+                });
+
+                if (data.index !== -1) {
+                    layerConfig.layerEntries = [dynamicLayerList.find(layerEntry =>
+                        layerEntry.index === data.index)];
+                }
+
+                const layerInfo = new LayerSourceInfo.DynamicServiceInfo(layerConfig, dynamicLayerList);
+
+                return layerInfo;
+            }
+
+            function _parseAsTile(url, data) {
+                const layerConfig = new ConfigObject.layers.BasicLayerNode({
+                    id: `${Geo.Layer.Types.ESRI_TILE}#${++ref.idCounter}`,
+                    url: data.rootUrl, // tile will display all the sublayers, even if the url was pointing to a child
+                    layerType: Geo.Layer.Types.ESRI_TILE,
+                    name: data.serviceName
+                });
+
+                const layerInfo = new LayerSourceInfo.TileServiceInfo(layerConfig);
+
+                return layerInfo;
+            }
+
+            function _parseAsImage(url, data) {
+                const layerConfig = new ConfigObject.layers.BasicLayerNode({
+                    id: `${Geo.Layer.Types.ESRI_IMAGE}#${++ref.idCounter}`,
+                    url: url,
+                    layerType: Geo.Layer.Types.ESRI_IMAGE,
+                    name: data.serviceName
+                });
+
+                const layerInfo = new LayerSourceInfo.ImageServiceInfo(layerConfig);
+
+                return layerInfo;
+            }
+
+
+
+            function _parseAsFeature2(url, data) {
+                const layerConfig = new ConfigObject.layers.FeatureLayerNode({
+                    id: `${Geo.Layer.Types.ESRI_FEATURE}#${++ref.idCounter}`,
+                    url: url,
+                    layerType: Geo.Layer.Types.ESRI_FEATURE,
+                    name: data.serviceName
                 });
 
                 const featureLayerInfo = new LayerSourceInfo.FeatureServiceInfo(layerConfig, data.fields);
@@ -165,8 +281,8 @@
                 return doublePrediction;
             }
 
-            function _parseAsDynamic(data) {
-                const dynamicLayerList = flattenDynamicLayerList(data.layers)
+            function _parseAsDynamic2(data) {
+                const dynamicLayerList = _flattenDynamicLayerList(data.layers)
                     .map(layerEntry =>
                         (new ConfigObject.layers.DynamicLayerEntryNode(layerEntry)));
 
@@ -174,7 +290,7 @@
                     id: `${Geo.Layer.Types.ESRI_DYNAMIC}#${++ref.idCounter}`,
                     url: serviceUrl,
                     layerType: Geo.Layer.Types.ESRI_DYNAMIC,
-                    name: data.name,
+                    name: data.serviceName,
                     layerEntries: []
                 });
 
@@ -183,12 +299,12 @@
                 return [layerInfo];
             }
 
-            function _parseAsTile(data) {
+            function _parseAs2Tile(data) {
                 const layerConfig = new ConfigObject.layers.BasicLayerNode({
                     id: `${Geo.Layer.Types.ESRI_TILE}#${++ref.idCounter}`,
                     url: serviceUrl,
                     layerType: Geo.Layer.Types.ESRI_TILE,
-                    name: data.name
+                    name: data.serviceName
                 });
 
                 const layerInfo = new LayerSourceInfo.TileServiceInfo(layerConfig);
@@ -204,9 +320,10 @@
              * @return {Array}        layer list
              */
             function _flattenWmsLayerList(layers, level = 0) {
-                return [].concat.apply([], layers.map(layer => {
+                return [].concat.apply([], layers.map((layer, index) => {
                     layer.level = level;
                     layer.indent = Array.from(Array(level)).fill('-').join('');
+                    layer.index = `${level}-${index}`;
 
                     if (layer.layers.length > 0) {
                         return [].concat(layer, _flattenWmsLayerList(layer.layers, ++level));
@@ -221,7 +338,7 @@
              * TODO: this is temporary, possibly, as we want to provide user with an actual tree to select from
              * @return {Array} layer list
              */
-            function flattenDynamicLayerList(layers) {
+            function _flattenDynamicLayerList(layers) {
                 return layers.map(layer => {
                     const level = calculateLevel(layer, layers);
 

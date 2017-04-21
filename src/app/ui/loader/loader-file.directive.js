@@ -359,7 +359,7 @@
             configure.form.$setPristine();
             configure.form.$setUntouched();
 
-            // this
+            // this will reset all the user-editable options to their defaults
             self.layerSource.reset();
 
             // TODO: generalize resetting custom form validation
@@ -384,7 +384,8 @@
             const layerBlueprint = new LayerBlueprint.file(self.layerSource);
 
             layerBlueprint.validateFileLayerSource().then(esriLayer => {
-                legendService.importLayer(layerBlueprint)
+                // TODO: close the loader wizard
+                legendService.importLayer(layerBlueprint);
             });
 
 

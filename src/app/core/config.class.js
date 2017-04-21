@@ -451,6 +451,7 @@
             constructor (source, parentSource = {}) {
                 this._source = source;
 
+                this._index = source.index;
                 this._name = source.name;
 
                 // state and controls defaults cannot be applied here;
@@ -463,6 +464,7 @@
 
             get source () { return this._source; }
 
+            get index () { return this._index; }
             get name () { return this._name; }
             get controls () { return this._controls; }
             get disabledControls () { return this._disabledControls; }
@@ -512,14 +514,12 @@
             constructor (source, parentSource) {
                 super(source, parentSource);
 
-                this._index = source.index;
                 this._outfields = source.outfields || '*';
                 this._stateOnly = source.stateOnly;
 
                 this.isLayerEntry = true;
             }
 
-            get index () { return this._index; }
             get outfields () { return this._outfields; }
             get stateOnly () { return this._stateOnly; }
 

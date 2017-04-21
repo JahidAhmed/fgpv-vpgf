@@ -129,15 +129,18 @@
 
                 this._think(); // set "thinking" mode to block `continue` button from further clicks
 
+                let isMoveCanceled = false;
                 // create a cancel promise for the move can be canceled by calling `cancelMove` on the stepper instance
                 // technically, it's a deferred
                 const cancelPromise = $q(resolve =>
-                    (this._resolveCancelPromise = resolve));
+                    (this._resolveCancelPromise = resolve)).then(() =>
+                        (isMoveCanceled = true));
 
                 // TODO: switch to $q.race when we update to Angular 1.5+
                 // wraps regular promise in $q since Promise doesn't have `finally`
-                $q.when(Promise.race([continuePromise, cancelPromise]).then(value => {
-                    if (value !== 'cancelPromise') {
+                // can't use Promise.race - it resolves on reject: https://www.jcore.com/2016/12/18/promise-me-you-wont-use-promise-race/
+                $q.when(continuePromise.then(() => {
+                    if (!isMoveCanceled) {
 
                         // TODO: it's possible to click the `cancel/continue` button at the moment when the transition to a differnt step starts and this will yo-yo stepper in place
                         // one solution would be to disable `cancel/continue` buttons when transition starts

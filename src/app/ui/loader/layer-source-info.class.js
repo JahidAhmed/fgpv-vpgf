@@ -43,10 +43,17 @@
             constructor(config, fields) {
                 super(config);
 
-                this._fields = fields;
+                this.fields = fields;
             }
 
             get fields () { return this._fields; }
+            set fields (value) {
+                // number all the fields, so even fields with equal names can be distinguished by the md selector
+                value.forEach((field, index) =>
+                    (field.index = index));
+
+                this._fields = value;
+            }
 
             get type () { return Geo.Service.Types.FeatureLayer; }
         }
@@ -75,9 +82,9 @@
             get type () { return Geo.Service.Types.WMS; }
         }
 
-        class RasterServiceInfo extends ServiceInfo {
+        /*class RasterServiceInfo extends ServiceInfo {
             get type () { return Geo.Service.Types.RasterLayer; }
-         }
+         }*/
 
         class ImageServiceInfo extends ServiceInfo {
             get type () { return Geo.Service.Types.ImageService; }
@@ -112,7 +119,7 @@
             validate() {
                 const validationPromise = gapiService.gapi.layer.validateFile(this.type, this.rawData)
                     .then(validationResult => {
-                        this._fields = validationResult.fields;
+                        this.fields = validationResult.fields;
                         this._parsedData = validationResult.formattedData;
                         this._formattedData = validationResult.formattedData;
                         // TODO: do we need geometry type at all???
@@ -160,7 +167,7 @@
             FeatureServiceInfo,
             DynamicServiceInfo,
             WMSServiceInfo,
-            RasterServiceInfo,
+            // RasterServiceInfo,
             ImageServiceInfo,
             TileServiceInfo,
 

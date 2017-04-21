@@ -16,7 +16,7 @@
         .module('app.geo')
         .factory('LayerBlueprint', LayerBlueprintFactory);
 
-    function LayerBlueprintFactory($q, LayerBlueprintUserOptions, gapiService, Geo,
+    function LayerBlueprintFactory($q, $http, LayerBlueprintUserOptions, gapiService, Geo,
         layerDefaults, LayerRecordFactory, ConfigObject, common) {
 
         let idCounter = 0; // layer counter for generating layer ids
@@ -257,6 +257,10 @@
                 // if layerType is no specified, this is a user added layer; otherwise blueprint creation is deemed completed
                 // call GeoApi to predict its type
                 this._constructorPromise = this.layerType !== null ? $q.resolve() : this._fetchServiceInfo();*/
+            }
+
+            setConfig (value) {
+                this._config = value;
             }
 
             /**

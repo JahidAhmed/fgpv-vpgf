@@ -129,8 +129,8 @@
             }
 
             // TODO: remove; opens the main panel for easier dev work
-            // stateManager.setActive({ side: false }, 'mainLoaderService');
-            stateManager.setActive({ side: false }, 'mainLoaderFile');
+            stateManager.setActive({ side: false }, 'mainLoaderService');
+            // stateManager.setActive({ side: false }, 'mainLoaderFile');
         }
 
         /**
