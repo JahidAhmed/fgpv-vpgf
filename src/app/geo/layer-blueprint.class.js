@@ -263,7 +263,7 @@
              * Get service info from the supplied url. Service info usually include information like service type, name, available fields, etc.
              * TODO: there is a lot of workarounds since wms layers need special handling, and it's not possible to immediately detect if the layer is not a service endpoint .
              */
-            _fetchServiceInfo() {
+            /*_fetchServiceInfo() {
                 const hint = this._serviceInfo !== null ? this._serviceInfo.serviceType : undefined;
 
                 // due to #702, wms detection is problematic; here are some workarounds
@@ -339,15 +339,6 @@
                             }
 
                             flattenDynamicLayerList(this._serviceInfo.layers);
-
-                            // this includes all sublayers; converting layerEntries to a proper config format
-                            /*this.config.layerEntries = this._serviceInfo.layers
-                                .filter(layer => layer.parentLayerId === -1) // pick all sub-top level items
-                                .map(layer => {
-                                    return {
-                                        index: layer.id
-                                    };
-                                });*/
                         }
                     })
                     .catch(error => {
@@ -362,7 +353,7 @@
                  * @param  {Number} level  =             0 tells how deep the layer is in the hierarchy
                  * @return {Array}        layer list
                  */
-                function flattenWmsLayerList(layers, level = 0) {
+                /*function flattenWmsLayerList(layers, level = 0) {
                     return [].concat.apply([], layers.map(layer => {
                         layer.indent = Array.from(Array(level)).fill('-').join('');
 
@@ -372,14 +363,14 @@
                             return layer;
                         }
                     }));
-                }
+                }*/
 
                 /**
                  * This calculates relative depth of the dynamic layer hierarchy on the provided flat list of layers
                  * TODO: this is temporary, possibly, as we want to provide user with an actual tree to select from
                  * @return {Array} layer list
                  */
-                function flattenDynamicLayerList(layers) {
+                /*function flattenDynamicLayerList(layers) {
                     layers.forEach(layer => {
                         const level = calculateLevel(layer, layers);
 
@@ -394,31 +385,31 @@
                             return calculateLevel(layers[layer.parentLayerId], layers) + 1;
                         }
                     }
-                }
-            }
+                }*/
+            //}
 
             /**
              * Returns service type of the service layer blueprint. If type is `Unknown`, returns null for template bindings
              * @return {String|null} service type
              */
-            get serviceType() {
+            /*get serviceType() {
                 if (Geo.Service.Types.Unknown === this._serviceType) {
                     return null;
                 }
                 return this._serviceType;
-            }
+            }*/
 
             /**
              * Sets service type
              * @param  {String} value service type
              */
-            set serviceType(value) { this._serviceType = value; }
+            //set serviceType(value) { this._serviceType = value; }
 
             /**
              * Returns fields found in the file data.
              * @return {Array|null} array of fields in the form of [{ name: "Long", type: "esriFieldTypeString"}]
              */
-            get fields() {
+            /*get fields() {
                 if (this._serviceInfo !== null) {
                     return this._serviceInfo.fields;
                 } else {
@@ -428,14 +419,14 @@
 
             get serviceInfo() {
                 return this._serviceInfo;
-            }
+            }*/
 
             /**
              * Validates service blueprint against selected service type.
              *
              * @return {Promise} a promise resolving if the validation is successful
              */
-            validate() {
+            /*validate() {
                 // our prediction routine is infallible, so if the user disagrees, too bad :D
                 // NOTE: in cases where we can't predict the service type (geoapi returns Unknown), we also cannot validate the service except if we make a layer and add it to the map and see if it loads or not
                 return $q((resolve, reject) => {
@@ -454,7 +445,7 @@
                         reject();
                     }
                 });
-            }
+            }*/
 
             /**
              * Generates a layer from an online service based on the layer type.
@@ -464,7 +455,8 @@
              */
             generateLayer () {
 
-                return LayerBlueprint.LAYER_TYPE_TO_LAYER_RECORD[this.config.layerType](this.config);
+                return LayerBlueprint.LAYER_TYPE_TO_LAYER_RECORD[this.config.layerType](
+                    this.config, undefined, epsgLookup);
                 // return LayerBlueprint.LAYER_TYPE_TO_LAYER_RECORD[this.source.layerType](this.source);
 
 
@@ -579,6 +571,11 @@
                 // clone data because the makeSomethingLayer functions mangle the config data
                 const formattedDataCopy = angular.copy(this._layerSource.formattedData);
 
+                // HACK: supply epsgLookup here;
+                // TODO: find a better place for it
+
+                this._layerSource.epsgLookup = epsgLookup;
+
                 const layerFileGenerators = {
                     [Geo.Service.Types.CSV]: () =>
                         gapiService.gapi.layer.makeCsvLayer(formattedDataCopy, this._layerSource),
@@ -674,6 +671,40 @@
 
                 return dataPromise;
             }*/
+        }
+
+        /**
+         * Lookup a proj4 style projection definition for a given ESPG code.
+         * @function epsgLookup
+         * @param {string|number} code the EPSG code as a string or number
+         * @return {Promise} a Promise resolving to proj4 style definition or null if the definition could not be found
+         */
+        function epsgLookup(code) {
+            // FIXME this should be moved to a plugin; it is hardcoded to use epsg.io
+
+            const urnRegex = /urn:ogc:def:crs:EPSG::(\d+)/;
+            const epsgRegex = /EPSG:(\d+)/;
+            let lookup = code;
+            if (typeof lookup === 'number') {
+                lookup = String(lookup);
+            }
+            const urnMatches = lookup.match(urnRegex);
+            if (urnMatches) {
+                lookup = urnMatches[1];
+            }
+            const epsgMatches = lookup.match(epsgRegex);
+            if (epsgMatches) {
+                lookup = epsgMatches[1];
+            }
+
+            return $http.get(`http://epsg.io/${lookup}.proj4`)
+                .then(response =>
+                    response.data)
+                .catch(err => {
+                    RV.logger.warn('geoService', 'proj4 style projection lookup failed with error', err);
+                    // jscs check doesn't realize return null; returns a promise
+                    return null; // jscs:ignore jsDoc
+                });
         }
 
         const service = {

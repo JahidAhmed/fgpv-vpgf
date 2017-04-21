@@ -22,7 +22,7 @@
         .module('app.geo')
         .factory('layerRegistry', layerRegistryFactory);
 
-    function layerRegistryFactory($timeout, gapiService, Geo, LayerBlueprint, configService, tooltipService) {
+    function layerRegistryFactory($timeout, gapiService, Geo, configService, tooltipService) {
         const service = {
             getLayerRecord,
             makeLayerRecord,

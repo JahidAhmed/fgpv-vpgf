@@ -25,7 +25,7 @@
 
         const service = {
             isMapReady: false, // flag indicating that the map is ready
-            epsgLookup,
+            // epsgLookup,
             assembleMap,
             reloadLayer: l => layerRegistry.reloadLayer(l),
             snapshotLayer: l => layerRegistry.snapshotLayer(l),
@@ -36,40 +36,6 @@
         };
 
         return service;
-
-        /**
-         * Lookup a proj4 style projection definition for a given ESPG code.
-         * @function epsgLookup
-         * @param {string|number} code the EPSG code as a string or number
-         * @return {Promise} a Promise resolving to proj4 style definition or null if the definition could not be found
-         */
-        function epsgLookup(code) {
-            // FIXME this should be moved to a plugin; it is hardcoded to use epsg.io
-
-            const urnRegex = /urn:ogc:def:crs:EPSG::(\d+)/;
-            const epsgRegex = /EPSG:(\d+)/;
-            let lookup = code;
-            if (typeof lookup === 'number') {
-                lookup = String(lookup);
-            }
-            const urnMatches = lookup.match(urnRegex);
-            if (urnMatches) {
-                lookup = urnMatches[1];
-            }
-            const epsgMatches = lookup.match(epsgRegex);
-            if (epsgMatches) {
-                lookup = epsgMatches[1];
-            }
-
-            return $http.get(`http://epsg.io/${lookup}.proj4`)
-                .then(response =>
-                    response.data)
-                .catch(err => {
-                    RV.logger.warn('geoService', 'proj4 style projection lookup failed with error', err);
-                    // jscs check doesn't realize return null; returns a promise
-                    return null; // jscs:ignore jsDoc
-                });
-        }
 
         /**
          * Constructs a map on the given DOM node given the current config object.
