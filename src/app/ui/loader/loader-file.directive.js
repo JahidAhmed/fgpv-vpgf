@@ -28,19 +28,13 @@
         return directive;
     }
 
-    function Controller($scope, $q, $timeout, stateManager, Stepper, geoService, LayerBlueprint, Geo, $rootElement,
+    function Controller($scope, $q, $timeout, stateManager, Stepper, LayerBlueprint, $rootElement,
         keyNames, layerSource, legendService) {
         'ngInject';
         const self = this;
 
         self.closeLoaderFile = closeLoaderFile;
         self.dropActive = false; // flag to indicate if file drop zone is active
-
-        self.fileTypes = [
-            Geo.Service.Types.CSV,
-            Geo.Service.Types.GeoJSON,
-            Geo.Service.Types.Shapefile
-        ];
 
         // create three steps: upload data, selecct data type, and configure layer
         self.upload = {
