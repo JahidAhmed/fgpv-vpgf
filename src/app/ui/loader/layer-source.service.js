@@ -258,65 +258,10 @@
                 return layerInfo;
             }
 
-
-
-            function _parseAsFeature2(url, data) {
-                const layerConfig = new ConfigObject.layers.FeatureLayerNode({
-                    id: `${Geo.Layer.Types.ESRI_FEATURE}#${++ref.idCounter}`,
-                    url: url,
-                    layerType: Geo.Layer.Types.ESRI_FEATURE,
-                    name: data.serviceName
-                });
-
-                const featureLayerInfo = new LayerSourceInfo.FeatureServiceInfo(layerConfig, data.fields);
-
-                const doublePrediction = _predictAsDynamic(serviceUrl)
-                    .then(({ layerInfo: [dynamicLayerInfo], layerId }) => {
-                        dynamicLayerInfo.config.layerEntries = [dynamicLayerInfo.layers.find(layer =>
-                            layer.index === layerId)];
-
-                        return [featureLayerInfo, dynamicLayerInfo];
-                    });
-
-                return doublePrediction;
-            }
-
-            function _parseAsDynamic2(data) {
-                const dynamicLayerList = _flattenDynamicLayerList(data.layers)
-                    .map(layerEntry =>
-                        (new ConfigObject.layers.DynamicLayerEntryNode(layerEntry)));
-
-                const layerConfig = new ConfigObject.layers.DynamicLayerNode({
-                    id: `${Geo.Layer.Types.ESRI_DYNAMIC}#${++ref.idCounter}`,
-                    url: serviceUrl,
-                    layerType: Geo.Layer.Types.ESRI_DYNAMIC,
-                    name: data.serviceName,
-                    layerEntries: []
-                });
-
-                const layerInfo = new LayerSourceInfo.DynamicServiceInfo(layerConfig, dynamicLayerList);
-
-                return [layerInfo];
-            }
-
-            function _parseAs2Tile(data) {
-                const layerConfig = new ConfigObject.layers.BasicLayerNode({
-                    id: `${Geo.Layer.Types.ESRI_TILE}#${++ref.idCounter}`,
-                    url: serviceUrl,
-                    layerType: Geo.Layer.Types.ESRI_TILE,
-                    name: data.serviceName
-                });
-
-                const layerInfo = new LayerSourceInfo.TileServiceInfo(layerConfig);
-
-                return [layerInfo];
-            }
-
             /**
              * This flattens wms array hierarchy into a flat list to be displayed in a drop down selector
-             * TODO: this is temporary, possibly, as we want to provide user with an actual tree to select from
              * @param  {Array} layers array of layer objects
-             * @param  {Number} level  =             0 tells how deep the layer is in the hierarchy
+             * @param  {Number} level  [optional=0] tells how deep the layer is in the hierarchy
              * @return {Array}        layer list
              */
             function _flattenWmsLayerList(layers, level = 0) {
@@ -335,7 +280,7 @@
 
             /**
              * This calculates relative depth of the dynamic layer hierarchy on the provided flat list of layers
-             * TODO: this is temporary, possibly, as we want to provide user with an actual tree to select from
+             * @param {Array} layers array of layer objects
              * @return {Array} layer list
              */
             function _flattenDynamicLayerList(layers) {

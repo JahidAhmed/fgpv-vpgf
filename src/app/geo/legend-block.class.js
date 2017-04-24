@@ -30,8 +30,6 @@
             SET: 'set'
         };
 
-        // jscs doesn't like enhanced object notation
-        // jscs:disable requireSpacesInAnonymousFunctionExpression
         class SymbologyStack {
             constructor(proxy, blockConfig, isInteractive = false) {
                 this._proxy = proxy;
@@ -59,9 +57,6 @@
         }
 
         /* -------- */
-        // jscs:enable
-
-        // jscs:disable requireSpacesInAnonymousFunctionExpression
         class LegendBlock {
             constructor (layerProxy, blockConfig) {
 
@@ -120,37 +115,9 @@
                 super(...args);
             }
 
-            // get availableControls () { return this.config.controls; }
-            // get disabledControls () { return this.config.controls; }
-
-
-            // TODO: turn state names and template names to consts
-            /*get template () {
-                const stateToTemplate = {
-                    'rv-loaded': () => super.template,
-                    'rv-refresh': () => super.template,
-                    'rv-loading': () => 'placeholder',
-                    'rv-error': () => 'error'
-                };
-
-                return stateToTemplate[this._layerProxy.state]();
-            }*/
-
-            /*get sortGroup () {
-                return -1;
-
-                const sortGroups = Geo.Layer.SORT_GROUPS_;
-
-                if (this._layerProxy.layerType) {
-                    return sortGroups[this._layerProxy.layerType];
-                }
-
-                return -1;
-            }*/
-
             get isInteractive () { return true; }
 
-            _isSelected = false; // jshint ignore:line
+            _isSelected = false;
 
             get isSelected () {         return this._isSelected; }
             set isSelected (value) {      this._isSelected = value; return this; }
@@ -175,7 +142,6 @@
                 return this.userDisabledControls.indexOf(controlName) !== -1;
             }
         }
-
 
         class LegendNode extends LegendEntry {
 
@@ -298,6 +264,10 @@
                 this._bboxProxy.setVisibility(value);
             }
 
+            get userAdded () {
+                return this._blockConfig.userAdded;
+            }
+
             get formattedData () {
                 return this._mainProxy.formattedAttributes;
             }
@@ -328,12 +298,9 @@
                 this._walk = ref.walkFunction.bind(this);
             }
 
-            //_blockType = TYPES.GROUP;
             get blockType () { return TYPES.GROUP; }
 
             _entries = [];
-
-            // get _allProxies () {        return this.entries.map(entry => entry.layerProxy; }
 
             get availableControls () {      return this._availableControls; }
             get disabledControls () {       return this._disabledControls; }
@@ -567,8 +534,6 @@
                 return this._walk(...args);
             }
         }
-        // jscs doesn't like enhanced object notation
-        // jscs:enable requireSpacesInAnonymousFunctionExpression
 
         const service = {
             Block: LegendBlock,
@@ -582,8 +547,20 @@
 
         return service;
 
+        /**
+         * Given an array of proxy states, returns the aggregates state using the following rules:
+         * - `rv-error` if at least one proxy is errored
+         * - `rv-loading` if none is errored, but at least one is loading
+         * - `rv-refresh` if none is errored or loading, but at least one is refreshing
+         * - `rv-loaded` if all proxies are loaded
+         *
+         * @function aggregateStates
+         * @private
+         * @param {Array} states an Array of strings representing states of all the proxies belonging to the legend block
+         * @return {String} the aggregated state of the states supplied
+         */
         function aggregateStates(states) {
-            const stateNames = ['rv-loading', 'rv-refresh', 'rv-error', 'rv-loaded'];
+            const stateNames = ['rv-error', 'rv-loading', 'rv-refresh', 'rv-loaded'];
 
             const stateValues = stateNames.map(name =>
                 states.indexOf(name) !== -1);

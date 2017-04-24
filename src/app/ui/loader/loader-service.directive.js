@@ -250,16 +250,13 @@
          * @function configureOnContinue
          */
         function configureOnContinue() {
-            const layerBlueprint = new LayerBlueprint.service('1');
-            layerBlueprint.setConfig(self.layerSource.config);
+            const layerBlueprint = new LayerBlueprint.service(null, self.layerSource);
 
-            // TODO: close the loader wizard
             legendService.importLayer(layerBlueprint);
 
             // TODO: display error message if something breaks
             // TODO: close import wizard if build is successful
-            /*geoService.constructLayers([self.layerBlueprint]);
-            closeLoaderService();*/
+            closeLoaderService();
         }
 
         /**

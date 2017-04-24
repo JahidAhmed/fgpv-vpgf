@@ -165,11 +165,8 @@
 
         /**
          * Starts file upload.
-         * FIXME this describes more args than it takes
          * @function uploadFilesSubmitted
          * @param  {Array} files uploaded array of files
-         * @param  {Object} event submitted event
-         * @param  {Object} flow  flow object https://github.com/flowjs/ng-flow
          */
         function uploadFilesSubmitted(files) {
             if (files.length > 0) {
@@ -205,22 +202,6 @@
                 layerSourcePromise, 300));
 
             return layerSourcePromise;
-
-            //return stepper.nextStep(layerSourcePromise);
-
-            /*
-            self.layerBlueprint = new LayerBlueprint.file(
-                geoService.epsgLookup, geoService.mapObject.spatialReference.wkid,
-                name, file, updateProgress
-            );
-
-            // TODO: refactor this
-            self.layerBlueprint.initialConfig = { flags: { user: { visible: true } } };
-
-            stepper.moveToStep(1, $timeout(() => self.layerBlueprint.ready, 300));
-
-            return self.layerBlueprint.ready;
-            */
 
             /**
              * Updates file load progress status.
@@ -312,18 +293,6 @@
             });
 
             stepper.nextStep(validationPromise);
-
-            /*
-            const validationPromise = self.layerBlueprint.validate();
-
-            stepper.nextStep(validationPromise);
-
-            validationPromise.catch(error => {
-                RV.logger.error('loaderFileDirective', 'file type is wrong', error);
-                toggleErrorMessage(self.select.form, 'dataType', 'wrong', false);
-                // TODO: display a meaningful error message why the file doesn't validate (malformed csv, zip with pictures of cats, etc.)
-            });
-            */
         }
 
         /**
@@ -383,24 +352,14 @@
         function configureOnContinue() {
             const layerBlueprint = new LayerBlueprint.file(self.layerSource);
 
-            layerBlueprint.validateFileLayerSource().then(esriLayer => {
-                // TODO: close the loader wizard
-                legendService.importLayer(layerBlueprint);
-            });
-
-
-
-            return;
-
-            /*layerBlueprint.generateLayer()
-                .then(() => {
-                    geoService.constructLayers([self.layerBlueprint]);
+            layerBlueprint.validateFileLayerSource()
+                .then(esriLayer => {
+                    legendService.importLayer(layerBlueprint);
                     closeLoaderFile();
-                })
-                .catch(error => {
+                }).catch(error => {
                     RV.logger.warn('loaderFileDirective', 'file is invalid ', error);
                     self.configure.form.$setValidity('invalid', false);
-                });*/
+                });
         }
 
         /**

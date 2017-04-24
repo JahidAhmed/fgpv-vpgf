@@ -54,7 +54,18 @@
         }
 
         function importLayer(layerBlueprint) {
-            const blockConfig = new ConfigObject.legend.Entry({ layerId: layerBlueprint.config.id });
+
+            // when adding a layer through the layer loader, set symbology render style as images for wms;
+            // TODO: this can potentially move to blueprint code
+            const entryConfigObject = {
+                layerId: layerBlueprint.config.id,
+                userAdded: true,
+                symbologyRenderStyle: layerBlueprint.config.layerType === Geo.Layer.Types.OGC_WMS ?
+                    ConfigObject.legend.Entry.IMAGES :
+                    ConfigObject.legend.Entry.ICONS
+            };
+
+            const blockConfig = new ConfigObject.legend.Entry(entryConfigObject);
 
             const legendBlock = _makeLegendBlock(blockConfig, [layerBlueprint]);
 

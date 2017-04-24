@@ -456,6 +456,7 @@
 
                 // state and controls defaults cannot be applied here;
                 // need to wait until dynamic/wms layer is loaded before parent/child defaulting can be applied; this is done in the legend service;
+                this._indent = source.indent || '';
                 this._state = new InitialLayerSettings(source.state || {});
                 this._controls = source.controls;
                 this._disabledControls = source.disabledControls;
@@ -469,6 +470,7 @@
             get controls () { return this._controls; }
             get disabledControls () { return this._disabledControls; }
             get userDisabledControls () { return this._userDisabledControls; }
+            get indent () { return this._indent; }
             get state () { return this._state; }
         }
 
@@ -748,20 +750,23 @@
          * @class Entry
          */
         class Entry {
-            constructor (visibilitySetSource) {
-                this._layerId = visibilitySetSource.layerId;
-                this._controlledIds = visibilitySetSource.controlledIds || [];
-                this._entryIndex = visibilitySetSource.entryIndex;
-                this._entryId = visibilitySetSource.entryId;
-                this._coverIcon = visibilitySetSource.coverIcon;
-                this._symbologyStack = visibilitySetSource.symbologyStack;
-                this._symbologyRenderStyle = visibilitySetSource.symbologyRenderStyle || Entry.ICONS;
+            constructor (entrySource) {
+                this._layerId = entrySource.layerId;
+                this._controlledIds = entrySource.controlledIds || [];
+                this._entryIndex = entrySource.entryIndex;
+                this._entryId = entrySource.entryId;
+                this._coverIcon = entrySource.coverIcon;
+                this._symbologyStack = entrySource.symbologyStack;
+                this._symbologyRenderStyle = entrySource.symbologyRenderStyle || Entry.ICONS;
+
+                this._userAdded = entrySource.userAdded || false;
             }
 
             static ICONS = 'icons'; // jshint ignore:line
             static IMAGES = 'images'; // jshint ignore:line
 
             get layerId () { return this._layerId; }
+            get userAdded () { return this._userAdded; }
             get controlledIds () { return this._controlledIds; }
             get entryIndex () { return this._entryIndex; }
             get entryId () { return this._entryId; }

@@ -368,8 +368,6 @@
 
             get icon () {    return 'community:table-large'; }
             get label () {   return 'toc.label.flag.data.table'; }
-
-            get isVisible () { return true; }
         }
 
         class QueryFlag extends BaseFlag {
@@ -395,7 +393,7 @@
             get icon () {    return 'social:person'; }
             get label () {   return 'toc.label.flag.user'; }
 
-            get isVisible () { return true; }
+            get isVisible () { return this.block.userAdded; }
         }
 
         class FilterFlag extends BaseFlag {
@@ -446,8 +444,6 @@
             }
         };
 
-        // jscs doesn't like enhanced object notation
-        // jscs:disable requireSpacesInAnonymousFunctionExpression
         return {
             makeControl(legendBlock, controlName) {
                 return new typeToClass[controlTypes.control][controlName](legendBlock);
@@ -457,7 +453,6 @@
                 return new typeToClass[controlTypes.flag][controlName](legendBlock);
             }
         };
-        // jscs:enable requireSpacesInAnonymousFunctionExpression
     }
 
 })();
