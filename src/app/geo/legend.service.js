@@ -146,8 +146,8 @@
 
                 layerRecord.addStateListener(_onLayerRecordLoad);
 
-                const userDisabledControls = [];
-                const dynamicLayerChildDefaults = ConfigObject.DEFAULTS.layer[Geo.Layer.Types.ESRI_DYNAMIC].child;
+                const dynamicLayerChildDefaults = angular.copy(
+                    ConfigObject.DEFAULTS.layer[Geo.Layer.Types.ESRI_DYNAMIC].child);
 
                 return legendBlockGroup;
 
@@ -168,7 +168,7 @@
                         // TODO: check/handle controlledIds proxies as well
                         // TODO: allow for an optional description why the control is disabled
                         if (!layerRecord.isTrueDynamic) {
-                            userDisabledControls.push('opacity');
+                            dynamicLayerChildDefaults.userDisabledControls.push('opacity');
                         }
 
                         const tempEntryGroup = new ConfigObject.legend.EntryGroup({
