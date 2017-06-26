@@ -11,7 +11,7 @@ angular
     .factory('bookmarkService', bookmarkService);
 
 function bookmarkService($rootElement, $q, /*geoService, LayerBlueprint,*/
-        LayerRecordFactory, configService, gapiService, bookmarkVersions, Geo, ConfigObject) {
+    LayerRecordFactory, configService, gapiService, bookmarkVersions, Geo, ConfigObject) {
 
     let _bookmarkObject = null;
 
@@ -141,9 +141,9 @@ function bookmarkService($rootElement, $q, /*geoService, LayerBlueprint,*/
      */
     function hexToBinary(value) {
         const hexes = value.match(/./g); // split into single chars
-        return hexes.map(h => {
-            return encodeInteger(parseInt(h, 16), 4); // 4-digit padded binary
-        }).join('');
+        return hexes.map(h =>
+            encodeInteger(parseInt(h, 16), 4) // 4-digit padded binary
+        ).join('');
     }
 
     /**
@@ -828,7 +828,7 @@ function bookmarkService($rootElement, $q, /*geoService, LayerBlueprint,*/
      * @returns {String}        The encoded string
      */
     function encode64(string) {
-        return btoa(string).replace(/=/g, '').replace(/\//g, '_').replace(/\+/g, '-');
+        return btoa(string).replace(/\=/g, '').replace(/\//g, '_').replace(/\+/g, '-');
     }
 
     /**

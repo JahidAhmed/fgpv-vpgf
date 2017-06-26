@@ -189,7 +189,6 @@ function basemapService($rootElement, $mdSidenav, $q) {
         // the basemap list is flat and will be grouped by tileSchema id and sorted by basemap name directly in the template
 
 
-
         basemapList.forEach(bm => {
             const basemap = _normalizeBasemap(bm);
             const projName = wkidToName(basemap.wkid);

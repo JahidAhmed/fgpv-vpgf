@@ -167,7 +167,7 @@ function Controller(stateManager/*, $scope, $timeout, geoService*/) {
         /**
          * Applies current opacity value from the settings panel to the tocEntry if it differs from its current opacity value.
          */
-        /*function setTocEntryOpacity() {
+    /*function setTocEntryOpacity() {
             if (self.tocEntry.options.opacity.value !== self.opacityValue) {
                 RV.logger.log('settingsDirective', `update opacity to ${self.opacityValue}`);
                 self.tocEntry.setOpacity(self.opacityValue);

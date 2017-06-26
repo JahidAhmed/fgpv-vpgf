@@ -103,7 +103,7 @@ function legendServiceFactory(Geo, ConfigObject, configService, LegendBlock, Lay
         // create a new record from its layer blueprint
         const layerBlueprintsCollection = configService.getSync.map.layerBlueprints;
         const layerBlueprint = layerBlueprintsCollection.find(blueprint =>
-                blueprint.config.id === layerRecordId);
+            blueprint.config.id === layerRecordId);
         layerRegistry.regenerateLayerRecord(layerBlueprint);
 
         mappings.forEach(({ legendBlockId, legendBlockConfigId }) => {

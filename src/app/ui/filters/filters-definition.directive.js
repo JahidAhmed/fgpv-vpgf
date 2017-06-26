@@ -65,7 +65,7 @@ const FILTERS_TEMPLATE = {
                         ng-disabled="self.${column}.static" />
             </md-input-container>
         </div>`,
-    selector: (column) =>
+    selector: column =>
         `<div class="rv-filter-selector" ng-show="self.${column}.filtersVisible">
             <md-input-container class="md-block" md-no-float flex>
                 <md-select ng-click="self.prevent($event)"
@@ -172,7 +172,7 @@ function rvFiltersDefinition(stateManager, events, $compile, filterService, layo
         transclude(() => {
             if (!el[0].hasChildNodes() && typeof scope.self.info !== 'undefined' &&
                 (scope.self.info.data !== 'rvSymbol' && scope.self.info.data !== 'rvInteractive')) {
-                    // if filter is not visible. This happen for customize columns where user doesn't want to have a filter.
+                // if filter is not visible. This happen for customize columns where user doesn't want to have a filter.
                 if (typeof scope.self.info.filter !== 'undefined') {
                     const filterInfo = setFilter(scope.self.info);
                     el.append(filterInfo.directive);
@@ -274,8 +274,10 @@ function rvFiltersDefinition(stateManager, events, $compile, filterService, layo
             const template = FILTERS_TEMPLATE[column.type](column.name);
 
             // return directive, scope and column type
-            return { directive: $compile(template)(filter.scope),
-                    scope: filter.scope.self[column.name] };
+            return {
+                directive: $compile(template)(filter.scope),
+                scope: filter.scope.self[column.name]
+            };
         }
 
         /**
@@ -311,6 +313,7 @@ function rvFiltersDefinition(stateManager, events, $compile, filterService, layo
          * @param {Integer} index    the column index to retreive the data to filter on
          */
         function setDateFilter(filter, index) {
+            // eslint-disable-next-line complexity
             $.fn.dataTable.ext.searchTemp.push((settings, data) => {
                 // check if it is a valid date and remove leading 0 because it doesn't set the date properly
                 let flag = false;

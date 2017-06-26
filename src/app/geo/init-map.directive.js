@@ -159,6 +159,7 @@ function rvInitMap($rootScope, geoService, events, storageService, mapService, g
      * @function animate
      * @param {Object} event     the keydown/keyup browser event
      */
+    // eslint-disable-next-line complexity
     function animate() {
         /*jshint maxcomplexity:16 */
         stopAnimate();
@@ -181,6 +182,7 @@ function rvInitMap($rootScope, geoService, events, storageService, mapService, g
         let hasShiftMultiplier = 1;
         for (let i = 0; i < keyMap.length; i++) {
             switch (keyMap[i]) {
+                /* eslint-disable */
                 // enter key is pressed - trigger identify
                 case 13:
                     // prevent identify if focus manager is in a waiting state since ENTER key is used to activate the focus manager.
@@ -227,6 +229,7 @@ function rvInitMap($rootScope, geoService, events, storageService, mapService, g
                 case 173:
                     geoService.map.shiftZoom(-1);
                     break;
+                /* eslint-enable */
             }
         }
 

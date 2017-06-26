@@ -415,6 +415,7 @@ function rvFiltersDefault($timeout, $q, stateManager, $compile, geoService, $tra
             * @private
             * @param {Object} config    configuration file for table
             */
+            // eslint-disable-next-line complexity
             function customizeTable(config = {}) {
                 // set title and description
                 displayData.filter.title = config.title ?

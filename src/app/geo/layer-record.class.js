@@ -33,9 +33,11 @@ function LayerRecordFactory(Geo, gapiService, $q) {
             if (this._bbox) {
                 throw new Error('Bbox is already setup');
             }
-            this._bbox = gapi().layer.bbox.makeBoundingBox(`bbox_${this._layer.id}`,
-                                                            this._layer.fullExtent,
-                                                            map.extent.spatialReference);
+            this._bbox = gapi().layer.bbox.makeBoundingBox(
+                `bbox_${this._layer.id}`,
+                this._layer.fullExtent,
+                map.extent.spatialReference
+            );
             map.addLayer(this._bbox);
         }
 
@@ -161,12 +163,8 @@ function LayerRecordFactory(Geo, gapiService, $q) {
         static parseData (props, info) {
 
             const lookup = {
-                opacity: value => {
-                    return parseInt(value) / 100;
-                },
-                visibility: value => {
-                    return value === '1' ? true : null;
-                },
+                opacity: value => parseInt(value) / 100,
+                visibility: value => value === '1' ? true : null,
                 boundingBox: value => value === '1',
                 snapshot: value => value === '1',
                 query: value => value === '1'
@@ -409,8 +407,9 @@ function LayerRecordFactory(Geo, gapiService, $q) {
 
         makeLayerConfig () {
             const cfg = super.makeLayerConfig();
-            cfg.mode = this.config.options.snapshot.value ? this.layerClass.MODE_SNAPSHOT
-                                                            : this.layerClass.MODE_ONDEMAND;
+            cfg.mode = this.config.options.snapshot.value ? 
+                this.layerClass.MODE_SNAPSHOT :
+                this.layerClass.MODE_ONDEMAND;
             this.config.options.snapshot.enabled = !this.config.options.snapshot.value;
             return cfg;
         }
@@ -469,10 +468,10 @@ function LayerRecordFactory(Geo, gapiService, $q) {
                 // pull metadata for this layer. feature layer only ever has one index (thus index 0)
                 // TODO after refactor, the class should have a .featureIdx property to use instead.
                 const featureIdx = this.attributeBundle.indexes[0];
-                this.attributeBundle[featureIdx].layerData.then(lInfo => {
+                this.attributeBundle[featureIdx].layerData.then(lInfo =>
                     // TODO this will change a bit after we add in quick lookup. for now, get all attribs
-                    return $q.all([Promise.resolve(lInfo), this.attributeBundle[featureIdx].getAttribs()]);
-                }).then(([lInfo, aInfo]) => {
+                    $q.all([Promise.resolve(lInfo), this.attributeBundle[featureIdx].getAttribs()])
+                ).then(([lInfo, aInfo]) => {
                     // graphic attributes will only have the OID if layer is server based
                     const oid = e.graphic.attributes[lInfo.oidField];
 

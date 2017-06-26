@@ -358,7 +358,7 @@ function layerRegistryFactory($rootScope, $timeout, gapiService, Geo, configServ
         let boundingBoxRecord = getBoundingBoxRecord(id);
         if (!boundingBoxRecord) {
             boundingBoxRecord = gapiService.gapi.layer.bbox.makeBoundingBox(
-                    id, bbExtent, mapBody.extent.spatialReference);
+                id, bbExtent, mapBody.extent.spatialReference);
 
             boundingBoxRecords.push(boundingBoxRecord);
             mapBody.addLayer(boundingBoxRecord);
@@ -780,7 +780,7 @@ function _layerRegistryFactory($q, $timeout, $translate, gapiService, legendServ
             // remove all layer id from the map stacks which are not present in the legend
             const fullMapStack =
                 [].concat(mapObject.graphicsLayerIds.slice().reverse(), mapObject.layerIds.slice().reverse())
-                .filter(layerId => service.layers.hasOwnProperty(layerId));
+                    .filter(layerId => service.layers.hasOwnProperty(layerId));
 
             // remove all layer ids from the legend which are not preset in the map stack
             const fullLegendStack = service.legend.items
@@ -842,7 +842,7 @@ function _layerRegistryFactory($q, $timeout, $translate, gapiService, legendServ
                     if (lr._layer.fullExtent &&
                         typeof lr._layer.fullExtent.xmax === 'undefined') {
                         lr._layer.fullExtent.spatialReference.wkid = lr._layer.graphics[0]
-                                                                        ._extent.spatialReference.wkid;
+                            ._extent.spatialReference.wkid;
                         lr._layer.fullExtent.xmax = Math.max(...lr._layer.graphics.map(o => o._extent.xmax));
                         lr._layer.fullExtent.xmin = Math.min(...lr._layer.graphics.map(o => o._extent.xmin));
                         lr._layer.fullExtent.ymax = Math.max(...lr._layer.graphics.map(o => o._extent.ymax));

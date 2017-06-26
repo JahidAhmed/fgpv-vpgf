@@ -18,7 +18,7 @@ angular
  * @return {object} service object
  */
 function mapNavigationService(stateManager, geoService, $rootScope, locateService,
-helpService, basemapService, events, fullScreenService) {
+    helpService, basemapService, events, fullScreenService) {
 
     const service = {
         controls: {}

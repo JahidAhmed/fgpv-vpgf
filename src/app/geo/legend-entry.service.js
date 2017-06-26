@@ -87,7 +87,7 @@ function legendEntryFactory($timeout, $translate, gapiService, Geo, layerDefault
          * Sets `scale` flags on the legend entry.
          * @param {Boolean} scaleSet     mapping of featureIdx to booleans reflecting flag state
          */
-        obj.setLayerScaleFlag = (scaleSet) => {
+        obj.setLayerScaleFlag = scaleSet => {
 
             if (obj.layerType !== Geo.Layer.Types.ESRI_DYNAMIC) {
                 // currently, non-feature based things have text-ish content put in their featureIdx.  map them to 0
@@ -428,7 +428,7 @@ function legendEntryFactory($timeout, $translate, gapiService, Geo, layerDefault
         getItemById(entryId) {
             return this.walkItems(item =>
                 item.id === entryId ? item : [],
-                true
+            true
             )[0]; // true is important here as we want to test entry groups as well
         },
 

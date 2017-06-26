@@ -128,7 +128,7 @@ function StepperFactory($q) {
             // technically, it's a deferred
             const cancelPromise = $q(resolve =>
                 (this._resolveCancelPromise = resolve)).then(() =>
-                    (isMoveCanceled = true));
+                (isMoveCanceled = true));
 
             // TODO: switch to $q.race when we update to Angular 1.5+
             // wraps regular promise in $q since Promise doesn't have `finally`

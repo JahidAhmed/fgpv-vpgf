@@ -291,7 +291,7 @@ function ConfigObjectFactory(Geo, gapiService, common) {
      */
     function applyLayerNodeDefaults(ownSource =
         { state: {}, controls: [], disabledControls: [], userDisabledControls: [] },
-        ownDefaults, parentSource = {}) {
+    ownDefaults, parentSource = {}) {
         const ownSourceCopy = angular.copy(ownSource);
 
         ownSourceCopy.state = _defaultState(ownSourceCopy.state, ownDefaults.state, parentSource.state);
@@ -903,7 +903,7 @@ function ConfigObjectFactory(Geo, gapiService, common) {
      */
     class Basemap {
         constructor ({ id, name, description, typeSummary, layers, thumbnailUrl = null, attribution, opacity = 1,
-                altText, zoomLevels = {} }, tileSchema) {
+            altText, zoomLevels = {} }, tileSchema) {
             this._id = id;
             this._name = name;
             this._description = description;
@@ -2029,7 +2029,7 @@ function ConfigObjectFactory(Geo, gapiService, common) {
                 // check if the number of all required search services is correct
                 if (typeof search === 'undefined' || typeof search.serviceUrls === 'undefined'
                     || Object.keys(search.serviceUrls).length < GEOSERVICES.length) {
-                        return false;
+                    return false;
                 }
 
                 // check if the serives match what were required

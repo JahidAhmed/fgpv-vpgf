@@ -158,9 +158,13 @@ function rvToc($timeout, layoutService, layerRegistry, dragulaService, geoServic
                         scrollDuration = (scrollElem[0].scrollHeight -
                             scrollElem.height() - scrollElem.scrollTop()) * speedRatio;
 
-                        scrollAnimation = animationService.to(scrollElem, scrollDuration,
-                            { scrollTo: { y: scrollElem[0].scrollHeight - scrollElem.height() },
-                            ease: 'Linear.easeNone' });
+                        scrollAnimation = animationService.to(
+                            scrollElem, scrollDuration,
+                            {
+                                scrollTo: { y: scrollElem[0].scrollHeight - scrollElem.height() },
+                                ease: 'Linear.easeNone'
+                            }
+                        );
                     }
 
                 // stop scrolling

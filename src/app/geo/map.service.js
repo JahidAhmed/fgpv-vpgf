@@ -401,13 +401,13 @@ function mapServiceFactory_($q, $timeout, gapiService, storageService, $rootElem
             // service.Map.BasemapControl.setBasemap(geoState.configObject.map.selectedBasemap.id);
 
             //mapConfig.components.basemap.body.basemapGallery.on('selection-change', event => {
-                //   $rootElement.find('div.ovwContainer').append('<rv-overview-toggle></rv-overview-toggle>');
-                //  $compile($rootElement.find('rv-overview-toggle')[0])($rootScope);
+            //   $rootElement.find('div.ovwContainer').append('<rv-overview-toggle></rv-overview-toggle>');
+            //  $compile($rootElement.find('rv-overview-toggle')[0])($rootScope);
 
-                //console.log(event);
+            //console.log(event);
 
-                //TODO: fix code setting basempa attribution
-                /*
+            //TODO: fix code setting basempa attribution
+            /*
                 // get selected basemap configuration
                 const selectedBaseMapCfg = config.baseMaps.find(bm => {
                     return bm.id === event.target._selectedBasemap.id;

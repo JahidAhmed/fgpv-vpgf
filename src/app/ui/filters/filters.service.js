@@ -120,7 +120,7 @@ function filterService(stateManager, geoService, $rootScope, $q, gapiService, de
 
         // recompute oidColNum for data table filter since it may not be first index
         oidColNum = stateManager.display.filters.data.columns.findIndex(col =>
-                col.data === stateManager.display.filters.data.oidField);
+            col.data === stateManager.display.filters.data.oidField);
 
         // add a DataTable filter which only accepts rows with oidField values in the validOIDs list
         $.fn.dataTable.ext.searchTemp.push((settings, data) =>
@@ -240,6 +240,7 @@ function filterService(stateManager, geoService, $rootScope, $q, gapiService, de
      * @param   {Object}   column   column object
      * @return {Array} defs definition queries array
      */
+    // eslint-disable-next-line complexity
     function getFilterDefintion(defs, column) {
         /*jshint maxcomplexity:11 */
         if (column.type === 'string') {
@@ -465,7 +466,7 @@ function filterService(stateManager, geoService, $rootScope, $q, gapiService, de
     function onCreate() {
         // recompute oidColNum for data table filter since it may not be first index
         oidColNum = stateManager.display.filters.data.columns.findIndex(col =>
-                col.data === stateManager.display.filters.data.oidField);
+            col.data === stateManager.display.filters.data.oidField);
 
         // TODO: fix
         // service.filter.isActive = stateManager.display.filters.requester.legendEntry.flags.filter.visible;

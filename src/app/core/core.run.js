@@ -14,7 +14,7 @@ angular
  * The `runBlock` triggers config and locale file loading, sets language of the app.
  */
 function runBlock($rootScope, $rootElement, $q, globalRegistry, reloadService, events, configService,
-        gapiService, appInfo) {
+    gapiService, appInfo) {
 
     const promises = [
         configService.initialize(),
@@ -259,8 +259,8 @@ function apiBlock($rootScope, globalRegistry, geoService, configService, events,
      */
     function centerAndZoom(x, y, spatialReference, zoom) {
         const coords = gapiService.gapi.proj.localProjectPoint(
-                            spatialReference, geoService.mapObject.spatialReference, { x: x, y: y }
-                );
+            spatialReference, geoService.mapObject.spatialReference, { x: x, y: y }
+        );
         const zoomPoint = gapiService.gapi.proj.Point(coords.x, coords.y, geoService.mapObject.spatialReference);
 
         // separate zoom and center calls, calling centerAndZoom sets the map to an extent made up of NaN

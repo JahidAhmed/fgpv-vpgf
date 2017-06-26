@@ -141,8 +141,8 @@ function _identifyServiceFactory($q, gapiService, stateManager, Geo) {
          * @param  {String} caption   optional captions to be displayed along with the name
          * @return {Object}           identify result object
          */
-        const IDENTIFY_RESULT = (name, symbology, format, layerRec, featureIdx, caption) => {
-            return {
+        const IDENTIFY_RESULT = (name, symbology, format, layerRec, featureIdx, caption) =>
+            ({
                 isLoading: true,
                 requestId: -1,
                 requester: {
@@ -154,8 +154,8 @@ function _identifyServiceFactory($q, gapiService, stateManager, Geo) {
                     featureIdx
                 },
                 data: []
-            };
-        };
+            });
+
         // jscs:enable requireSpacesInAnonymousFunctionExpression
 
         return init();
@@ -461,10 +461,10 @@ function _identifyServiceFactory($q, gapiService, stateManager, Geo) {
 
             // no need to check if the layer is registered as this object comes from an array of registered layers
             const identifyPromise = $q.all([
-                    layerRecord.getAttributes(legendEntry.featureIdx),
-                    $q.resolve(layerRecord._layer.queryFeatures(qry)),
-                    layerRecord.attributeBundle[legendEntry.featureIdx].layerData
-                ])
+                layerRecord.getAttributes(legendEntry.featureIdx),
+                $q.resolve(layerRecord._layer.queryFeatures(qry)),
+                layerRecord.attributeBundle[legendEntry.featureIdx].layerData
+            ])
                 .then(([attributes, queryResult, layerData]) => {
                     // transform attributes of query results into {name,data} objects one object per queried feature
                     //

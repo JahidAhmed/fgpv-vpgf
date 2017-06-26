@@ -204,7 +204,7 @@ const mapProxy = {
     },
 
 
-     /**
+    /**
     * reinitial when a new config file is loaded
     * @function  reInitialize
     */
