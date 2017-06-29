@@ -72,7 +72,9 @@ function filterService(stateManager, geoService, $rootScope, $q, gapiService, de
         if (filterTimeStamps.onCreated !== null) { // ignore if no DataTable is active
             service.filter.isActive = value;
             stateManager.display.filters.data.filter.isActive = value; // set on layer so it can persist when we change layer
-            stateManager.display.filters.requester.legendEntry.flags.filter.visible =
+
+            // TODO: fix because we dont use flag anymore...
+            stateManager.display.filters.requester.legendEntry.filter =
                 service.filter.isActive || service.filter.isApplied;
 
             filteredState().then(() => {
@@ -120,7 +122,7 @@ function filterService(stateManager, geoService, $rootScope, $q, gapiService, de
 
         // recompute oidColNum for data table filter since it may not be first index
         oidColNum = stateManager.display.filters.data.columns.findIndex(col =>
-                col.data === stateManager.display.filters.data.oidField);
+            col.data === stateManager.display.filters.data.oidField);
 
         // add a DataTable filter which only accepts rows with oidField values in the validOIDs list
         $.fn.dataTable.ext.searchTemp.push((settings, data) =>
@@ -191,7 +193,7 @@ function filterService(stateManager, geoService, $rootScope, $q, gapiService, de
 
         // TODO check how
         // check if we need to show filter flag (we show it if there is static filter or filter by extent is enable)
-        // filters.requester.legendEntry.flags.filter.visible = (service.filter.isActive || filter) ? true : false;
+        filters.requester.legendEntry.filter = (service.filter.isActive || filter) ? true : false;
 
         // if filter by extent is enable, manually trigger the on extentChange event to refresh the table
         if (service.filter.isActive) { onExtentChange(); }
@@ -216,7 +218,7 @@ function filterService(stateManager, geoService, $rootScope, $q, gapiService, de
         filters.data.filter.isApplied = service.filter.isApplied;  // set on layer so it can persist when we change layer
 
         // TODO: fix because we dont use flag anymore... show filter flag
-        // filters.requester.legendEntry.flags.filter.visible = true;
+        filters.requester.legendEntry.filter = true;
 
         // loop trought all the filters to construct the array queries
         let defs = [];
@@ -432,7 +434,7 @@ function filterService(stateManager, geoService, $rootScope, $q, gapiService, de
             service.filters[column] = false;
 
             service.filter.isApplied =
-                stateManager.display.filters.requester.legendEntry.flags.filter.visible ? false : true;
+                stateManager.display.filters.requester.legendEntry.filter ? false : true;
 
             filtersObject.each(el => {
                 // check if another field have a filter. If so, show Apply Map
@@ -465,10 +467,10 @@ function filterService(stateManager, geoService, $rootScope, $q, gapiService, de
     function onCreate() {
         // recompute oidColNum for data table filter since it may not be first index
         oidColNum = stateManager.display.filters.data.columns.findIndex(col =>
-                col.data === stateManager.display.filters.data.oidField);
+            col.data === stateManager.display.filters.data.oidField);
 
         // TODO: fix
-        // service.filter.isActive = stateManager.display.filters.requester.legendEntry.flags.filter.visible;
+        service.filter.isActive = stateManager.display.filters.requester.legendEntry.filter;
 
         // set filter extent and apply map button from table information
         const filter = stateManager.display.filters.data.filter;

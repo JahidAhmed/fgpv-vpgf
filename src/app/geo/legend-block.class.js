@@ -199,6 +199,12 @@ function LegendBlockFactory($q, Geo, layerRegistry, gapiService, configService, 
          */
         get userAdded () {              return this._layerConfig.state.userAdded; }
 
+        get filter () {                 return this._layerConfig.state.filter; }
+
+        set filter (value) {
+            this._layerConfig.state.filter = value;
+        }
+
         _validProjection = true;
         get validProjection () { return this._validProjection; }
         /**
@@ -524,6 +530,14 @@ function LegendBlockFactory($q, Geo, layerRegistry, gapiService, configService, 
             return this._mainProxyWrapper.userAdded;
         }
 
+        get filter () { 
+            return this._mainProxyWrapper.filter;
+        }
+
+        set filter (value) { 
+            this._mainProxyWrapper.filter = value;
+        }
+
         get formattedData () {
             return this._mainProxyWrapper.formattedAttributes;
         }
@@ -596,7 +610,7 @@ function LegendBlockFactory($q, Geo, layerRegistry, gapiService, configService, 
 
             this._aggregateStates = ref.aggregateStates;
             this._walk = ref.walkFunction.bind(this);
-                    }
+        }
 
         get blockType () {      return TYPES.GROUP; }
 

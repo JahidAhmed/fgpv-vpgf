@@ -69,7 +69,8 @@ function ConfigObjectFactory(Geo, gapiService, common) {
                     boundingBox: false,
                     query: true,
                     snapshot: false,
-                    userAdded: false
+                    userAdded: false,
+                    filter: false
                 },
                 controls: [
                     'opacity',
@@ -96,7 +97,8 @@ function ConfigObjectFactory(Geo, gapiService, common) {
                     boundingBox: false,
                     query: true,
                     snapshot: false,
-                    userAdded: false
+                    userAdded: false,
+                    filter: false
                 },
                 controls: [
                     'opacity',
@@ -129,7 +131,8 @@ function ConfigObjectFactory(Geo, gapiService, common) {
                     boundingBox: false,
                     query: true,
                     snapshot: false,
-                    userAdded: false
+                    userAdded: false,
+                    filter: false
                 },
                 controls: [
                     'opacity',
@@ -157,7 +160,8 @@ function ConfigObjectFactory(Geo, gapiService, common) {
                         boundingBox: false,
                         query: true,
                         snapshot: false,
-                        userAdded: false
+                        userAdded: false,
+                        filter: false
                     },
                     controls: [
                         'opacity',
@@ -185,7 +189,8 @@ function ConfigObjectFactory(Geo, gapiService, common) {
                     boundingBox: false,
                     query: false,
                     snapshot: false,
-                    userAdded: false
+                    userAdded: false,
+                    filter: false
                 },
                 controls: [
                     'opacity',
@@ -212,7 +217,8 @@ function ConfigObjectFactory(Geo, gapiService, common) {
                     boundingBox: false,
                     query: false,
                     snapshot: false,
-                    userAdded: false
+                    userAdded: false,
+                    filter: false
                 },
                 controls: [
                     'opacity',
@@ -247,6 +253,7 @@ function ConfigObjectFactory(Geo, gapiService, common) {
             this._query = source.query;
             this._snapshot = source.snapshot;
             this._userAdded = source.userAdded;
+            this._filter = source.filter;
 
             // TODO: decide if we want to preserve any settings (apart from snapshot) through the layer reload
         }
@@ -268,6 +275,9 @@ function ConfigObjectFactory(Geo, gapiService, common) {
 
         get userAdded () {          return this._userAdded; }
         set userAdded (value) {     this._userAdded = value; }
+
+        get filter () {             return this._filter; }
+        set filter (value) {        this._filter = value; }
 
         get JSON() {
             return {
@@ -291,7 +301,7 @@ function ConfigObjectFactory(Geo, gapiService, common) {
      */
     function applyLayerNodeDefaults(ownSource =
         { state: {}, controls: [], disabledControls: [], userDisabledControls: [] },
-        ownDefaults, parentSource = {}) {
+    ownDefaults, parentSource = {}) {
         const ownSourceCopy = angular.copy(ownSource);
 
         ownSourceCopy.state = _defaultState(ownSourceCopy.state, ownDefaults.state, parentSource.state);
@@ -323,7 +333,7 @@ function ConfigObjectFactory(Geo, gapiService, common) {
          */
         function _defaultState(state = {}, stateDefaults, parentState = {}) {
             const properies = [
-                'opacity', 'visibility', 'boundingBox', 'query', 'snapshot', 'userAdded'
+                'opacity', 'visibility', 'boundingBox', 'query', 'snapshot', 'userAdded', 'filter'
             ];
 
             properies.forEach(propName => {
@@ -903,7 +913,7 @@ function ConfigObjectFactory(Geo, gapiService, common) {
      */
     class Basemap {
         constructor ({ id, name, description, typeSummary, layers, thumbnailUrl = null, attribution, opacity = 1,
-                altText, zoomLevels = {} }, tileSchema) {
+            altText, zoomLevels = {} }, tileSchema) {
             this._id = id;
             this._name = name;
             this._description = description;
@@ -2029,7 +2039,7 @@ function ConfigObjectFactory(Geo, gapiService, common) {
                 // check if the number of all required search services is correct
                 if (typeof search === 'undefined' || typeof search.serviceUrls === 'undefined'
                     || Object.keys(search.serviceUrls).length < GEOSERVICES.length) {
-                        return false;
+                    return false;
                 }
 
                 // check if the serives match what were required
