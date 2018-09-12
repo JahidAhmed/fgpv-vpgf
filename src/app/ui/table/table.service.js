@@ -444,7 +444,7 @@ function tableService(stateManager, geoService, $rootScope, $q, gapiService, deb
             val = filterVal.split(" ").join("[\\w,\\s]*");
         }
         const table = service.getTable();
-        $timeout(() => { table.column(`${column}:name`).search(val, true, false).draw(); }, 100);
+        $timeout(() => { table.column(`${column}:name`).search(jQuery.fn.DataTable.ext.type.search.string(val), true, false).draw(); }, 100);
 
         // keep filter state to know when to show apply map button
         setFiltersState(column, value);

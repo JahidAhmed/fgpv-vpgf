@@ -226,7 +226,7 @@ function rvTableDefinition(stateManager, events, $compile, tableService, referen
                             setDateFilter(filterInfo.scope, i);
                         } else if (column.type === 'string') {
                             const val = `^${column.filter.value.replace(/\*/g, '.*')}.*$`;
-                            table.column(`${column.name}:name`).search(val, true, false);
+                            table.column(`${column.name}:name`).search(jQuery.fn.DataTable.ext.type.search.string(val), true, false);
                         } else if (column.type === 'selector') {
                             setSelectorFilter(filterInfo.scope, table, column);
                         }
@@ -378,7 +378,7 @@ function rvTableDefinition(stateManager, events, $compile, tableService, referen
 
                 // create the regex to select value
                 const val = `^${array.join('|').replace(/"/g, '')}.*$`;
-                table.column(`${column.name}:name`).search(val, true, false);
+                table.column(`${column.name}:name`).search(jQuery.fn.DataTable.ext.type.search.string(val), true, false);
 
                 // set initial value
                 filter.init = array;

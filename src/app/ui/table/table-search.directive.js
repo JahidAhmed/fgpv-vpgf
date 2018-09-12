@@ -124,7 +124,7 @@ function Controller(tableService, debounceService, $timeout, $rootElement, state
         // if user enter value is not valid filters, simply search the whole datatable
         // redraw table with search parameter (use timeout for redraw so processing can show
         if (self.searchFilter.filters.length === 0) {
-            $timeout(() => { table.search(self.searchText).draw(); }, 100);
+            $timeout(() => { table.search(jQuery.fn.DataTable.ext.type.search.string(self.searchText)).draw(); }, 100);
         } else {
             $timeout(() => { table.search('').draw(); }, 100);
         }
